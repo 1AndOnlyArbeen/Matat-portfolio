@@ -1,0 +1,290 @@
+// Placeholder data — used when the backend API is not available yet.
+// Replace these with real API calls once the Node backend is connected.
+
+import arbinImage from "../assets/arbin.jpeg";
+
+export const heroData = {
+  title: "We Build Digital Experiences",
+  subtitle: "A creative agency crafting modern web & mobile solutions for businesses worldwide.",
+  buttonText: "View Our Work",
+  buttonLink: "#projects",
+  backgroundImage: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=1400&q=80",
+};
+
+export const projectsData = [
+  {
+    _id: "1",
+    title: "E-Commerce Platform",
+    description: "A full-stack online shopping platform with payment integration and admin dashboard.",
+    longDescription: "Built a complete e-commerce solution featuring product catalog, shopping cart, secure checkout with Stripe, admin dashboard for inventory management, order tracking, and customer analytics. The platform handles 10k+ daily visitors with optimized performance.",
+    image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&q=80",
+    tags: ["React", "Node.js", "MongoDB"],
+    features: ["Payment Integration", "Admin Dashboard", "Order Tracking", "Product Reviews", "Inventory Management"],
+    client: "TechCorp",
+    date: "2025-06",
+    link: "#",
+  },
+  {
+    _id: "2",
+    title: "Healthcare Management",
+    description: "Patient management system with appointment scheduling and medical records.",
+    longDescription: "Developed a comprehensive healthcare management system for clinics and hospitals. Features include patient records, appointment booking, prescription management, billing, and reporting. HIPAA compliant with role-based access control.",
+    image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=600&q=80",
+    tags: ["Vue.js", "Express", "PostgreSQL"],
+    features: ["Patient Records", "Appointment Scheduling", "Prescription Management", "Billing System", "Reports"],
+    client: "InnovateCo",
+    date: "2025-03",
+    link: "#",
+  },
+  {
+    _id: "3",
+    title: "Real Estate Portal",
+    description: "Property listing website with advanced search, maps, and virtual tours.",
+    longDescription: "Created a modern real estate portal with interactive map search, virtual property tours, mortgage calculator, and agent dashboard. Integrated with MLS data feeds for real-time listing updates across 50+ regions.",
+    image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&q=80",
+    tags: ["Next.js", "Prisma", "Tailwind"],
+    features: ["Map Search", "Virtual Tours", "Mortgage Calculator", "Agent Dashboard", "MLS Integration"],
+    client: "StartupXYZ",
+    date: "2025-01",
+    link: "#",
+  },
+  {
+    _id: "4",
+    title: "Learning Platform",
+    description: "Online course platform with video streaming, quizzes, and certification.",
+    longDescription: "Built an online learning platform supporting video courses, live classes, interactive quizzes, progress tracking, and certificate generation. Includes instructor tools for course creation and student analytics.",
+    image: "https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=600&q=80",
+    tags: ["React", "Firebase", "Stripe"],
+    features: ["Video Streaming", "Live Classes", "Quizzes", "Certificates", "Progress Tracking"],
+    client: "DigitalFlow",
+    date: "2024-11",
+    link: "#",
+  },
+  {
+    _id: "5",
+    title: "Restaurant POS System",
+    description: "Point of sale system for restaurants with order management and reporting.",
+    longDescription: "Designed and developed a tablet-based POS system for restaurants. Features table management, kitchen display system, split billing, inventory tracking, and daily sales reporting. Currently used by 30+ restaurants.",
+    image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&q=80",
+    tags: ["React", "Node.js", "MySQL"],
+    features: ["Table Management", "Kitchen Display", "Split Billing", "Inventory Tracking", "Sales Reports"],
+    client: "CloudNine",
+    date: "2024-08",
+    link: "#",
+  },
+  {
+    _id: "6",
+    title: "Social Media Dashboard",
+    description: "Analytics dashboard for managing multiple social media accounts.",
+    longDescription: "Created a unified social media management dashboard that connects with major platforms. Features post scheduling, engagement analytics, audience insights, competitor tracking, and automated reporting for marketing teams.",
+    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80",
+    tags: ["Angular", "Python", "Redis"],
+    features: ["Post Scheduling", "Analytics", "Audience Insights", "Competitor Tracking", "Auto Reports"],
+    client: "DataDriven",
+    date: "2024-05",
+    link: "#",
+  },
+];
+
+export const appsData = [
+  {
+    _id: "1",
+    name: "TaskFlow",
+    description: "Project management app with kanban boards, team collaboration, and time tracking.",
+    longDescription: "TaskFlow is a complete project management solution designed for agile teams. Features include drag-and-drop kanban boards, sprint planning, time tracking with reports, file attachments, team chat, and integrations with GitHub, Slack, and Jira.",
+    icon: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=200&q=80",
+    screenshots: [
+      "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=600&q=80",
+      "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=600&q=80",
+    ],
+    platform: "iOS & Android",
+    downloads: "25K+",
+    rating: 4.8,
+    link: "#",
+  },
+  {
+    _id: "2",
+    name: "FitTrack Pro",
+    description: "Fitness tracking app with workout plans, nutrition logging, and progress analytics.",
+    longDescription: "FitTrack Pro helps users achieve their fitness goals with personalized workout plans, nutrition tracking with barcode scanner, body measurement logging, progress photos, and AI-powered recommendations. Syncs with Apple Health and Google Fit.",
+    icon: "https://images.unsplash.com/photo-1526256262350-7da7584cf5eb?w=200&q=80",
+    screenshots: [
+      "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=600&q=80",
+      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80",
+    ],
+    platform: "iOS & Android",
+    downloads: "50K+",
+    rating: 4.6,
+    link: "#",
+  },
+  {
+    _id: "3",
+    name: "QuickInvoice",
+    description: "Invoice generation app for freelancers with payment reminders and expense tracking.",
+    longDescription: "QuickInvoice simplifies billing for freelancers and small businesses. Create professional invoices in seconds, set up recurring billing, track expenses, send payment reminders, and generate tax reports. Supports multiple currencies and payment gateways.",
+    icon: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=200&q=80",
+    screenshots: [
+      "https://images.unsplash.com/photo-1554224154-22dec7ec8818?w=600&q=80",
+      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80",
+    ],
+    platform: "Web & Mobile",
+    downloads: "15K+",
+    rating: 4.7,
+    link: "#",
+  },
+  {
+    _id: "4",
+    name: "ChatConnect",
+    description: "Real-time messaging app with group chats, file sharing, and video calls.",
+    longDescription: "ChatConnect is a secure messaging platform for teams and communities. Features end-to-end encryption, group channels, voice and video calls, screen sharing, file sharing up to 2GB, message reactions, and custom integrations via webhooks.",
+    icon: "https://images.unsplash.com/photo-1611606063065-ee7946f0787a?w=200&q=80",
+    screenshots: [
+      "https://images.unsplash.com/photo-1587560699334-cc4ff634909a?w=600&q=80",
+      "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&q=80",
+    ],
+    platform: "Cross-platform",
+    downloads: "100K+",
+    rating: 4.5,
+    link: "#",
+  },
+];
+
+export const clientsData = [
+  {
+    _id: "1", name: "TechCorp",
+    logo: "https://via.placeholder.com/150x60/1e40af/ffffff?text=TechCorp",
+    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80",
+    description: "Leading technology solutions provider specializing in enterprise software and cloud infrastructure.",
+    industry: "Technology",
+    website: "#",
+    projects: ["E-Commerce Platform"],
+  },
+  {
+    _id: "2", name: "InnovateCo",
+    logo: "https://via.placeholder.com/150x60/1e40af/ffffff?text=InnovateCo",
+    image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=600&q=80",
+    description: "Healthcare innovation company transforming patient care through digital solutions.",
+    industry: "Healthcare",
+    website: "#",
+    projects: ["Healthcare Management"],
+  },
+  {
+    _id: "3", name: "StartupXYZ",
+    logo: "https://via.placeholder.com/150x60/1e40af/ffffff?text=StartupXYZ",
+    image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&q=80",
+    description: "Fast-growing proptech startup disrupting the real estate market with AI-powered tools.",
+    industry: "Real Estate",
+    website: "#",
+    projects: ["Real Estate Portal"],
+  },
+  {
+    _id: "4", name: "DigitalFlow",
+    logo: "https://via.placeholder.com/150x60/1e40af/ffffff?text=DigitalFlow",
+    image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&q=80",
+    description: "EdTech company making quality education accessible to everyone through technology.",
+    industry: "Education",
+    website: "#",
+    projects: ["Learning Platform"],
+  },
+  {
+    _id: "5", name: "CloudNine",
+    logo: "https://via.placeholder.com/150x60/1e40af/ffffff?text=CloudNine",
+    image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&q=80",
+    description: "Hospitality tech company providing modern solutions for restaurants and hotels.",
+    industry: "Hospitality",
+    website: "#",
+    projects: ["Restaurant POS System"],
+  },
+  {
+    _id: "6", name: "DataDriven",
+    logo: "https://via.placeholder.com/150x60/1e40af/ffffff?text=DataDriven",
+    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80",
+    description: "Marketing analytics firm helping brands make smarter decisions with data.",
+    industry: "Marketing",
+    website: "#",
+    projects: ["Social Media Dashboard"],
+  },
+];
+
+export const teamData = [
+  {
+    _id: "1",
+    name: "Arbeen Shrestha",
+    role: "Software Developer",
+    image: arbinImage,
+    social: { linkedin: "#", github: "#", twitter: "#" },
+  },
+  {
+    _id: "2",
+    name: "Sarah Johnson",
+    role: "UI/UX Designer",
+    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80",
+    social: { linkedin: "#", github: "#", twitter: "#" },
+  },
+  {
+    _id: "3",
+    name: "Mike Chen",
+    role: "Backend Developer",
+    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+    social: { linkedin: "#", github: "#", twitter: "#" },
+  },
+  {
+    _id: "4",
+    name: "Emily Davis",
+    role: "Project Manager",
+    image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&q=80",
+    social: { linkedin: "#", github: "#", twitter: "#" },
+  },
+];
+
+export const testimonialsData = [
+  {
+    _id: "1",
+    name: "John Smith",
+    company: "TechCorp",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80",
+    text: "Working with this team was an absolute pleasure. They delivered our e-commerce platform ahead of schedule and the quality exceeded our expectations.",
+    rating: 5,
+  },
+  {
+    _id: "2",
+    name: "Lisa Wang",
+    company: "InnovateCo",
+    avatar: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=200&q=80",
+    text: "Their mobile app development skills are top-notch. Our fitness app has gained over 50k downloads in the first month thanks to their excellent work.",
+    rating: 5,
+  },
+  {
+    _id: "3",
+    name: "David Brown",
+    company: "StartupXYZ",
+    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&q=80",
+    text: "Professional, responsive, and creative. They transformed our vision into a beautiful reality. Highly recommended for any web development project.",
+    rating: 4,
+  },
+];
+
+export const galleryData = [
+  { _id: "1", image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&q=80", caption: "Development Workshop" },
+  { _id: "2", image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&q=80", caption: "Team Collaboration" },
+  { _id: "3", image: "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=600&q=80", caption: "Client Meeting" },
+  { _id: "4", image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600&q=80", caption: "Office Space" },
+  { _id: "5", image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&q=80", caption: "Brainstorming Session" },
+  { _id: "6", image: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=600&q=80", caption: "Product Launch" },
+  { _id: "7", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80", caption: "Modern Workspace" },
+  { _id: "8", image: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=600&q=80", caption: "Strategy Planning" },
+];
+
+export const aboutData = {
+  title: "About Us",
+  description:
+    "We are a passionate team of developers, designers, and strategists who love building digital products. With over 5 years of experience in the industry, we have helped businesses of all sizes bring their ideas to life through technology.",
+  mission:
+    "Our mission is to deliver high-quality, scalable, and user-friendly digital solutions that drive real business results.",
+  stats: [
+    { label: "Projects Completed", value: "150+" },
+    { label: "Happy Clients", value: "80+" },
+    { label: "Team Members", value: "12" },
+    { label: "Years Experience", value: "5+" },
+  ],
+};

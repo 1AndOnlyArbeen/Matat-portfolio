@@ -1,0 +1,269 @@
+// ==========================================
+// Admin API service
+// All admin endpoints go through /api/admin
+// Just plug in your Node backend and these will work
+// ==========================================
+
+const BASE = "/api/v1/admin";
+
+// helper to get auth token from localStorage
+function getToken() {
+  return localStorage.getItem("matat-admin-token");
+}
+
+// generic fetch wrapper with auth header
+async function adminFetch(endpoint, options = {}) {
+  try {
+    const token = getToken();
+    const res = await fetch(`${BASE}${endpoint}`, {
+      ...options,
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        ...options.headers,
+      },
+    });
+
+    // if unauthorized, try refreshing the token first
+    if (res.status === 401) {
+      const refreshed = await refreshToken();
+      if (refreshed) {
+        // retry the original request with new token
+        const retryRes = await fetch(`${BASE}${endpoint}`, {
+          ...options,
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getToken()}`,
+            ...options.headers,
+          },
+        });
+        if (retryRes.ok) return await retryRes.json();
+      }
+      // refresh failed — go to login
+      localStorage.removeItem("matat-admin-token");
+      window.location.href = "/matat-admin/login";
+      return null;
+    }
+
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.error(`Admin API [${endpoint}]:`, err.message);
+    return null;
+  }
+}
+
+// for file uploads (images etc) - uses FormData instead of JSON
+async function adminUpload(endpoint, formData, method = "POST") {
+  try {
+    const token = getToken();
+    const res = await fetch(`${BASE}${endpoint}`, {
+      method,
+      credentials: "include",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData, // browser sets content-type with boundary automatically
+    });
+
+    if (res.status === 401) {
+      const refreshed = await refreshToken();
+      if (refreshed) {
+        const retryRes = await fetch(`${BASE}${endpoint}`, {
+          method,
+          credentials: "include",
+          headers: { Authorization: `Bearer ${getToken()}` },
+          body: formData,
+        });
+        if (retryRes.ok) return await retryRes.json();
+      }
+      localStorage.removeItem("matat-admin-token");
+      window.location.href = "/matat-admin/login";
+      return null;
+    }
+
+    if (!res.ok) throw new Error(`Upload error: ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.error(`Admin Upload [${endpoint}]:`, err.message);
+    return null;
+  }
+}
+
+// ---- Auth ----
+export async function loginAdmin(email, password) {
+  try {
+    const res = await fetch(`${BASE}/login`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    // store accessToken in localStorage for Authorization header
+    if (data?.data?.accessToken) {
+      localStorage.setItem("matat-admin-token", data.data.accessToken);
+    }
+    return data;
+  } catch (err) {
+    console.error("Login error:", err.message);
+    return null;
+  }
+}
+
+export async function logoutAdmin() {
+  try {
+    const token = getToken();
+    const res = await fetch(`${BASE}/logout/`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    localStorage.removeItem("matat-admin-token");
+    return res.ok;
+  } catch (err) {
+    console.error("Logout error:", err.message);
+    localStorage.removeItem("matat-admin-token");
+    return false;
+  }
+}
+
+export async function refreshToken() {
+  try {
+    const res = await fetch(`${BASE}/refresh-token`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    if (data?.data?.accessToken) {
+      localStorage.setItem("matat-admin-token", data.data.accessToken);
+    }
+    return true;
+  } catch (err) {
+    console.error("Refresh token error:", err.message);
+    return false;
+  }
+}
+
+export async function verifyToken() {
+  return await adminFetch("/verify");
+}
+
+// ---- Hero ----
+export async function getHero() {
+  return await adminFetch("/hero");
+}
+export async function updateHero(data) {
+  return await adminFetch("/hero", { method: "PUT", body: JSON.stringify(data) });
+}
+
+// ---- Projects ----
+export async function getProjects() {
+  return await adminFetch("/projects");
+}
+export async function createProject(data) {
+  return await adminUpload("/projects", data);
+}
+export async function updateProject(id, data) {
+  return await adminUpload(`/projects/${id}`, data, "PUT");
+}
+export async function deleteProject(id) {
+  return await adminFetch(`/projects/${id}`, { method: "DELETE" });
+}
+
+// ---- Apps ----
+export async function getApps() {
+  return await adminFetch("/apps");
+}
+export async function createApp(data) {
+  return await adminUpload("/apps", data);
+}
+export async function updateApp(id, data) {
+  return await adminUpload(`/apps/${id}`, data, "PUT");
+}
+export async function deleteApp(id) {
+  return await adminFetch(`/apps/${id}`, { method: "DELETE" });
+}
+
+// ---- Clients ----
+export async function getClients() {
+  return await adminFetch("/clients");
+}
+export async function createClient(data) {
+  return await adminUpload("/clients", data);
+}
+export async function updateClient(id, data) {
+  return await adminUpload(`/clients/${id}`, data, "PUT");
+}
+export async function deleteClient(id) {
+  return await adminFetch(`/clients/${id}`, { method: "DELETE" });
+}
+
+// ---- Team ----
+export async function getTeamMembers() {
+  return await adminFetch("/team");
+}
+export async function createTeamMember(data) {
+  return await adminUpload("/team", data);
+}
+export async function updateTeamMember(id, data) {
+  return await adminUpload(`/team/${id}`, data, "PUT");
+}
+export async function deleteTeamMember(id) {
+  return await adminFetch(`/team/${id}`, { method: "DELETE" });
+}
+
+// ---- Testimonials ----
+export async function getTestimonials() {
+  return await adminFetch("/testimonials");
+}
+export async function createTestimonial(data) {
+  return await adminUpload("/testimonials", data);
+}
+export async function updateTestimonial(id, data) {
+  return await adminUpload(`/testimonials/${id}`, data, "PUT");
+}
+export async function deleteTestimonial(id) {
+  return await adminFetch(`/testimonials/${id}`, { method: "DELETE" });
+}
+
+// ---- Gallery ----
+export async function getGalleryImages() {
+  return await adminFetch("/gallery");
+}
+export async function uploadGalleryImage(data) {
+  return await adminUpload("/gallery", data);
+}
+export async function updateGalleryImage(id, data) {
+  return await adminUpload(`/gallery/${id}`, data, "PUT");
+}
+export async function deleteGalleryImage(id) {
+  return await adminFetch(`/gallery/${id}`, { method: "DELETE" });
+}
+
+// ---- About ----
+export async function getAbout() {
+  return await adminFetch("/about");
+}
+export async function updateAbout(data) {
+  return await adminFetch("/about", { method: "PUT", body: JSON.stringify(data) });
+}
+
+// ---- Contact Messages (read only from admin) ----
+export async function getMessages() {
+  return await adminFetch("/messages");
+}
+export async function deleteMessage(id) {
+  return await adminFetch(`/messages/${id}`, { method: "DELETE" });
+}
+
+// ---- Dashboard stats ----
+export async function getDashboardStats() {
+  return await adminFetch("/dashboard");
+}
