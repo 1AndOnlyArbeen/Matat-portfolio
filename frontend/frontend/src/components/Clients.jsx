@@ -1,16 +1,19 @@
 import { useState, useEffect } from "react";
 import { getClients } from "../api";
 import { clientsData as fallback } from "../data/placeholders";
-import { FiX, FiBriefcase, FiExternalLink, FiGrid } from "react-icons/fi";
+import { FiX, FiBriefcase, FiExternalLink, FiGrid, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import useScrollAnimation from "../hooks/useScrollAnimation";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Autoplay } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
 
-// client logos section - shows companies we have worked with
-// clicking a logo opens a popup with client details
+// client logos slider - clicking a logo opens a popup with client details
 function Clients() {
   const [clients, setClients] = useState(fallback);
-  const [selected, setSelected] = useState(null); // currently opened client popup
+  const [selected, setSelected] = useState(null);
   const [headingRef, headingVisible] = useScrollAnimation();
-  const [gridRef, gridVisible] = useScrollAnimation(0.1);
+  const [sliderRef, sliderVisible] = useScrollAnimation(0.1);
 
   useEffect(() => {
     getClients().then((res) => {
@@ -30,21 +33,46 @@ function Clients() {
           </p>
         </div>
 
-        {/* logos grid - click opens popup */}
-        <div ref={gridRef} className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 items-center stagger-children ${gridVisible ? "visible" : ""}`}>
-          {clients.map((client) => (
-            <button
-              key={client._id}
-              onClick={() => setSelected(client)}
-              className="flex items-center justify-center p-4 bg-gray-50 rounded-lg hover:bg-blue-50 transition-all duration-300 h-20 hover:scale-105 cursor-pointer"
-            >
-              <img
-                src={client.logo}
-                alt={client.name}
-                className="max-h-10 max-w-full object-contain grayscale hover:grayscale-0 transition-all duration-300 opacity-70 hover:opacity-100"
-              />
-            </button>
-          ))}
+        {/* logos slider */}
+        <div ref={sliderRef} className={`relative animate-fade-up ${sliderVisible ? "visible" : ""}`}>
+          <Swiper
+            modules={[Navigation, Autoplay]}
+            spaceBetween={20}
+            slidesPerView={2}
+            navigation={{
+              prevEl: ".clients-prev",
+              nextEl: ".clients-next",
+            }}
+            autoplay={{ delay: 3000, disableOnInteraction: false }}
+            loop={clients.length > 6}
+            breakpoints={{
+              640: { slidesPerView: 3 },
+              1024: { slidesPerView: 6 },
+            }}
+          >
+            {clients.map((client) => (
+              <SwiperSlide key={client._id}>
+                <button
+                  onClick={() => setSelected(client)}
+                  className="flex items-center justify-center p-4 bg-gray-50 rounded-lg hover:bg-blue-50 transition-all duration-300 h-20 w-full hover:scale-105 cursor-pointer"
+                >
+                  <img
+                    src={client.logo}
+                    alt={client.name}
+                    className="max-h-10 max-w-full object-contain grayscale hover:grayscale-0 transition-all duration-300 opacity-70 hover:opacity-100"
+                  />
+                </button>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+
+          {/* custom nav arrows */}
+          <button className="clients-prev absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-10 bg-white shadow-lg rounded-full p-2 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors cursor-pointer">
+            <FiChevronLeft size={22} />
+          </button>
+          <button className="clients-next absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-10 bg-white shadow-lg rounded-full p-2 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors cursor-pointer">
+            <FiChevronRight size={22} />
+          </button>
         </div>
       </div>
 
@@ -63,7 +91,6 @@ function Clients() {
               <div className="relative h-40 overflow-hidden">
                 <img src={selected.image} alt={selected.name} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-                {/* close button on image */}
                 <button
                   onClick={() => setSelected(null)}
                   className="absolute top-3 right-3 bg-black/30 hover:bg-black/50 text-white p-1.5 rounded-full cursor-pointer transition-colors"
@@ -98,12 +125,10 @@ function Clients() {
 
             {/* popup body */}
             <div className="p-6">
-              {/* description */}
               {selected.description && (
                 <p className="text-gray-600 text-sm leading-relaxed mb-4">{selected.description}</p>
               )}
 
-              {/* projects we did for them */}
               {selected.projects && selected.projects.length > 0 && (
                 <div className="mb-4">
                   <h4 className="text-sm font-semibold text-gray-800 mb-2 flex items-center gap-1">
@@ -119,7 +144,6 @@ function Clients() {
                 </div>
               )}
 
-              {/* website link */}
               {selected.website && selected.website !== "#" && (
                 <a
                   href={selected.website}

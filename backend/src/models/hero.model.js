@@ -3,7 +3,7 @@ import mongoose, { model } from "mongoose";
 
 const hero = new mongoose.Schema({
     title :{
-        type:Sting,
+        type:String,
         required:true,
     },
     subtitle:{
@@ -17,11 +17,16 @@ const hero = new mongoose.Schema({
     },
     buttonLink:{
         type:String,
-        required:true,
+        
     },
     backgroundImage:{
         type:String,
         required:true,
+    },
+    isActive:{
+        type:Boolean,
+        required:true,
+        default:false,
     }
 },{timestamps:true})
 

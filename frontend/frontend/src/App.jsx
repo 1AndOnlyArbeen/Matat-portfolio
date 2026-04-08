@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 // public site components
 import Navbar from "./components/Navbar";
@@ -7,6 +9,36 @@ import Home from "./pages/Home";
 import ProjectDetail from "./pages/ProjectDetail";
 import AppDetail from "./pages/AppDetail";
 import ClientDetail from "./pages/ClientDetail";
+
+// maps section paths to their element IDs
+const sectionMap = {
+  "/projects": "projects",
+  "/apps": "apps",
+  "/about": "about",
+  "/team": "team",
+  "/gallery": "gallery",
+  "/contact": "contact",
+};
+
+// wrapper that scrolls to the correct section on mount
+function HomeWithScroll() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const sectionId = sectionMap[location.pathname];
+    if (sectionId) {
+      // small delay to let the page render before scrolling
+      setTimeout(() => {
+        const el = document.getElementById(sectionId);
+        if (el) el.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, [location.pathname]);
+
+  return <Home />;
+}
 
 // admin panel components
 import AdminLayout from "./admin/AdminLayout";
@@ -43,8 +75,14 @@ function App() {
 
         {/* ===== PUBLIC SITE ROUTES ===== */}
 
-        {/* home page */}
-        <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
+        {/* home page and section routes */}
+        <Route path="/" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
+        <Route path="/projects" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
+        <Route path="/apps" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
+        <Route path="/about" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
+        <Route path="/team" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
+        <Route path="/gallery" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
+        <Route path="/contact" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
 
         {/* detail pages - project, app, client */}
         <Route path="/projects/:id" element={<PublicLayout><ProjectDetail /></PublicLayout>} />

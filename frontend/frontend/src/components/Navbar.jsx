@@ -6,12 +6,12 @@ import logo from "../assets/matat-logo-new1.svg";
 // nav links - each maps to a section id on the homepage
 const navLinks = [
   { name: "Home", path: "/", section: "hero" },
-  { name: "Projects", path: "/#projects", section: "projects" },
-  { name: "Apps", path: "/#apps", section: "apps" },
-  { name: "About", path: "/#about", section: "about" },
-  { name: "Team", path: "/#team", section: "team" },
-  { name: "Gallery", path: "/#gallery", section: "gallery" },
-  { name: "Contact", path: "/#contact", section: "contact" },
+  { name: "Projects", path: "/projects", section: "projects" },
+  { name: "Apps", path: "/apps", section: "apps" },
+  { name: "About", path: "/about", section: "about" },
+  { name: "Team", path: "/team", section: "team" },
+  { name: "Gallery", path: "/gallery", section: "gallery" },
+  { name: "Contact", path: "/contact", section: "contact" },
 ];
 
 function Navbar() {
@@ -39,9 +39,11 @@ function Navbar() {
 
   // observe which section is currently visible on the homepage
   // this makes the nav link highlight as you scroll through sections
+  // and updates the URL to match the current section
   useEffect(() => {
-    // only run observer on homepage
-    if (location.pathname !== "/") return;
+    // only run observer on homepage-like paths
+    const homePaths = ["/", ...navLinks.map((l) => l.path)];
+    if (!homePaths.includes(location.pathname)) return;
 
     const sectionIds = navLinks.map((l) => l.section);
     const observers = [];
@@ -52,9 +54,13 @@ function Navbar() {
 
       const observer = new IntersectionObserver(
         ([entry]) => {
-          // when section enters viewport, mark it as active
+          // when section enters viewport, mark it as active and update URL
           if (entry.isIntersecting) {
             setActiveSection(id);
+            const link = navLinks.find((l) => l.section === id);
+            if (link) {
+              window.history.replaceState(null, "", link.path);
+            }
           }
         },
         { rootMargin: "-40% 0px -40% 0px" } // trigger when section is near center of screen
@@ -72,19 +78,22 @@ function Navbar() {
     e.preventDefault();
     setMobileOpen(false);
 
-    // if on a detail page, navigate to home first then scroll
-    if (location.pathname !== "/") {
+    const homePaths = ["/", ...navLinks.map((l) => l.path)];
+
+    // if on a detail page (not a section path), navigate to home first then scroll
+    if (!homePaths.includes(location.pathname)) {
       navigate(link.path);
       return;
     }
 
-    // on homepage, just scroll to the section
+    // on homepage, just scroll to the section and update URL
     if (link.section === "hero") {
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
       const el = document.getElementById(link.section);
       if (el) el.scrollIntoView({ behavior: "smooth" });
     }
+    window.history.replaceState(null, "", link.path);
   };
 
   // figure out if a nav link is the "active" one
@@ -99,7 +108,7 @@ function Navbar() {
 
   return (
     <nav
-      className={`bg-white sticky top-0 z-50 transition-all duration-300 ${
+      className={`bg-white/80 backdrop-blur-sm sticky top-0 z-50 transition-all duration-300 ${
         scrolled ? "shadow-[0_6px_30px_rgba(37,99,235,0.35)]" : "shadow-[0_4px_20px_rgba(37,99,235,0.2)]"
       }`}
     >

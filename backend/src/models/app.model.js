@@ -25,5 +25,5 @@ const app = new mongoose.Schema({
     
 },{timestamps:true})
 
-const App = new model ('App',app )
+const App = mongoose.model ('App',app )
 export{App}

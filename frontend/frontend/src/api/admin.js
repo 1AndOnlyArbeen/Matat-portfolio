@@ -160,7 +160,7 @@ export async function getHero() {
   return await adminFetch("/hero");
 }
 export async function updateHero(data) {
-  return await adminFetch("/hero", { method: "PUT", body: JSON.stringify(data) });
+  return await adminUpload("/hero", data, "PUT");
 }
 
 // ---- Projects ----

@@ -1,17 +1,19 @@
 import { useState, useEffect } from "react";
 import { getTestimonials } from "../api";
 import { testimonialsData as fallback } from "../data/placeholders";
-import { FiStar } from "react-icons/fi";
+import { FiStar, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import useScrollAnimation from "../hooks/useScrollAnimation";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Autoplay } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
 
-// client testimonials / reviews section
-// shows client avatar, name, company, star rating and their review
+// client testimonials slider
 function Testimonials() {
   const [testimonials, setTestimonials] = useState(fallback);
   const [headingRef, headingVisible] = useScrollAnimation();
-  const [gridRef, gridVisible] = useScrollAnimation(0.1);
+  const [sliderRef, sliderVisible] = useScrollAnimation(0.1);
 
-  // load from backend
   useEffect(() => {
     getTestimonials().then((res) => {
       if (res && res.length > 0) setTestimonials(res);
@@ -30,42 +32,65 @@ function Testimonials() {
           </p>
         </div>
 
-        {/* testimonial cards */}
-        <div ref={gridRef} className={`grid grid-cols-1 md:grid-cols-3 gap-8 stagger-children ${gridVisible ? "visible" : ""}`}>
-          {testimonials.map((item) => (
-            <div
-              key={item._id}
-              className="bg-blue-50 rounded-xl p-6 relative hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
-            >
-              {/* decorative quote mark */}
-              <div className="text-blue-200 text-6xl font-serif absolute top-4 right-6 leading-none">
-                &ldquo;
-              </div>
+        {/* testimonials slider */}
+        <div ref={sliderRef} className={`relative animate-fade-up ${sliderVisible ? "visible" : ""}`}>
+          <Swiper
+            modules={[Navigation, Autoplay]}
+            spaceBetween={24}
+            slidesPerView={1}
+            navigation={{
+              prevEl: ".testimonials-prev",
+              nextEl: ".testimonials-next",
+            }}
+            autoplay={{ delay: 5000, disableOnInteraction: false }}
+            loop={testimonials.length > 3}
+            breakpoints={{
+              768: { slidesPerView: 2 },
+              1024: { slidesPerView: 3 },
+            }}
+          >
+            {testimonials.map((item) => (
+              <SwiperSlide key={item._id}>
+                <div className="bg-blue-50 rounded-xl p-6 relative hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full">
+                  {/* decorative quote mark */}
+                  <div className="text-blue-200 text-6xl font-serif absolute top-4 right-6 leading-none">
+                    &ldquo;
+                  </div>
 
-              {/* client avatar + info at top */}
-              <div className="flex items-center gap-3 mb-4">
-                <img src={item.avatar} alt={item.name} className="w-12 h-12 rounded-full object-cover border-2 border-blue-200" />
-                <div>
-                  <p className="text-blue-900 font-semibold text-sm">{item.name}</p>
-                  <p className="text-gray-400 text-xs">{item.company}</p>
+                  {/* client avatar + info */}
+                  <div className="flex items-center gap-3 mb-4">
+                    <img src={item.avatar} alt={item.name} className="w-12 h-12 rounded-full object-cover border-2 border-blue-200" />
+                    <div>
+                      <p className="text-blue-900 font-semibold text-sm">{item.name}</p>
+                      <p className="text-gray-400 text-xs">{item.company}</p>
+                    </div>
+                  </div>
+
+                  {/* review text */}
+                  <p className="text-gray-600 text-sm leading-relaxed mb-4">{item.text}</p>
+
+                  {/* star rating */}
+                  <div className="flex gap-1">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <FiStar
+                        key={i}
+                        size={16}
+                        className={i < item.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
 
-              {/* review text */}
-              <p className="text-gray-600 text-sm leading-relaxed mb-4">{item.text}</p>
-
-              {/* star rating at bottom */}
-              <div className="flex gap-1">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <FiStar
-                    key={i}
-                    size={16}
-                    className={i < item.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
+          {/* custom nav arrows */}
+          <button className="testimonials-prev absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-10 bg-white shadow-lg rounded-full p-2 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors cursor-pointer">
+            <FiChevronLeft size={22} />
+          </button>
+          <button className="testimonials-next absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-10 bg-white shadow-lg rounded-full p-2 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors cursor-pointer">
+            <FiChevronRight size={22} />
+          </button>
         </div>
       </div>
     </section>

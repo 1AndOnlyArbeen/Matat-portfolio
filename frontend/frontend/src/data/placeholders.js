@@ -235,6 +235,62 @@ export const teamData = [
     image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&q=80",
     social: { linkedin: "#", github: "#", twitter: "#" },
   },
+  {
+    _id: "5",
+    name: "James Wilson",
+    role: "DevOps Engineer",
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+    social: { linkedin: "#", github: "#" },
+  },
+  {
+    _id: "6",
+    name: "Priya Patel",
+    role: "Frontend Developer",
+    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80",
+    social: { linkedin: "#", github: "#", twitter: "#" },
+  },
+  {
+    _id: "7",
+    name: "Alex Rivera",
+    role: "Mobile Developer",
+    image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&q=80",
+    social: { linkedin: "#", github: "#" },
+  },
+  {
+    _id: "8",
+    name: "Sophia Lee",
+    role: "QA Engineer",
+    image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&q=80",
+    social: { linkedin: "#", twitter: "#" },
+  },
+  {
+    _id: "9",
+    name: "Daniel Martinez",
+    role: "Full Stack Developer",
+    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&q=80",
+    social: { linkedin: "#", github: "#", twitter: "#" },
+  },
+  {
+    _id: "10",
+    name: "Olivia Thompson",
+    role: "Product Designer",
+    image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&q=80",
+    social: { linkedin: "#", github: "#" },
+  },
+  {
+    _id: "11",
+    name: "Ryan Cooper",
+    role: "Data Analyst",
+    image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80",
+    social: { linkedin: "#", twitter: "#" },
+  },
+  {
+    _id: "12",
+    name: "Maya Gupta",
+    role: "Cloud Architect",
+    image: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&q=80",
+    social: { linkedin: "#", github: "#", twitter: "#" },
+  },
 ];
 
 export const testimonialsData = [
@@ -262,6 +318,30 @@ export const testimonialsData = [
     text: "Professional, responsive, and creative. They transformed our vision into a beautiful reality. Highly recommended for any web development project.",
     rating: 4,
   },
+  {
+    _id: "4",
+    name: "Amanda Foster",
+    company: "DigitalFlow",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80",
+    text: "The learning platform they built for us has been a game-changer. User engagement increased by 300% within the first quarter of launch.",
+    rating: 5,
+  },
+  {
+    _id: "5",
+    name: "Robert Kim",
+    company: "CloudNine",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80",
+    text: "Our restaurant POS system runs flawlessly thanks to their expertise. The support and maintenance has been equally impressive.",
+    rating: 5,
+  },
+  {
+    _id: "6",
+    name: "Natalie Cruz",
+    company: "DataDriven",
+    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80",
+    text: "They understood our analytics needs perfectly and delivered a dashboard that our entire marketing team relies on daily. Exceptional work.",
+    rating: 4,
+  },
 ];
 
 export const galleryData = [
@@ -273,6 +353,10 @@ export const galleryData = [
   { _id: "6", image: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=600&q=80", caption: "Product Launch" },
   { _id: "7", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80", caption: "Modern Workspace" },
   { _id: "8", image: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=600&q=80", caption: "Strategy Planning" },
+  { _id: "9", image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=600&q=80", caption: "Tech Setup" },
+  { _id: "10", image: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=600&q=80", caption: "Hackathon Night" },
+  { _id: "11", image: "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=600&q=80", caption: "Team Outing" },
+  { _id: "12", image: "https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=600&q=80", caption: "Design Sprint" },
 ];
 
 export const aboutData = {
