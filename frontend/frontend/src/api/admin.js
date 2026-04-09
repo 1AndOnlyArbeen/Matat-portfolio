@@ -157,10 +157,22 @@ export async function verifyToken() {
 
 // ---- Hero ----
 export async function getHero() {
-  return await adminFetch("/hero");
+  return await adminFetch("/getActiveHero");
 }
-export async function updateHero(data) {
-  return await adminUpload("/hero", data, "PUT");
+export async function getAllHeroes() {
+  return await adminFetch("/getAllHero");
+}
+export async function createHero(data) {
+  return await adminUpload("/createHero", data, "POST");
+}
+export async function updateHero(id, data) {
+  return await adminUpload(`/editHeroDetails/${id}`, data, "PATCH");
+}
+export async function toggleHero(id) {
+  return await adminFetch(`/toggleHeroDetail/${id}`, { method: "PATCH" });
+}
+export async function deleteHero(id) {
+  return await adminFetch(`/deleteHero/${id}`, { method: "DELETE" });
 }
 
 // ---- Projects ----

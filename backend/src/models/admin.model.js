@@ -36,6 +36,11 @@ const adminSchema = new mongoose.Schema({
     },
     refreshToken: {
         type: String,
+    },
+    role:{
+        type:String,
+        required:true,
+        
     }
 }, { timestamps: true });
 

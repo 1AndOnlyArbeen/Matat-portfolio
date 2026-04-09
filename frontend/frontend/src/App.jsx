@@ -9,6 +9,8 @@ import Home from "./pages/Home";
 import ProjectDetail from "./pages/ProjectDetail";
 import AppDetail from "./pages/AppDetail";
 import ClientDetail from "./pages/ClientDetail";
+import NotFound from "./pages/NotFound";
+import AdminNotFound from "./admin/AdminNotFound";
 
 // maps section paths to their element IDs
 const sectionMap = {
@@ -109,7 +111,11 @@ function App() {
           <Route path="gallery" element={<ManageGallery />} />
           <Route path="about" element={<ManageAbout />} />
           <Route path="messages" element={<ManageMessages />} />
+          <Route path="*" element={<AdminNotFound />} />
         </Route>
+
+        {/* 404 catch-all */}
+        <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />
 
       </Routes>
     </BrowserRouter>

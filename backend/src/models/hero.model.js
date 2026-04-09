@@ -17,6 +17,7 @@ const hero = new mongoose.Schema({
     },
     buttonLink:{
         type:String,
+        required:true
         
     },
     backgroundImage:{

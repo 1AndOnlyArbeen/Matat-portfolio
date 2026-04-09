@@ -1,16 +1,18 @@
 import { useState, useEffect } from "react";
 import { getHero } from "../api";
-import { heroData as fallback } from "../data/placeholders";
 
 function Hero() {
-  const [data, setData] = useState(fallback);
+  const [data, setData] = useState(null);
 
-  // fetch hero data from backend, fallback to placeholder if api not ready
+  // fetch active hero from backend
   useEffect(() => {
     getHero().then((res) => {
-      if (res) setData(res);
+      if (res && res.title) setData(res);
     });
   }, []);
+
+  // no active banner — show nothing
+  if (!data) return null;
 
   return (
     <section

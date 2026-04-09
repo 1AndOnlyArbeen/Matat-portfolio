@@ -6,15 +6,15 @@
 // and the components fall back to placeholder data
 // ==========================================
 
-const API_BASE = "/api";
+const API_BASE = "/api/v1/admin";
 
 // generic GET helper - fetches data from an endpoint
 async function fetchData(endpoint) {
   try {
     const res = await fetch(`${API_BASE}${endpoint}`);
     if (!res.ok) throw new Error(`Failed to fetch ${endpoint}`);
-    const data = await res.json();
-    return data;
+    const json = await res.json();
+    return json.data || json;
   } catch (error) {
     console.error(`API Error [${endpoint}]:`, error.message);
     return null;
@@ -24,7 +24,7 @@ async function fetchData(endpoint) {
 // ---- individual section fetchers ----
 
 export async function getHero() {
-  return await fetchData("/hero");
+  return await fetchData("/getActiveHero");
 }
 
 export async function getProjects() {

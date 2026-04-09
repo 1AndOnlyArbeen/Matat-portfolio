@@ -10,14 +10,12 @@ const seedAdmin= asyncHandler(async () => {
     await dbConnect();
     
 
-    
-
-
-   const admin =  await Admin.create({
+    const admin =  await Admin.create({
     name:"Arbeen",
     email:'arbin.matat@gmail.com',
     password:'Arbeen@1',
     phoneNumber:"9818856764",
+    role:'admin'
  
    })
    const existingAdmin = await Admin.findOne({email:'arbin.matat@gmail.com'})

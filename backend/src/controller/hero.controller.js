@@ -2,7 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { apiError } from "../utils/apiError.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import { Hero } from "../models/hero.model.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js";
 
 {
   /*
@@ -18,53 +18,51 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 // create the hero and save in the db
 const createHero = asyncHandler(async (req, res) => {
-  const { title, subtitle, buttonText } = req.body;
+  const { title, subtitle, buttonText, buttonLink } = req.body;
 
-  if (!title || !subtitle || !buttonText) {
-    throw new apiError(400, " All the field are required");
+  if (!title || !subtitle || !buttonText || !buttonLink) {
+    throw new apiError(400, "All fields are required");
   }
-  // for image handeling
 
   const backgroundImagePath = req.file?.path;
   if (!backgroundImagePath) {
-    throw new apiError(400, "invalid background image ");
+    throw new apiError(400, "Background image is required");
   }
   const backgroundImage = await uploadOnCloudinary(backgroundImagePath);
-  console.log("uplaod backgroundImage result : ", backgroundImage);
   if (!backgroundImage) {
-    throw new apiError(400, " backgroundImageFailed");
+    throw new apiError(400, "Background image upload failed");
   }
 
-  //create the object and save into the db .
-
-  const heroDetails = await Hero.create({
-    title,
-    subtitle,
-    buttonText,
-    backgroundImage: backgroundImage.url,
-  });
-
-  if (!heroDetails) {
-    throw new apiError(
-      500,
-      "something went wrong while creating creating the heroBanner fields!",
-    );
+  let heroDetails;
+  try {
+    heroDetails = await Hero.create({
+      title,
+      subtitle,
+      buttonText,
+      buttonLink,
+      backgroundImage: backgroundImage.url,
+    });
+  } catch (err) {
+    // cleanup cloudinary image if db save fails
+    const publicId = backgroundImage.public_id;
+    if (publicId) await deleteFromCloudinary(publicId);
+    throw new apiError(500, "Failed to create hero banner");
   }
+
   return res
     .status(201)
-    .json(new apiResponse(201, " hero added and created successfully "));
+    .json(new apiResponse(201, heroDetails, "Hero banner created successfully"));
 });
 
 // fetch the hero banner and give to router so the frontend can call it and save
 const getAllHero = asyncHandler(async (req, res) => {
-  const hero = await Hero.find();
-  if (!hero) {
-    throw new apiError(404, " Hero Banner detials didint found ");
+  const heroes = await Hero.find().sort({ createdAt: -1 });
+  if (!heroes) {
+    throw new apiError(404, "Hero banners not found");
   }
-  console.debug('----------------------sanoke',hero)
   return res
     .status(200)
-    .json(new apiResponse(200, " Hero Banner fethced successfully ",hero));
+    .json(new apiResponse(200, heroes, "Hero banners fetched successfully"));
 });
 
 // get the active data of the hero banner
@@ -79,14 +77,14 @@ const getActiveHero = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(
-      new apiResponse(200, " Active Hero Banner detils fetched successfully !"),
+      new apiResponse(200, activeHero, "Active hero banner fetched successfully"),
     );
 });
 
 // toggle the active user into inactive and incative into the active
 
 const toggleHeroDetail = asyncHandler(async (req, res) => {
-  const hero = await Hero.findbyId(req.param.id);
+  const hero = await Hero.findById(req.params.id);
   if (!hero) throw new apiError(400, "Banner not found !");
 
   // chek is the banner on ?
@@ -106,24 +104,68 @@ const toggleHeroDetail = asyncHandler(async (req, res) => {
     
   }
   return res
-  .status(200)
-  .json((new apiResponse(200, " Hero banner status update successfull ")))
-
+    .status(200)
+    .json(
+      new apiResponse(200, hero, " Hero banner status update successfull "),
+    );
 });
 
-//delete hero 
+//editing th hero banner and details after the upload:
 
-const deleteHero = asyncHandler(async(req,res)=>{
-    const hero = await Hero.findByIdAndDelete(req.param.id)
-    if (!hero) {
-        throw new apiError(404, " Banner didit Exist ")
-        
+const editHeroDetails = asyncHandler(async (req, res) => {
+  const { title, subtitle, buttonText, buttonLink } = req.body;
+  if (!title || !subtitle || !buttonText || !buttonLink) {
+    throw new apiError(400, " all field are required ");
+  }
+  const hero = await Hero.findById(req.params.id);
+
+  if (!hero) {
+    throw new apiError(404, " banner didint exits");
+  }
+  hero.title = title || hero.title;
+  hero.subtitle = subtitle || hero.subtitle;
+  hero.buttonText = buttonText || hero.buttonText;
+  hero.buttonLink = buttonLink || hero.buttonLink;
+
+  // if a new image was uploaded, replace the old one on cloudinary
+  if (req.file) {
+    // delete old image from cloudinary
+    if (hero.backgroundImage) {
+      const publicId = hero.backgroundImage.split("/").pop().split(".")[0];
+      await deleteFromCloudinary(publicId);
     }
-    return res
+
+    // upload the new image
+    const cloudinaryResponse = await uploadOnCloudinary(req.file.path);
+    if (!cloudinaryResponse) {
+      throw new apiError(500, "Image upload failed");
+    }
+    hero.backgroundImage = cloudinaryResponse.secure_url;
+  }
+
+  await hero.save();
+  return res
     .status(200)
-    .json((new apiResponse(200, " Banner deleted successfully")))
-    
-})
+    .json(new apiResponse(200, hero, "Details updated successfully"));
+});
 
-export {createHero,getAllHero,getActiveHero,toggleHeroDetail,deleteHero}
+//delete hero
 
+const deleteHero = asyncHandler(async (req, res) => {
+  const hero = await Hero.findByIdAndDelete(req.params.id);
+  if (!hero) {
+    throw new apiError(404, " Banner didit Exist ");
+  }
+  return res
+    .status(200)
+    .json(new apiResponse(200, hero, " Banner deleted successfully"));
+});
+
+export {
+  createHero,
+  getAllHero,
+  getActiveHero,
+  toggleHeroDetail,
+  deleteHero,
+  editHeroDetails,
+};

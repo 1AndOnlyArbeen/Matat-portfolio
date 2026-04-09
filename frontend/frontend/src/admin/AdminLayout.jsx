@@ -6,6 +6,7 @@ import {
   FiStar, FiCamera, FiInfo, FiMail, FiLogOut, FiMenu,
   FiX, FiMonitor
 } from "react-icons/fi";
+import logo from "../assets/matat-logo-new1.svg";
 
 // sidebar nav items - each maps to an admin page
 const sidebarLinks = [
@@ -54,7 +55,13 @@ function AdminLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 flex relative">
+      {/* transparent watermark logo in background - hidden on dashboard */}
+      {location.pathname !== "/matat-admin" && (
+        <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0">
+          <img src={logo} alt="" className="w-96 h-96 object-contain opacity-[0.08]" />
+        </div>
+      )}
 
       {/* mobile overlay when sidebar is open */}
       {sidebarOpen && (
@@ -72,8 +79,8 @@ function AdminLayout() {
       >
         {/* sidebar header */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-gray-100">
-          <Link to="/matat-admin" className="text-xl font-bold text-blue-600">
-            Matat Admin
+          <Link to="/matat-admin" className="flex items-center">
+            <img src={logo} alt="Matat" className="h-8 w-auto" />
           </Link>
           <button
             className="lg:hidden text-gray-500 cursor-pointer"
@@ -121,23 +128,31 @@ function AdminLayout() {
       <div className="flex-1 flex flex-col min-w-0">
 
         {/* top bar with hamburger for mobile */}
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center px-4 gap-4 shrink-0">
+        <header className="h-16 bg-white/40 backdrop-blur-xl shadow-[0_6px_24px_rgba(37,99,235,0.15)] border-b border-blue-100/50 flex items-center px-6 gap-4 shrink-0 sticky top-0 z-30">
           <button
-            className="lg:hidden text-gray-600 cursor-pointer"
+            className="lg:hidden text-blue-600 cursor-pointer"
             onClick={() => setSidebarOpen(true)}
           >
             <FiMenu size={22} />
           </button>
-          <h1 className="text-lg font-semibold text-gray-800">
-            {sidebarLinks.find((l) => l.path === location.pathname)?.name || "Admin"}
-          </h1>
+
+          {(() => {
+            const current = sidebarLinks.find((l) => l.path === location.pathname);
+            const Icon = current?.icon;
+            return (
+              <h1 className="flex-1 flex items-center justify-center gap-2 text-xl font-bold text-blue-700">
+                {Icon && <Icon size={22} className="text-blue-500" />}
+                {current?.name || "Admin"}
+              </h1>
+            );
+          })()}
 
           {/* link to view live site */}
           <a
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="ml-auto text-sm text-blue-600 hover:text-blue-800 transition-colors"
+            className="text-sm font-medium text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-all"
           >
             View Site
           </a>

@@ -41,12 +41,10 @@ function ImageDropzone({ onFileSelect, currentImage, label = "Upload Image" }) {
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
         onClick={() => inputRef.current?.click()}
-        className={`relative border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
+        className={`relative rounded-lg cursor-pointer transition-all border-2 border-dashed backdrop-blur-sm ${
           dragging
-            ? "border-blue-500 bg-blue-50"
-            : shown
-              ? "border-gray-200 bg-gray-50"
-              : "border-gray-300 hover:border-blue-400 bg-gray-50"
+            ? "border-blue-400 bg-blue-50/20"
+            : "border-blue-300 bg-white/20 hover:border-blue-400"
         }`}
       >
         <input

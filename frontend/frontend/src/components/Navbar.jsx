@@ -135,10 +135,10 @@ function Navbar() {
                 key={link.name}
                 href={link.path}
                 onClick={(e) => handleNavClick(e, link)}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`px-3 py-2 text-sm font-medium transition-colors ${
                   isActive(link)
-                    ? "text-blue-600 bg-blue-50"
-                    : "text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                    ? "text-blue-600"
+                    : "text-gray-700 hover:text-blue-600"
                 }`}
               >
                 {link.name}
@@ -168,10 +168,10 @@ function Navbar() {
               key={link.name}
               href={link.path}
               onClick={(e) => handleNavClick(e, link)}
-              className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+              className={`block px-3 py-2 text-base font-medium transition-colors ${
                 isActive(link)
-                  ? "text-blue-600 bg-blue-50"
-                  : "text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                  ? "text-blue-600"
+                  : "text-gray-700 hover:text-blue-600"
               }`}
             >
               {link.name}

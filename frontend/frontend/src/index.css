@@ -127,6 +127,20 @@ body {
   transform: scale(1);
 }
 
+/* Apps marquee animation - pauses on hover */
+@keyframes marqueeApps {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee-apps {
+  animation: marqueeApps 30s linear infinite;
+}
+
+.animate-marquee-apps:hover {
+  animation-play-state: paused;
+}
+
 /* Navbar scroll effect */
 .navbar-scrolled {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
