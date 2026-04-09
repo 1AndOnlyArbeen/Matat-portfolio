@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { getMessages, deleteMessage } from "../api/admin";
 import { FiTrash2, FiMail, FiClock } from "react-icons/fi";
+import ConfirmModal from "./ConfirmModal";
 
 function ManageMessages() {
   const [messages, setMessages] = useState([]);
+  const [deleteId, setDeleteId] = useState(null);
 
   // load contact form submissions
   useEffect(() => {
@@ -16,9 +18,10 @@ function ManageMessages() {
   };
 
   // delete a message
-  const handleDelete = async (id) => {
-    if (!window.confirm("Delete this message?")) return;
-    const result = await deleteMessage(id);
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    const result = await deleteMessage(deleteId);
+    setDeleteId(null);
     if (result) await loadMessages();
   };
 
@@ -60,7 +63,7 @@ function ManageMessages() {
 
               {/* delete button */}
               <button
-                onClick={() => handleDelete(msg._id)}
+                onClick={() => setDeleteId(msg._id)}
                 className="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg cursor-pointer transition-colors shrink-0"
               >
                 <FiTrash2 size={16} />
@@ -77,6 +80,9 @@ function ManageMessages() {
           </div>
         )}
       </div>
+      {deleteId && (
+        <ConfirmModal message="This message will be permanently deleted." onConfirm={confirmDelete} onCancel={() => setDeleteId(null)} />
+      )}
     </div>
   );
 }

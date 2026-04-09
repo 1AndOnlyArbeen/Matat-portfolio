@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { getTestimonials, createTestimonial, updateTestimonial, deleteTestimonial } from "../api/admin";
 import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiStar } from "react-icons/fi";
 import ImageDropzone from "./ImageDropzone";
+import ConfirmModal from "./ConfirmModal";
 
 function ManageTestimonials() {
   const [testimonials, setTestimonials] = useState([]);
@@ -10,6 +11,7 @@ function ManageTestimonials() {
   const [form, setForm] = useState({ name: "", company: "", text: "", rating: 5 });
   const [avatarFile, setAvatarFile] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
 
   useEffect(() => {
     loadTestimonials();
@@ -64,9 +66,10 @@ function ManageTestimonials() {
     setSaving(false);
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Delete this testimonial?")) return;
-    const result = await deleteTestimonial(id);
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    const result = await deleteTestimonial(deleteId);
+    setDeleteId(null);
     if (result) await loadTestimonials();
   };
 
@@ -102,7 +105,7 @@ function ManageTestimonials() {
               </div>
               <div className="flex gap-1 shrink-0">
                 <button onClick={() => openEdit(item)} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg cursor-pointer"><FiEdit2 size={16} /></button>
-                <button onClick={() => handleDelete(item._id)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg cursor-pointer"><FiTrash2 size={16} /></button>
+                <button onClick={() => setDeleteId(item._id)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg cursor-pointer"><FiTrash2 size={16} /></button>
               </div>
             </div>
           </div>
@@ -116,7 +119,14 @@ function ManageTestimonials() {
       {/* modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white/95 backdrop-blur-[2px] rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-[0_4px_30px_rgba(37,99,235,0.3)] border border-blue-300">
+          <div className="relative bg-white/95 backdrop-blur-[2px] rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-[0_4px_30px_rgba(37,99,235,0.3)] border border-blue-300">
+            {saving && (
+              <div className="absolute inset-0 z-10 bg-white/80 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center gap-3">
+                <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                <p className="text-sm font-medium text-gray-700">{avatarFile ? "Uploading image..." : "Saving changes..."}</p>
+                <p className="text-xs text-gray-400">This may take a few seconds</p>
+              </div>
+            )}
             <div className="flex items-center justify-between p-5 border-b border-gray-100">
               <h3 className="text-lg font-semibold text-gray-800">{editing ? "Edit Testimonial" : "Add Testimonial"}</h3>
               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 cursor-pointer"><FiX size={20} /></button>
@@ -164,6 +174,10 @@ function ManageTestimonials() {
             </form>
           </div>
         </div>
+      )}
+
+      {deleteId && (
+        <ConfirmModal message="This testimonial will be permanently deleted." onConfirm={confirmDelete} onCancel={() => setDeleteId(null)} />
       )}
     </div>
   );

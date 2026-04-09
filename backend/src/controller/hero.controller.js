@@ -54,16 +54,33 @@ const createHero = asyncHandler(async (req, res) => {
     .json(new apiResponse(201, heroDetails, "Hero banner created successfully"));
 });
 
-// fetch the hero banner and give to router so the frontend can call it and save
-const getAllHero = asyncHandler(async (req, res) => {
-  const heroes = await Hero.find().sort({ createdAt: -1 });
-  if (!heroes) {
-    throw new apiError(404, "Hero banners not found");
-  }
-  return res
-    .status(200)
-    .json(new apiResponse(200, heroes, "Hero banners fetched successfully"));
-});
+// fetch the hero banner and give to router so the frontend can call it and save with the proper pagination 
+const getAllHero = asyncHandler(async (req, res) => {                                                                                                    
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) ||7;
+    const hasLimit = limit > 0;
+    const skip = hasLimit ? (page - 1) * limit : 0;
+
+    let query = Hero.find().sort({ createdAt: -1 });
+    if (hasLimit) {
+      query = query.skip(skip).limit(limit);
+    }
+    const heroes = await query;
+    const total = await Hero.countDocuments();
+
+    return res.status(200).json(
+      new apiResponse(200, {
+        heroes,
+        pagination: {
+          currentPage: hasLimit ? page : 1,
+          totalPages: hasLimit ? Math.ceil(total / limit) : 1,
+          totalItems: total,
+          limit: hasLimit ? limit : total,
+        },
+      }, "Hero Banners fetched successfully")               
+    );
+  });
+ 
 
 // get the active data of the hero banner
 const getActiveHero = asyncHandler(async (req, res) => {
@@ -150,6 +167,7 @@ const editHeroDetails = asyncHandler(async (req, res) => {
 });
 
 //delete hero
+
 
 const deleteHero = asyncHandler(async (req, res) => {
   const hero = await Hero.findByIdAndDelete(req.params.id);

@@ -11,7 +11,6 @@ function Apps() {
   const [headingRef, headingVisible] = useScrollAnimation();
   const [sliderRef, sliderVisible] = useScrollAnimation(0.1);
 
-  // try loading from backend
   useEffect(() => {
     getApps().then((res) => {
       if (res && res.length > 0) setApps(res);

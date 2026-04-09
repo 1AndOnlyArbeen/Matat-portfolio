@@ -66,7 +66,7 @@ function AdminProjectDetail() {
 
         {/* tags */}
         <div className="flex flex-wrap gap-2 mb-4">
-          {project.tags?.map((tag) => (
+          {(Array.isArray(project.tags) ? project.tags : project.tags?.split(",").map(t => t.trim()))?.map((tag) => (
             <span key={tag} className="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded-full font-medium">{tag}</span>
           ))}
         </div>

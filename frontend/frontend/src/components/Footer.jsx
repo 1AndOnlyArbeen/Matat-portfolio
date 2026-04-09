@@ -31,7 +31,7 @@ function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-blue-200 mt-4 pt-3 text-center text-xs text-blue-900/60">
+        <div className="border-t border-blue-400 mt-4 pt-3 text-center text-xs text-blue-900/60">
           &copy; {currentYear} Matat. All rights reserved.
         </div>
       </div>

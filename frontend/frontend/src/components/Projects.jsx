@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getProjects } from "../api";
-import { projectsData as fallback } from "../data/placeholders";
 import { FiExternalLink, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import useScrollAnimation from "../hooks/useScrollAnimation";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -11,16 +10,20 @@ import "swiper/css/navigation";
 
 // shows all portfolio projects in a slider
 function Projects() {
-  const [projects, setProjects] = useState(fallback);
+  const [projects, setProjects] = useState([]);
   const [headingRef, headingVisible] = useScrollAnimation();
   const [sliderRef, sliderVisible] = useScrollAnimation(0.1);
 
-  // try loading projects from backend
   useEffect(() => {
-    getProjects().then((res) => {
-      if (res && res.length > 0) setProjects(res);
-    });
+    getProjects()
+      .then((res) => {
+        const list = res?.project || (Array.isArray(res) ? res : []);
+        if (list.length > 0) setProjects(list);
+      })
+      .catch(() => {});
   }, []);
+
+  if (projects.length === 0) return null;
 
   return (
     <section id="projects" className="py-20 bg-white">
@@ -57,7 +60,7 @@ function Projects() {
                   {/* project thumbnail */}
                   <div className="overflow-hidden h-48">
                     <img
-                      src={project.image}
+                      src={project.projectImage || project.image}
                       alt={project.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
@@ -70,7 +73,7 @@ function Projects() {
 
                     {/* tech tags */}
                     <div className="flex flex-wrap gap-2 mb-4">
-                      {project.tags?.map((tag) => (
+                      {(Array.isArray(project.tags) ? project.tags : project.tags?.split(",").map(t => t.trim()))?.map((tag) => (
                         <span
                           key={tag}
                           className="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded-full font-medium"

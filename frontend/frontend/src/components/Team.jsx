@@ -14,7 +14,6 @@ function Team() {
   const [headingRef, headingVisible] = useScrollAnimation();
   const [sliderRef, sliderVisible] = useScrollAnimation(0.1);
 
-  // load team from backend
   useEffect(() => {
     getTeamMembers().then((res) => {
       if (res && res.length > 0) setMembers(res);

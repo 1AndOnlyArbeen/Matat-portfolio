@@ -16,6 +16,7 @@ import AdminNotFound from "./admin/AdminNotFound";
 const sectionMap = {
   "/projects": "projects",
   "/apps": "apps",
+  "/clients": "clients",
   "/about": "about",
   "/team": "team",
   "/gallery": "gallery",
@@ -29,11 +30,18 @@ function HomeWithScroll() {
   useEffect(() => {
     const sectionId = sectionMap[location.pathname];
     if (sectionId) {
-      // small delay to let the page render before scrolling
-      setTimeout(() => {
+      // retry until the section element exists (async data may delay render)
+      let attempts = 0;
+      const tryScroll = () => {
         const el = document.getElementById(sectionId);
-        if (el) el.scrollIntoView({ behavior: "smooth" });
-      }, 100);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth" });
+        } else if (attempts < 10) {
+          attempts++;
+          setTimeout(tryScroll, 150);
+        }
+      };
+      setTimeout(tryScroll, 100);
     } else {
       window.scrollTo(0, 0);
     }
@@ -81,6 +89,7 @@ function App() {
         <Route path="/" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
         <Route path="/projects" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
         <Route path="/apps" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
+        <Route path="/clients" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
         <Route path="/about" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
         <Route path="/team" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
         <Route path="/gallery" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />

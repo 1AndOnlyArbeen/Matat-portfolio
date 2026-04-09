@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { getGalleryImages, uploadGalleryImage, updateGalleryImage, deleteGalleryImage } from "../api/admin";
 import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave } from "react-icons/fi";
 import ImageDropzone from "./ImageDropzone";
+import ConfirmModal from "./ConfirmModal";
 
 function ManageGallery() {
   const [images, setImages] = useState([]);
@@ -10,6 +11,7 @@ function ManageGallery() {
   const [caption, setCaption] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
 
   useEffect(() => {
     loadImages();
@@ -56,9 +58,10 @@ function ManageGallery() {
     setSaving(false);
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Delete this image?")) return;
-    const result = await deleteGalleryImage(id);
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    const result = await deleteGalleryImage(deleteId);
+    setDeleteId(null);
     if (result) await loadImages();
   };
 
@@ -82,7 +85,7 @@ function ManageGallery() {
                 <p className="text-white text-sm mb-2">{img.caption}</p>
                 <div className="flex gap-2">
                   <button onClick={() => openEdit(img)} className="bg-white/20 text-white p-1.5 rounded-lg hover:bg-white/30 cursor-pointer"><FiEdit2 size={14} /></button>
-                  <button onClick={() => handleDelete(img._id)} className="bg-white/20 text-white p-1.5 rounded-lg hover:bg-red-500/80 cursor-pointer"><FiTrash2 size={14} /></button>
+                  <button onClick={() => setDeleteId(img._id)} className="bg-white/20 text-white p-1.5 rounded-lg hover:bg-red-500/80 cursor-pointer"><FiTrash2 size={14} /></button>
                 </div>
               </div>
             </div>
@@ -97,7 +100,14 @@ function ManageGallery() {
       {/* modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white/95 backdrop-blur-[2px] rounded-xl w-full max-w-md shadow-[0_4px_30px_rgba(37,99,235,0.3)] border border-blue-300">
+          <div className="relative bg-white/95 backdrop-blur-[2px] rounded-xl w-full max-w-md shadow-[0_4px_30px_rgba(37,99,235,0.3)] border border-blue-300">
+            {saving && (
+              <div className="absolute inset-0 z-10 bg-white/80 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center gap-3">
+                <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                <p className="text-sm font-medium text-gray-700">{imageFile ? "Uploading image..." : "Saving changes..."}</p>
+                <p className="text-xs text-gray-400">This may take a few seconds</p>
+              </div>
+            )}
             <div className="flex items-center justify-between p-5 border-b border-gray-100">
               <h3 className="text-lg font-semibold text-gray-800">{editing ? "Edit Image" : "Upload Image"}</h3>
               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 cursor-pointer"><FiX size={20} /></button>
@@ -119,6 +129,10 @@ function ManageGallery() {
             </form>
           </div>
         </div>
+      )}
+
+      {deleteId && (
+        <ConfirmModal message="This image will be permanently deleted." onConfirm={confirmDelete} onCancel={() => setDeleteId(null)} />
       )}
     </div>
   );

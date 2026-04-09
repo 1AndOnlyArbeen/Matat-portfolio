@@ -58,7 +58,14 @@ function ManageAbout() {
     <div className="max-w-2xl">
       <h2 className="text-xl font-bold text-gray-800 mb-6">Manage About Section</h2>
 
-      <form onSubmit={handleSubmit} className="bg-white/95 backdrop-blur-[2px] rounded-xl p-6 shadow-[0_4px_30px_rgba(37,99,235,0.3)] border border-blue-300 space-y-4">
+      <form onSubmit={handleSubmit} className="relative bg-white/95 backdrop-blur-[2px] rounded-xl p-6 shadow-[0_4px_30px_rgba(37,99,235,0.3)] border border-blue-300 space-y-4">
+        {saving && (
+          <div className="absolute inset-0 z-10 bg-white/80 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center gap-3">
+            <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+            <p className="text-sm font-medium text-gray-700">Saving changes...</p>
+            <p className="text-xs text-gray-400">This may take a few seconds</p>
+          </div>
+        )}
         {/* title */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>

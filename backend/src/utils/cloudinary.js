@@ -18,7 +18,7 @@ const uploadOnCloudinary = async (localFilePath) => {
         if (!localFilePath) return null;
 
         const response = await cloudinary.uploader.upload(localFilePath, {
-            resource_type: "image",
+            resource_type: "",
         });
         console.log(`the respones is :${response}`);
 
@@ -53,4 +53,4 @@ const deleteFromCloudinary = async (publicId) => {
     }
 };
 
-export { uploadOnCloudinary, deleteFromCloudinary };
+export { uploadOnCloudinary, deleteFromCloudinary};

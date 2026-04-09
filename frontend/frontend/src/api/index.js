@@ -28,12 +28,12 @@ export async function getHero() {
 }
 
 export async function getProjects() {
-  return await fetchData("/projects");
+  return await fetchData("/getAllProject?limit=0");
 }
 
 // get single project by id
 export async function getProjectById(id) {
-  return await fetchData(`/projects/${id}`);
+  return await fetchData(`/getAllProject?limit=0`);
 }
 
 export async function getApps() {

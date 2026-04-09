@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getProjectById } from "../api";
-import { projectsData } from "../data/placeholders";
 import { FiArrowLeft, FiExternalLink, FiCalendar, FiUser } from "react-icons/fi";
 
 // single project detail page
@@ -12,15 +11,10 @@ function ProjectDetail() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // try backend first
     getProjectById(id).then((res) => {
-      if (res) {
-        setProject(res);
-      } else {
-        // fallback - find from placeholder data
-        const found = projectsData.find((p) => p._id === id);
-        setProject(found || null);
-      }
+      const list = res?.project || (Array.isArray(res) ? res : []);
+      const found = list.find((p) => p._id === id);
+      setProject(found || null);
       setLoading(false);
     });
   }, [id]);
@@ -61,7 +55,7 @@ function ProjectDetail() {
         {/* hero image */}
         <div className="rounded-xl overflow-hidden mb-8 shadow-lg">
           <img
-            src={project.image}
+            src={project.projectImage || project.image}
             alt={project.title}
             className="w-full h-64 sm:h-80 md:h-96 object-cover"
           />
@@ -76,7 +70,7 @@ function ProjectDetail() {
 
             {/* tags */}
             <div className="flex flex-wrap gap-2 mb-6">
-              {project.tags?.map((tag) => (
+              {(Array.isArray(project.tags) ? project.tags : project.tags?.split(",").map(t => t.trim()))?.map((tag) => (
                 <span key={tag} className="bg-blue-50 text-blue-600 text-sm px-3 py-1 rounded-full font-medium">
                   {tag}
                 </span>
@@ -104,9 +98,9 @@ function ProjectDetail() {
             )}
 
             {/* external link */}
-            {project.link && project.link !== "#" && (
+            {(project.projectLink || project.link) && (project.projectLink || project.link) !== "#" && (
               <a
-                href={project.link}
+                href={project.projectLink || project.link}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition-colors"
@@ -147,7 +141,7 @@ function ProjectDetail() {
             <div className="bg-gray-50 rounded-xl p-5">
               <h3 className="text-sm font-semibold text-blue-900 mb-3 uppercase tracking-wide">Tech Stack</h3>
               <div className="flex flex-wrap gap-2">
-                {project.tags?.map((tag) => (
+                {(Array.isArray(project.tags) ? project.tags : project.tags?.split(",").map(t => t.trim()))?.map((tag) => (
                   <span key={tag} className="bg-white text-gray-700 text-xs px-3 py-1.5 rounded-lg border border-gray-200 font-medium">
                     {tag}
                   </span>

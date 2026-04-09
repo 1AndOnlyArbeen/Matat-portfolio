@@ -159,8 +159,8 @@ export async function verifyToken() {
 export async function getHero() {
   return await adminFetch("/getActiveHero");
 }
-export async function getAllHeroes() {
-  return await adminFetch("/getAllHero");
+export async function getAllHeroes(page = 1, limit = 7) {
+  return await adminFetch(`/getAllHero?page=${page}&limit=${limit}`);
 }
 export async function createHero(data) {
   return await adminUpload("/createHero", data, "POST");
@@ -176,17 +176,17 @@ export async function deleteHero(id) {
 }
 
 // ---- Projects ----
-export async function getProjects() {
-  return await adminFetch("/projects");
+export async function getProjects(page = 1, limit = 6) {
+  return await adminFetch(`/getAllProject?page=${page}&limit=${limit}`);
 }
 export async function createProject(data) {
-  return await adminUpload("/projects", data);
+  return await adminUpload("/createProject", data, "POST");
 }
 export async function updateProject(id, data) {
-  return await adminUpload(`/projects/${id}`, data, "PUT");
+  return await adminUpload(`/projectEdit/${id}`, data, "PATCH");
 }
 export async function deleteProject(id) {
-  return await adminFetch(`/projects/${id}`, { method: "DELETE" });
+  return await adminFetch(`/deleteProject/${id}`, { method: "DELETE" });
 }
 
 // ---- Apps ----

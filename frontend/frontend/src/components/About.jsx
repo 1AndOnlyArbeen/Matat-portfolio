@@ -10,7 +10,6 @@ function About() {
   const [textRef, textVisible] = useScrollAnimation();
   const [statsRef, statsVisible] = useScrollAnimation(0.2);
 
-  // load about data from backend
   useEffect(() => {
     getAbout().then((res) => {
       if (res) setAbout(res);
@@ -20,19 +19,24 @@ function About() {
   return (
     <section id="about" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        {/* section heading */}
+        <div className="text-center mb-12 animate-fade-up visible">
+          <h2 className="text-3xl sm:text-4xl font-bold text-blue-900 mb-3">{about.title}</h2>
+          <p className="text-gray-500 max-w-xl mx-auto">{about.mission}</p>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 
           {/* left side - text content, slides in from left */}
           <div ref={textRef} className={`animate-fade-left ${textVisible ? "visible" : ""}`}>
-            <h2 className="text-3xl sm:text-4xl font-bold text-blue-900 mb-4">{about.title}</h2>
-            <p className="text-gray-600 leading-relaxed mb-4">{about.description}</p>
-            <p className="text-gray-600 leading-relaxed mb-6">{about.mission}</p>
-            <a
-              href="#contact"
-              className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-all hover:-translate-y-0.5 hover:shadow-lg"
+            <p className="text-gray-600 leading-relaxed mb-6">{about.description}</p>
+            <button
+              onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
+              className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-all hover:-translate-y-0.5 hover:shadow-lg cursor-pointer"
             >
               Get In Touch
-            </a>
+            </button>
           </div>
 
           {/* right side - stats cards with stagger animation */}

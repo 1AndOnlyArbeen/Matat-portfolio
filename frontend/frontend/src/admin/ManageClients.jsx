@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { getClients, createClient, updateClient, deleteClient } from "../api/admin";
 import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiEye } from "react-icons/fi";
 import ImageDropzone from "./ImageDropzone";
+import ConfirmModal from "./ConfirmModal";
 
 function ManageClients() {
   const [clients, setClients] = useState([]);
@@ -11,6 +12,7 @@ function ManageClients() {
   const [name, setName] = useState("");
   const [logoFile, setLogoFile] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
 
   useEffect(() => {
     loadClients();
@@ -57,9 +59,10 @@ function ManageClients() {
     setSaving(false);
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Delete this client?")) return;
-    const result = await deleteClient(id);
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    const result = await deleteClient(deleteId);
+    setDeleteId(null);
     if (result) await loadClients();
   };
 
@@ -83,7 +86,7 @@ function ManageClients() {
             <div className="flex justify-center gap-2">
               <Link to={`/matat-admin/clients/${client._id}`} className="text-gray-500 hover:bg-gray-50 p-1.5 rounded-lg"><FiEye size={14} /></Link>
               <button onClick={() => openEdit(client)} className="text-blue-600 hover:bg-blue-50 p-1.5 rounded-lg cursor-pointer"><FiEdit2 size={14} /></button>
-              <button onClick={() => handleDelete(client._id)} className="text-red-500 hover:bg-red-50 p-1.5 rounded-lg cursor-pointer"><FiTrash2 size={14} /></button>
+              <button onClick={() => setDeleteId(client._id)} className="text-red-500 hover:bg-red-50 p-1.5 rounded-lg cursor-pointer"><FiTrash2 size={14} /></button>
             </div>
           </div>
         ))}
@@ -96,7 +99,14 @@ function ManageClients() {
       {/* modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white/95 backdrop-blur-[2px] rounded-xl w-full max-w-md shadow-[0_4px_30px_rgba(37,99,235,0.3)] border border-blue-300">
+          <div className="relative bg-white/95 backdrop-blur-[2px] rounded-xl w-full max-w-md shadow-[0_4px_30px_rgba(37,99,235,0.3)] border border-blue-300">
+            {saving && (
+              <div className="absolute inset-0 z-10 bg-white/80 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center gap-3">
+                <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                <p className="text-sm font-medium text-gray-700">Saving changes...</p>
+                <p className="text-xs text-gray-400">This may take a few seconds</p>
+              </div>
+            )}
             <div className="flex items-center justify-between p-5 border-b border-gray-100">
               <h3 className="text-lg font-semibold text-gray-800">{editing ? "Edit Client" : "Add Client"}</h3>
               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 cursor-pointer"><FiX size={20} /></button>
@@ -118,6 +128,10 @@ function ManageClients() {
             </form>
           </div>
         </div>
+      )}
+
+      {deleteId && (
+        <ConfirmModal message="This client will be permanently deleted." onConfirm={confirmDelete} onCancel={() => setDeleteId(null)} />
       )}
     </div>
   );

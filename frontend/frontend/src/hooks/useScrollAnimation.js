@@ -1,12 +1,16 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useCallback, useState } from "react";
 
 function useScrollAnimation(threshold = 0.15) {
-  const ref = useRef(null);
+  const [element, setElement] = useState(null);
   const [isVisible, setIsVisible] = useState(false);
 
+  // callback ref — fires whenever the DOM node attaches/detaches
+  const ref = useCallback((node) => {
+    setElement(node);
+  }, []);
+
   useEffect(() => {
-    const element = ref.current;
-    if (!element) return;
+    if (!element || isVisible) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -20,7 +24,7 @@ function useScrollAnimation(threshold = 0.15) {
 
     observer.observe(element);
     return () => observer.disconnect();
-  }, [threshold]);
+  }, [element, threshold, isVisible]);
 
   return [ref, isVisible];
 }

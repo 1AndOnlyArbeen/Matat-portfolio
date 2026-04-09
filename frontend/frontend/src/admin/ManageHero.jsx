@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { getAllHeroes, createHero, updateHero, toggleHero, deleteHero } from "../api/admin";
 import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiToggleLeft, FiToggleRight, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import ImageDropzone from "./ImageDropzone";
-
-const ITEMS_PER_PAGE = 5;
+import ConfirmModal from "./ConfirmModal";
 
 function ManageHero() {
   const [heroes, setHeroes] = useState([]);
@@ -14,25 +13,22 @@ function ManageHero() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [deleteId, setDeleteId] = useState(null);
 
   useEffect(() => {
-    loadHeroes();
-  }, []);
+    loadHeroes(page);
+  }, [page]);
 
-  const loadHeroes = async () => {
-    const res = await getAllHeroes();
-    const list = res?.data;
-    if (Array.isArray(list)) {
-      setHeroes(list);
-    } else if (list?.heroes) {
-      // supports paginated response format too
-      setHeroes(list.heroes);
+  const loadHeroes = async (p = 1) => {
+    const res = await getAllHeroes(p, 7);
+    const data = res?.data;
+    const list = data?.heroes || (Array.isArray(data) ? data : []);
+    setHeroes(list);
+    if (data?.pagination) {
+      setTotalPages(data.pagination.totalPages || 1);
     }
   };
-
-  // pagination
-  const totalPages = Math.ceil(heroes.length / ITEMS_PER_PAGE);
-  const paginatedHeroes = heroes.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
 
   // open modal for creating new banner
   const openCreate = () => {
@@ -83,7 +79,7 @@ function ManageHero() {
     }
 
     if (result) {
-      await loadHeroes();
+      await loadHeroes(page);
       setShowModal(false);
       setMessage("");
     } else {
@@ -95,18 +91,20 @@ function ManageHero() {
   // toggle active/inactive
   const handleToggle = async (id) => {
     const result = await toggleHero(id);
-    if (result) await loadHeroes();
+    if (result) await loadHeroes(page);
   };
 
   // delete with confirmation
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this banner?")) return;
-    const result = await deleteHero(id);
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    const result = await deleteHero(deleteId);
+    setDeleteId(null);
     if (result) {
-      await loadHeroes();
-      // adjust page if current page becomes empty
-      const newTotal = Math.ceil((heroes.length - 1) / ITEMS_PER_PAGE);
-      if (page > newTotal && newTotal > 0) setPage(newTotal);
+      if (heroes.length === 1 && page > 1) {
+        setPage(page - 1);
+      } else {
+        await loadHeroes(page);
+      }
     }
   };
 
@@ -125,13 +123,13 @@ function ManageHero() {
 
       {/* banners list */}
       <div className="space-y-3">
-        {paginatedHeroes.map((hero) => (
+        {heroes.map((hero) => (
           <div
             key={hero._id}
-            className={`flex items-center gap-4 p-4 rounded-xl border backdrop-blur-md shadow-sm ${
+            className={`flex items-center gap-4 p-4 rounded-xl border backdrop-blur-xl ${
               hero.isActive
-                ? "bg-green-50/60 border-green-300 shadow-[0_2px_10px_rgba(34,197,94,0.2)]"
-                : "bg-white/60 border-blue-200 shadow-[0_2px_10px_rgba(37,99,235,0.1)]"
+                ? "bg-green-50/40 border-green-400/50 shadow-[0_4px_20px_rgba(34,197,94,0.25)]"
+                : "bg-white/30 border-blue-300/40 shadow-[0_4px_20px_rgba(30,64,175,0.2)]"
             }`}
           >
             {/* thumbnail */}
@@ -190,7 +188,7 @@ function ManageHero() {
             {/* delete */}
             <button
               type="button"
-              onClick={() => handleDelete(hero._id)}
+              onClick={() => setDeleteId(hero._id)}
               className="p-2 rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
               title="Delete"
             >
@@ -242,7 +240,7 @@ function ManageHero() {
       {/* create/edit modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white/95 backdrop-blur-[2px] rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-[0_4px_30px_rgba(37,99,235,0.3)] border border-blue-300">
+          <div className="relative bg-white/95 backdrop-blur-[2px] rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-[0_4px_30px_rgba(37,99,235,0.3)] border border-blue-300">
             {/* modal header */}
             <div className="flex items-center justify-between p-5 border-b border-gray-100">
               <h3 className="text-lg font-semibold text-gray-800">
@@ -252,6 +250,17 @@ function ManageHero() {
                 <FiX size={20} />
               </button>
             </div>
+
+            {/* saving overlay */}
+            {saving && (
+              <div className="absolute inset-0 z-10 bg-white/80 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center gap-3">
+                <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                <p className="text-sm font-medium text-gray-700">
+                  {imageFile ? "Uploading image..." : "Saving changes..."}
+                </p>
+                <p className="text-xs text-gray-400">This may take a few seconds</p>
+              </div>
+            )}
 
             {/* modal form */}
             <form onSubmit={handleSubmit} className="p-5 space-y-4">
@@ -336,6 +345,15 @@ function ManageHero() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* delete confirmation */}
+      {deleteId && (
+        <ConfirmModal
+          message="This banner will be permanently deleted."
+          onConfirm={confirmDelete}
+          onCancel={() => setDeleteId(null)}
+        />
       )}
     </div>
   );
