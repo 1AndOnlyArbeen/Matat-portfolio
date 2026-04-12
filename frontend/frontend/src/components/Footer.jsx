@@ -1,5 +1,5 @@
 import { FiGithub, FiLinkedin, FiTwitter, FiMail, FiPhone, FiMapPin } from "react-icons/fi";
-import logo from "../assets/matat-logo-new1.svg";
+import logo from "../assets/matat.footer.svg";
 
 // site footer with brand info, quick links, and contact details
 function Footer() {
@@ -9,7 +9,10 @@ function Footer() {
     <footer className="backdrop-blur-sm bg-blue-100 text-blue-900 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
         <div className="flex flex-col md:flex-row items-center md:justify-between gap-4 md:gap-8">
-          <img src={logo} alt="Matat" className="h-5 w-auto" />
+          <div className="flex items-center gap-2">
+            <img src={logo} alt="Matat" className="h-5 w-auto" />
+            <span className="text-xs text-blue-900/60">Developed by Matat Technologies LTD</span>
+          </div>
 
           <nav className="flex flex-wrap justify-center items-center gap-x-5 gap-y-1 text-sm text-blue-900">
             <a href="#projects" className="hover:text-blue-600 transition-colors">Projects</a>

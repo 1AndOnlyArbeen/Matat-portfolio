@@ -1,8 +1,8 @@
-import { Admin } from "../models/admin.model.js";
-import { apiError } from "../utils/apiError.js";
-import { apiResponse } from "../utils/apiResponse.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
-import jwt from "jsonwebtoken";
+import { Admin } from '../models/admin.model.js';
+import { apiError } from '../utils/apiError.js';
+import { apiResponse } from '../utils/apiResponse.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
+import jwt from 'jsonwebtoken';
 
 /*
 Login the admin 
@@ -26,19 +26,19 @@ const generateAccessTokenAndRefreshToken = async (adminId) => {
   } catch (error) {
     throw new apiError(
       500,
-      "something went wrong while genereting the accessToken and refreshToken ",
+      'something went wrong while genereting the accessToken and refreshToken ',
     );
   }
 };
 
 const adminLogin = asyncHandler(async (req, res) => {
   const { name, email, password, phoneNumber } = req.body;
-  console.log("adminEmail", email);
-  console.log("adminPassword", password);
-  console.log("adminName", name);
+  console.log('adminEmail', email);
+  console.log('adminPassword', password);
+  console.log('adminName', name);
 
   if (!email) {
-    throw new apiError(400, " admin email is required");
+    throw new apiError(400, ' admin email is required');
   }
   // find the admin based on the email or phone number
 
@@ -48,11 +48,11 @@ const adminLogin = asyncHandler(async (req, res) => {
 
   // if the admin email is not found say this email didint exits
   if (!admin) {
-    throw new apiError(400, " admin with this email didit exist");
+    throw new apiError(400, ' admin with this email didit exist');
   }
   // if found the admin then go and check the admin password (first check if the admin has enter the password or not )
   if (!password) {
-    throw new apiError(400, "please enter the password");
+    throw new apiError(400, 'please enter the password');
   }
 
   // here the plain text password is being hased and checking if the hashed password of the admin match or not ?
@@ -60,7 +60,7 @@ const adminLogin = asyncHandler(async (req, res) => {
   // if not matched then say didint matched
 
   if (!isPasswordValid) {
-    throw new apiError(400, "entered Password or email didnt matched!");
+    throw new apiError(400, 'entered Password or email didnt matched!');
   }
 
   //accesstoken and refreshtoken
@@ -72,7 +72,7 @@ const adminLogin = asyncHandler(async (req, res) => {
 
   // selecting the detils form the admin document and excluding password and refreshtoken to give respone becaue we dont give them back
   const loggedAdmin = await Admin.findById(admin._id).select(
-    "-password -refreshToken",
+    '-password -refreshToken',
   );
 
   const option = {
@@ -82,8 +82,8 @@ const adminLogin = asyncHandler(async (req, res) => {
   // return the response
   return res
     .status(200)
-    .cookie("accessToken", accessToken, option)
-    .cookie("refreshToken", refreshToken, option)
+    .cookie('accessToken', accessToken, option)
+    .cookie('refreshToken', refreshToken, option)
     .json(
       new apiResponse(
         200,
@@ -92,7 +92,7 @@ const adminLogin = asyncHandler(async (req, res) => {
           accessToken,
           refreshToken,
         },
-        "Admin Logged in successfully ",
+        'Admin Logged in successfully ',
       ),
     );
 });
@@ -100,25 +100,26 @@ const adminLogin = asyncHandler(async (req, res) => {
 // refreshToken roatation
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
-  const incomingRefreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+  const incomingRefreshToken =
+    req.cookies?.refreshToken || req.body?.refreshToken;
   if (!incomingRefreshToken) {
-    throw new apiError(401, "unauthorized request");
+    throw new apiError(401, 'unauthorized request');
   }
   const decodedToken = jwt.verify(
     incomingRefreshToken,
     process.env.REFRESH_TOKEN_SECRET,
   );
   if (!decodedToken) {
-    throw new apiError(401, "invalid refresh token");
+    throw new apiError(401, 'invalid refresh token');
   }
 
   const admin = await Admin.findById(decodedToken?._id);
   if (!admin) {
-    throw new apiError(401, " invalid refresh Token ");
+    throw new apiError(401, ' invalid refresh Token ');
   }
 
   if (incomingRefreshToken !== admin?.refreshToken) {
-    throw new apiError(401, "refresh token expired or invalid");
+    throw new apiError(401, 'refresh token expired or invalid');
   }
   const option = {
     httpOnly: true,
@@ -129,13 +130,13 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .cookie("accessToken", accessToken, option)
-    .cookie("refreshToken", refreshToken, option)
+    .cookie('accessToken', accessToken, option)
+    .cookie('refreshToken', refreshToken, option)
     .json(
       new apiResponse(
         200,
         { accessToken, refreshToken },
-        "access token refreshed successfully ",
+        'access token refreshed successfully ',
       ),
     );
 });
@@ -160,19 +161,17 @@ const logoutAdmin = asyncHandler(async (req, res) => {
     {
       new: true,
     },
-
-   
   );
 
-   const option ={
-      httpOnly:true,
-      secure:true,
-    };
-    return res
+  const option = {
+    httpOnly: true,
+    secure: true,
+  };
+  return res
     .status(200)
-    .clearCookie('accessToken',option)
-    .clearCookie('refreshToken',option)
-    .json(new apiResponse(200, {}, "Admin loggedout Successfully"))
+    .clearCookie('accessToken', option)
+    .clearCookie('refreshToken', option)
+    .json(new apiResponse(200, {}, 'Admin loggedout Successfully'));
 });
 
-export { adminLogin, refreshAccessToken,logoutAdmin };
+export { adminLogin, refreshAccessToken, logoutAdmin };

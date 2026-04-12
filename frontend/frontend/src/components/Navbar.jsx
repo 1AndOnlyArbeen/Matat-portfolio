@@ -8,8 +8,10 @@ const navLinks = [
   { name: "Home", path: "/", section: "hero" },
   { name: "Projects", path: "/projects", section: "projects" },
   { name: "Apps", path: "/apps", section: "apps" },
+  { name: "Clients", path: "/clients", section: "clients" },
   { name: "About", path: "/about", section: "about" },
   { name: "Team", path: "/team", section: "team" },
+  { name: "Testimonials", path: "/testimonials", section: "testimonials" },
   { name: "Gallery", path: "/gallery", section: "gallery" },
   { name: "Contact", path: "/contact", section: "contact" },
 ];
@@ -63,7 +65,7 @@ function Navbar() {
             }
           }
         },
-        { rootMargin: "-40% 0px -40% 0px" } // trigger when section is near center of screen
+        { rootMargin: "-30% 0px -50% 0px" } // trigger when section enters upper portion of screen
       );
 
       observer.observe(el);
@@ -91,7 +93,11 @@ function Navbar() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
       const el = document.getElementById(link.section);
-      if (el) el.scrollIntoView({ behavior: "smooth" });
+      if (el) {
+        const offset = 80; // navbar height + padding
+        const top = el.getBoundingClientRect().top + window.scrollY - offset;
+        window.scrollTo({ top, behavior: "smooth" });
+      }
     }
     window.history.replaceState(null, "", link.path);
   };

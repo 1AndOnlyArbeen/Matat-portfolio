@@ -10,13 +10,12 @@ function AdminAppDetail() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getApps().then((res) => {
-      if (res) {
-        const found = res.find((a) => a._id === id);
-        setApp(found || null);
-      }
+    getApps(1, 0).then((res) => {
+      const list = res?.data?.apps || [];
+      const found = list.find((a) => a._id === id);
+      setApp(found || null);
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
   }, [id]);
 
   if (loading) {
@@ -52,11 +51,11 @@ function AdminAppDetail() {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
         {/* app header */}
         <div className="flex items-start gap-4 mb-6">
-          {app.icon && (
-            <img src={app.icon} alt={app.name} className="w-20 h-20 rounded-2xl object-cover shadow-sm" />
+          {(app.appIcon || app.icon) && (
+            <img src={app.appIcon || app.icon} alt={app.appName || app.name} className="w-20 h-20 rounded-2xl object-cover shadow-sm" />
           )}
           <div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-1">{app.name}</h1>
+            <h1 className="text-2xl font-bold text-gray-800 mb-1">{app.appName || app.name}</h1>
             <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
               <span className="flex items-center gap-1"><FiSmartphone size={14} /> {app.platform}</span>
               {app.downloads && <span className="flex items-center gap-1"><FiDownload size={14} /> {app.downloads}</span>}

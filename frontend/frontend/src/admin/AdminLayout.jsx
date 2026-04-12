@@ -78,9 +78,9 @@ function AdminLayout() {
         }`}
       >
         {/* sidebar header */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-gray-100">
+        <div className="h-20 flex items-center justify-between px-4 border-b border-gray-100">
           <Link to="/matat-admin" className="flex items-center">
-            <img src={logo} alt="Matat" className="h-8 w-auto" />
+            <img src={logo} alt="Matat" className="h-12 w-auto" />
           </Link>
           <button
             className="lg:hidden text-gray-500 cursor-pointer"

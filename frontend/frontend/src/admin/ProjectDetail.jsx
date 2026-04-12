@@ -11,15 +11,12 @@ function AdminProjectDetail() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // load all projects and find the one we need
-    // TODO: switch to single fetch endpoint when backend is ready
-    getProjects().then((res) => {
-      if (res) {
-        const found = res.find((p) => p._id === id);
-        setProject(found || null);
-      }
+    getProjects(1, 0).then((res) => {
+      const list = res?.data?.project || [];
+      const found = list.find((p) => p._id === id);
+      setProject(found || null);
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
   }, [id]);
 
   if (loading) {
@@ -54,9 +51,9 @@ function AdminProjectDetail() {
       </div>
 
       {/* project image */}
-      {project.image && (
+      {(project.projectImage || project.image) && (
         <div className="rounded-xl overflow-hidden mb-6 shadow-md">
-          <img src={project.image} alt={project.title} className="w-full h-64 object-cover" />
+          <img src={project.projectImage || project.image} alt={project.title} className="w-full h-64 object-cover" />
         </div>
       )}
 
@@ -82,8 +79,8 @@ function AdminProjectDetail() {
           {project.date && (
             <span className="flex items-center gap-1"><FiCalendar size={14} /> {project.date}</span>
           )}
-          {project.link && project.link !== "#" && (
-            <a href={project.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-blue-600 hover:text-blue-800">
+          {(project.projectLink || project.link) && (project.projectLink || project.link) !== "#" && (
+            <a href={project.projectLink || project.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-blue-600 hover:text-blue-800">
               <FiExternalLink size={14} /> Visit
             </a>
           )}

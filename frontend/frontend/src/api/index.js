@@ -28,38 +28,42 @@ export async function getHero() {
 }
 
 export async function getProjects() {
-  return await fetchData("/getAllProject?limit=0");
+  return await fetchData("/getAllProject?limit=999");
 }
 
 // get single project by id
 export async function getProjectById(id) {
-  return await fetchData(`/getAllProject?limit=0`);
+  return await fetchData(`/getAllProject?limit=999`);
 }
 
 export async function getApps() {
-  return await fetchData("/apps");
+  return await fetchData("/getAllApp?limit=999");
 }
 
-// get single app by id
+// get single app by id (fetch all and find by id since no single-fetch endpoint)
 export async function getAppById(id) {
-  return await fetchData(`/apps/${id}`);
+  const res = await fetchData("/getAllApp?limit=999");
+  const list = res?.apps || [];
+  return list.find((a) => a._id === id) || null;
 }
 
 export async function getClients() {
-  return await fetchData("/clients");
+  return await fetchData("/getAllClient?limit=999");
 }
 
-// get single client by id
+// get single client by id (fetch all and filter)
 export async function getClientById(id) {
-  return await fetchData(`/clients/${id}`);
+  const res = await fetchData("/getAllClient?limit=999");
+  const list = res?.clients || [];
+  return list.find((c) => c._id === id) || null;
 }
 
 export async function getTeamMembers() {
-  return await fetchData("/team");
+  return await fetchData("/getAllteam?limit=999");
 }
 
 export async function getTestimonials() {
-  return await fetchData("/testimonials");
+  return await fetchData("/getAlltestiomonail?limit=999");
 }
 
 export async function getGallery() {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { getTeamMembers, createTeamMember, updateTeamMember, deleteTeamMember } from "../api/admin";
-import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave } from "react-icons/fi";
+import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import ImageDropzone from "./ImageDropzone";
 import ConfirmModal from "./ConfirmModal";
 
@@ -12,14 +12,21 @@ function ManageTeam() {
   const [imageFile, setImageFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    loadMembers();
-  }, []);
+    loadMembers(page);
+  }, [page]);
 
-  const loadMembers = async () => {
-    const res = await getTeamMembers();
-    if (res) setMembers(res);
+  const loadMembers = async (p = 1) => {
+    const res = await getTeamMembers(p, 6);
+    const data = res?.data;
+    const list = data?.teams || (Array.isArray(data) ? data : []);
+    setMembers(list);
+    if (data?.pagination) {
+      setTotalPages(data.pagination.totalPages || 1);
+    }
   };
 
   const openCreate = () => {
@@ -34,9 +41,9 @@ function ManageTeam() {
     setForm({
       name: member.name,
       role: member.role,
-      linkedin: member.social?.linkedin || "",
-      github: member.social?.github || "",
-      twitter: member.social?.twitter || "",
+      linkedin: member.linkedinUrl || member.social?.linkedin || "",
+      github: member.githubUrl || member.social?.github || "",
+      twitter: member.twitterUrl || member.social?.twitter || "",
     });
     setImageFile(null);
     setShowModal(true);
@@ -49,10 +56,10 @@ function ManageTeam() {
     const data = new FormData();
     data.append("name", form.name);
     data.append("role", form.role);
-    data.append("linkedin", form.linkedin);
-    data.append("github", form.github);
-    data.append("twitter", form.twitter);
-    if (imageFile) data.append("image", imageFile);
+    data.append("linkedinUrl", form.linkedin);
+    data.append("githubUrl", form.github);
+    data.append("twitterUrl", form.twitter);
+    if (imageFile) data.append("teamImage", imageFile);
 
     let result;
     if (editing) {
@@ -62,7 +69,7 @@ function ManageTeam() {
     }
 
     if (result) {
-      await loadMembers();
+      await loadMembers(page);
       setShowModal(false);
     }
     setSaving(false);
@@ -72,7 +79,13 @@ function ManageTeam() {
     if (!deleteId) return;
     const result = await deleteTeamMember(deleteId);
     setDeleteId(null);
-    if (result) await loadMembers();
+    if (result) {
+      if (members.length === 1 && page > 1) {
+        setPage(page - 1);
+      } else {
+        await loadMembers(page);
+      }
+    }
   };
 
   return (
@@ -88,8 +101,8 @@ function ManageTeam() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {members.map((member) => (
           <div key={member._id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            {member.image && (
-              <img src={member.image} alt={member.name} className="w-full h-40 object-cover" />
+            {(member.teamImage || member.image) && (
+              <img src={member.teamImage || member.image} alt={member.name} className="w-full h-40 object-cover" />
             )}
             <div className="p-4">
               <h3 className="font-semibold text-gray-800">{member.name}</h3>
@@ -106,6 +119,23 @@ function ManageTeam() {
           <div className="col-span-full text-center py-12 text-gray-400">No team members yet.</div>
         )}
       </div>
+
+      {/* pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-6">
+          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors">
+            <FiChevronLeft size={18} />
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+            <button key={num} onClick={() => setPage(num)} className={`w-8 h-8 rounded-lg text-sm font-medium cursor-pointer transition-colors ${num === page ? "bg-blue-600 text-white" : "text-gray-600 hover:bg-gray-100"}`}>
+              {num}
+            </button>
+          ))}
+          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors">
+            <FiChevronRight size={18} />
+          </button>
+        </div>
+      )}
 
       {/* modal */}
       {showModal && (
@@ -133,7 +163,6 @@ function ManageTeam() {
                   <input type="text" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} required className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
                 </div>
               </div>
-              {/* social links */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn URL</label>
                 <input type="text" value={form.linkedin} onChange={(e) => setForm({ ...form, linkedin: e.target.value })} className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
@@ -148,11 +177,7 @@ function ManageTeam() {
                   <input type="text" value={form.twitter} onChange={(e) => setForm({ ...form, twitter: e.target.value })} className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
                 </div>
               </div>
-              <ImageDropzone
-                label="Photo"
-                onFileSelect={setImageFile}
-                currentImage={editing?.image}
-              />
+              <ImageDropzone label="Photo" onFileSelect={setImageFile} currentImage={editing?.teamImage || editing?.image} />
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-100 cursor-pointer">Cancel</button>
                 <button type="submit" disabled={saving} className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium px-5 py-2.5 rounded-lg text-sm flex items-center gap-2 cursor-pointer"><FiSave size={14} /> {saving ? "Saving..." : "Save"}</button>

@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { getApps, createApp, updateApp, deleteApp } from "../api/admin";
-import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiEye } from "react-icons/fi";
+import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiEye, FiUploadCloud, FiStar, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import ImageDropzone from "./ImageDropzone";
 import ConfirmModal from "./ConfirmModal";
 
@@ -9,52 +9,80 @@ function ManageApps() {
   const [apps, setApps] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: "", description: "", platform: "", link: "" });
+  const [form, setForm] = useState({ name: "", description: "", platform: "", link: "", rating: 0 });
   const [iconFile, setIconFile] = useState(null);
+  const [screenshotFiles, setScreenshotFiles] = useState([]);
+  const [screenshotPreviews, setScreenshotPreviews] = useState([]);
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const ssInputRef = useRef(null);
 
   useEffect(() => {
-    loadApps();
-  }, []);
+    loadApps(page);
+  }, [page]);
 
-  const loadApps = async () => {
-    const res = await getApps();
-    if (res) setApps(res);
+  const loadApps = async (p = 1) => {
+    const res = await getApps(p, 6);
+    const data = res?.data;
+    const list = data?.apps || (Array.isArray(data) ? data : []);
+    setApps(list);
+    if (data?.pagination) {
+      setTotalPages(data.pagination.totalPages || 1);
+    }
   };
 
-  // open modal in create mode
   const openCreate = () => {
     setEditing(null);
-    setForm({ name: "", description: "", platform: "", link: "" });
+    setForm({ name: "", description: "", platform: "", link: "", rating: 0 });
     setIconFile(null);
+    setScreenshotFiles([]);
+    setScreenshotPreviews([]);
     setShowModal(true);
   };
 
-  // open modal in edit mode with existing data
   const openEdit = (app) => {
     setEditing(app);
     setForm({
-      name: app.name,
+      name: app.appName || app.name,
       description: app.description,
       platform: app.platform || "",
       link: app.link || "",
+      rating: app.rating || 0,
     });
     setIconFile(null);
+    setScreenshotFiles([]);
+    setScreenshotPreviews([]);
     setShowModal(true);
   };
 
-  // submit form - handles both create and update
+  const handleScreenshots = (e) => {
+    const files = Array.from(e.target.files).filter(f => f.type.startsWith("image/"));
+    if (files.length === 0) return;
+    setScreenshotFiles(files);
+    setScreenshotPreviews(files.map(f => URL.createObjectURL(f)));
+  };
+
+  const removeScreenshot = (index) => {
+    setScreenshotFiles(prev => prev.filter((_, i) => i !== index));
+    setScreenshotPreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
 
     const data = new FormData();
-    data.append("name", form.name);
+    data.append("appName", form.name);
     data.append("description", form.description);
     data.append("platform", form.platform);
     data.append("link", form.link);
-    if (iconFile) data.append("icon", iconFile);
+    data.append("rating", form.rating);
+    if (iconFile) data.append("appIcon", iconFile);
+    for (const file of screenshotFiles) {
+      data.append("screenshots", file);
+    }
 
     let result;
     if (editing) {
@@ -64,19 +92,26 @@ function ManageApps() {
     }
 
     if (result) {
-      await loadApps();
+      await loadApps(page);
       setShowModal(false);
     }
     setSaving(false);
   };
 
-  // delete with confirmation popup
   const confirmDelete = async () => {
     if (!deleteId) return;
     const result = await deleteApp(deleteId);
     setDeleteId(null);
-    if (result) await loadApps();
+    if (result) {
+      if (apps.length === 1 && page > 1) {
+        setPage(page - 1);
+      } else {
+        await loadApps(page);
+      }
+    }
   };
+
+  const existingScreenshots = editing?.screenshots?.map(s => s.url || s) || [];
 
   return (
     <div>
@@ -92,13 +127,19 @@ function ManageApps() {
         {apps.map((app) => (
           <div key={app._id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
             <div className="flex items-start gap-3">
-              {app.icon && (
-                <img src={app.icon} alt={app.name} className="w-14 h-14 rounded-xl object-cover shrink-0" />
+              {(app.appIcon || app.icon) && (
+                <img src={app.appIcon || app.icon} alt={app.appName || app.name} className="w-14 h-14 rounded-xl object-cover shrink-0" />
               )}
               <div className="min-w-0">
-                <h3 className="font-semibold text-gray-800">{app.name}</h3>
+                <h3 className="font-semibold text-gray-800">{app.appName || app.name}</h3>
                 <p className="text-blue-500 text-xs mb-1">{app.platform}</p>
                 <p className="text-gray-500 text-sm line-clamp-2">{app.description}</p>
+                {app.rating > 0 && (
+                  <div className="flex items-center gap-1 mt-1">
+                    <FiStar size={12} className="text-yellow-400 fill-yellow-400" />
+                    <span className="text-xs text-gray-500">{app.rating}</span>
+                  </div>
+                )}
               </div>
             </div>
             <div className="flex gap-2 mt-3">
@@ -122,6 +163,23 @@ function ManageApps() {
         )}
       </div>
 
+      {/* pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-6">
+          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors">
+            <FiChevronLeft size={18} />
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+            <button key={num} onClick={() => setPage(num)} className={`w-8 h-8 rounded-lg text-sm font-medium cursor-pointer transition-colors ${num === page ? "bg-blue-600 text-white" : "text-gray-600 hover:bg-gray-100"}`}>
+              {num}
+            </button>
+          ))}
+          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors">
+            <FiChevronRight size={18} />
+          </button>
+        </div>
+      )}
+
       {/* modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
@@ -129,7 +187,7 @@ function ManageApps() {
             {saving && (
               <div className="absolute inset-0 z-10 bg-white/80 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center gap-3">
                 <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-                <p className="text-sm font-medium text-gray-700">{iconFile ? "Uploading image..." : "Saving changes..."}</p>
+                <p className="text-sm font-medium text-gray-700">{iconFile || screenshotFiles.length > 0 ? "Uploading images..." : "Saving changes..."}</p>
                 <p className="text-xs text-gray-400">This may take a few seconds</p>
               </div>
             )}
@@ -156,11 +214,85 @@ function ManageApps() {
                   <input type="text" value={form.link} onChange={(e) => setForm({ ...form, link: e.target.value })} className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
                 </div>
               </div>
+
+              {/* rating */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setForm({ ...form, rating: star === form.rating ? 0 : star })}
+                      className="cursor-pointer transition-colors"
+                    >
+                      <FiStar
+                        size={22}
+                        className={star <= form.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}
+                      />
+                    </button>
+                  ))}
+                  {form.rating > 0 && (
+                    <span className="text-sm text-gray-500 ml-2 self-center">{form.rating} / 5</span>
+                  )}
+                </div>
+              </div>
+
               <ImageDropzone
                 label="App Icon"
                 onFileSelect={setIconFile}
-                currentImage={editing?.icon}
+                currentImage={editing?.appIcon || editing?.icon}
               />
+
+              {/* screenshots */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Screenshots (up to 6)</label>
+
+                {/* existing screenshots when editing */}
+                {editing && existingScreenshots.length > 0 && screenshotFiles.length === 0 && (
+                  <div className="grid grid-cols-3 gap-2 mb-2">
+                    {existingScreenshots.map((src, i) => (
+                      <img key={i} src={src} alt={`Screenshot ${i + 1}`} className="w-full h-20 object-cover rounded-lg border border-gray-200" />
+                    ))}
+                  </div>
+                )}
+
+                {/* new screenshot previews */}
+                {screenshotPreviews.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2 mb-2">
+                    {screenshotPreviews.map((src, i) => (
+                      <div key={i} className="relative">
+                        <img src={src} alt={`New ${i + 1}`} className="w-full h-20 object-cover rounded-lg border border-blue-200" />
+                        <button
+                          type="button"
+                          onClick={() => removeScreenshot(i)}
+                          className="absolute -top-1.5 -right-1.5 bg-red-500 hover:bg-red-600 text-white p-0.5 rounded-full transition-colors"
+                        >
+                          <FiX size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <input
+                  ref={ssInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleScreenshots}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => ssInputRef.current?.click()}
+                  className="w-full rounded-lg cursor-pointer transition-all border-2 border-dashed border-blue-300 bg-white/20 hover:border-blue-400 flex flex-col items-center justify-center py-5 text-gray-400"
+                >
+                  <FiUploadCloud size={24} className="mb-1" />
+                  <p className="text-xs font-medium">{editing && existingScreenshots.length > 0 ? "Upload new screenshots to replace" : "Click to upload screenshots"}</p>
+                </button>
+              </div>
+
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-100 cursor-pointer">Cancel</button>
                 <button type="submit" disabled={saving} className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium px-5 py-2.5 rounded-lg text-sm flex items-center gap-2 cursor-pointer transition-colors">

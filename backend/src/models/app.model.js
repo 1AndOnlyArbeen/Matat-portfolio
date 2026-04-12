@@ -1,29 +1,30 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-const app = new mongoose.Schema({
-    appName:{
-        type:String,
-        required:true
+const app = new mongoose.Schema(
+  {
+    appName: {
+      type: String,
+      required: true,
     },
-    description:{
-        type:String,
-        required:true,
+    description: {
+      type: String,
+      required: true,
     },
-    platform:{
-        type:String,
-        required:true,
+    platform: {
+      type: String,
+      required: true,
     },
-    link:{
-        type:String,
-        required:true,
+    link: {
+      type: String,
+      required: true,
     },
-    appIcon:{
-        type:String,
-        required:true,
+    appIcon: {
+      type: String,
+      required: true,
     },
+  },
+  { timestamps: true },
+);
 
-    
-},{timestamps:true})
-
-const App = mongoose.model ('App',app )
-export{App}
+const App = mongoose.model('App', app);
+export { App };

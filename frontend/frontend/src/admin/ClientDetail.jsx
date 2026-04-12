@@ -10,13 +10,12 @@ function AdminClientDetail() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getClients().then((res) => {
-      if (res) {
-        const found = res.find((c) => c._id === id);
-        setClient(found || null);
-      }
+    getClients(1, 0).then((res) => {
+      const list = res?.data?.clients || [];
+      const found = list.find((c) => c._id === id);
+      setClient(found || null);
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
   }, [id]);
 
   if (loading) {
@@ -53,9 +52,9 @@ function AdminClientDetail() {
         {/* client header */}
         <div className="flex flex-col items-center text-center mb-6 pb-6 border-b border-gray-100">
           {client.logo && (
-            <img src={client.logo} alt={client.name} className="h-14 object-contain mb-3" />
+            <img src={client.logo} alt={client.clientName || client.name} className="h-14 object-contain mb-3" />
           )}
-          <h1 className="text-2xl font-bold text-gray-800 mb-1">{client.name}</h1>
+          <h1 className="text-2xl font-bold text-gray-800 mb-1">{client.clientName || client.name}</h1>
           {client.industry && (
             <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-600 text-sm px-3 py-1 rounded-full font-medium">
               <FiBriefcase size={12} /> {client.industry}

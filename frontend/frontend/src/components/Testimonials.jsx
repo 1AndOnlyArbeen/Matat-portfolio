@@ -16,7 +16,8 @@ function Testimonials() {
 
   useEffect(() => {
     getTestimonials().then((res) => {
-      if (res && res.length > 0) setTestimonials(res);
+      const list = res?.testimonial || (Array.isArray(res) ? res : []);
+      if (list.length > 0) setTestimonials(list);
     });
   }, []);
 
@@ -43,15 +44,18 @@ function Testimonials() {
               nextEl: ".testimonials-next",
             }}
             autoplay={{ delay: 5000, disableOnInteraction: false }}
+            centeredSlides={true}
             loop={testimonials.length > 3}
             breakpoints={{
-              768: { slidesPerView: 2 },
-              1024: { slidesPerView: 3 },
+              480: { slidesPerView: 2 },
+              640: { slidesPerView: 3 },
+              768: { slidesPerView: 4 },
+              1024: { slidesPerView: 5 },
             }}
           >
             {testimonials.map((item) => (
               <SwiperSlide key={item._id}>
-                <div className="bg-blue-50 rounded-xl p-6 relative hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-full">
+                <div className="bg-blue-50 rounded-xl p-6 relative hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-64 flex flex-col">
                   {/* decorative quote mark */}
                   <div className="text-blue-200 text-6xl font-serif absolute top-4 right-6 leading-none">
                     &ldquo;
@@ -67,7 +71,7 @@ function Testimonials() {
                   </div>
 
                   {/* review text */}
-                  <p className="text-gray-600 text-sm leading-relaxed mb-4">{item.text}</p>
+                  <p className="text-gray-600 text-sm leading-relaxed mb-4 flex-1 line-clamp-4">{item.reviewText || item.text}</p>
 
                   {/* star rating */}
                   <div className="flex gap-1">

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { getTestimonials, createTestimonial, updateTestimonial, deleteTestimonial } from "../api/admin";
-import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiStar } from "react-icons/fi";
+import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiStar, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import ImageDropzone from "./ImageDropzone";
 import ConfirmModal from "./ConfirmModal";
 
@@ -12,14 +12,21 @@ function ManageTestimonials() {
   const [avatarFile, setAvatarFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    loadTestimonials();
-  }, []);
+    loadTestimonials(page);
+  }, [page]);
 
-  const loadTestimonials = async () => {
-    const res = await getTestimonials();
-    if (res) setTestimonials(res);
+  const loadTestimonials = async (p = 1) => {
+    const res = await getTestimonials(p, 7);
+    const data = res?.data;
+    const list = data?.testimonial || (Array.isArray(data) ? data : []);
+    setTestimonials(list);
+    if (data?.pagination) {
+      setTotalPages(data.pagination.totalPages || 1);
+    }
   };
 
   const openCreate = () => {
@@ -34,7 +41,7 @@ function ManageTestimonials() {
     setForm({
       name: item.name,
       company: item.company || "",
-      text: item.text,
+      text: item.reviewText || item.text,
       rating: item.rating || 5,
     });
     setAvatarFile(null);
@@ -48,7 +55,7 @@ function ManageTestimonials() {
     const data = new FormData();
     data.append("name", form.name);
     data.append("company", form.company);
-    data.append("text", form.text);
+    data.append("reviewText", form.text);
     data.append("rating", form.rating);
     if (avatarFile) data.append("avatar", avatarFile);
 
@@ -60,7 +67,7 @@ function ManageTestimonials() {
     }
 
     if (result) {
-      await loadTestimonials();
+      await loadTestimonials(page);
       setShowModal(false);
     }
     setSaving(false);
@@ -70,7 +77,13 @@ function ManageTestimonials() {
     if (!deleteId) return;
     const result = await deleteTestimonial(deleteId);
     setDeleteId(null);
-    if (result) await loadTestimonials();
+    if (result) {
+      if (testimonials.length === 1 && page > 1) {
+        setPage(page - 1);
+      } else {
+        await loadTestimonials(page);
+      }
+    }
   };
 
   return (
@@ -95,13 +108,12 @@ function ManageTestimonials() {
                   <h3 className="font-semibold text-gray-800">{item.name}</h3>
                   <span className="text-gray-400 text-sm">- {item.company}</span>
                 </div>
-                {/* star rating display */}
                 <div className="flex gap-0.5 mb-2">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <FiStar key={i} size={14} className={i < item.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"} />
                   ))}
                 </div>
-                <p className="text-gray-500 text-sm">{item.text}</p>
+                <p className="text-gray-500 text-sm">{item.reviewText || item.text}</p>
               </div>
               <div className="flex gap-1 shrink-0">
                 <button onClick={() => openEdit(item)} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg cursor-pointer"><FiEdit2 size={16} /></button>
@@ -115,6 +127,23 @@ function ManageTestimonials() {
           <div className="text-center py-12 text-gray-400">No testimonials yet.</div>
         )}
       </div>
+
+      {/* pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-6">
+          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors">
+            <FiChevronLeft size={18} />
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+            <button key={num} onClick={() => setPage(num)} className={`w-8 h-8 rounded-lg text-sm font-medium cursor-pointer transition-colors ${num === page ? "bg-blue-600 text-white" : "text-gray-600 hover:bg-gray-100"}`}>
+              {num}
+            </button>
+          ))}
+          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors">
+            <FiChevronRight size={18} />
+          </button>
+        </div>
+      )}
 
       {/* modal */}
       {showModal && (
@@ -146,27 +175,17 @@ function ManageTestimonials() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Review Text</label>
                 <textarea value={form.text} onChange={(e) => setForm({ ...form, text: e.target.value })} rows={4} required className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none" />
               </div>
-              {/* star rating selector */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
                 <div className="flex gap-1">
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => setForm({ ...form, rating: star })}
-                      className="cursor-pointer"
-                    >
+                    <button key={star} type="button" onClick={() => setForm({ ...form, rating: star })} className="cursor-pointer">
                       <FiStar size={24} className={star <= form.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"} />
                     </button>
                   ))}
                 </div>
               </div>
-              <ImageDropzone
-                label="Avatar"
-                onFileSelect={setAvatarFile}
-                currentImage={editing?.avatar}
-              />
+              <ImageDropzone label="Avatar" onFileSelect={setAvatarFile} currentImage={editing?.avatar} />
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-100 cursor-pointer">Cancel</button>
                 <button type="submit" disabled={saving} className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium px-5 py-2.5 rounded-lg text-sm flex items-center gap-2 cursor-pointer"><FiSave size={14} /> {saving ? "Saving..." : "Save"}</button>

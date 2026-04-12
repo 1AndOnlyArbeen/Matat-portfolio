@@ -19,6 +19,7 @@ const sectionMap = {
   "/clients": "clients",
   "/about": "about",
   "/team": "team",
+  "/testimonials": "testimonials",
   "/gallery": "gallery",
   "/contact": "contact",
 };
@@ -35,13 +36,16 @@ function HomeWithScroll() {
       const tryScroll = () => {
         const el = document.getElementById(sectionId);
         if (el) {
-          el.scrollIntoView({ behavior: "smooth" });
-        } else if (attempts < 10) {
+          const offset = 80;
+          const top = el.getBoundingClientRect().top + window.scrollY - offset;
+          window.scrollTo({ top, behavior: "smooth" });
+        } else if (attempts < 20) {
           attempts++;
-          setTimeout(tryScroll, 150);
+          setTimeout(tryScroll, 200);
         }
       };
-      setTimeout(tryScroll, 100);
+      // wait for page to render first
+      setTimeout(tryScroll, 300);
     } else {
       window.scrollTo(0, 0);
     }
@@ -92,6 +96,7 @@ function App() {
         <Route path="/clients" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
         <Route path="/about" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
         <Route path="/team" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
+        <Route path="/testimonials" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
         <Route path="/gallery" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
         <Route path="/contact" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
 

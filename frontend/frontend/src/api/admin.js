@@ -190,59 +190,59 @@ export async function deleteProject(id) {
 }
 
 // ---- Apps ----
-export async function getApps() {
-  return await adminFetch("/apps");
+export async function getApps(page = 1, limit = 7) {
+  return await adminFetch(`/getAllApp?page=${page}&limit=${limit}`);
 }
 export async function createApp(data) {
-  return await adminUpload("/apps", data);
+  return await adminUpload("/createApp", data, "POST");
 }
 export async function updateApp(id, data) {
-  return await adminUpload(`/apps/${id}`, data, "PUT");
+  return await adminUpload(`/editApp/${id}`, data, "PATCH");
 }
 export async function deleteApp(id) {
-  return await adminFetch(`/apps/${id}`, { method: "DELETE" });
+  return await adminFetch(`/deleteApp/${id}`, { method: "DELETE" });
 }
 
 // ---- Clients ----
-export async function getClients() {
-  return await adminFetch("/clients");
+export async function getClients(page = 1, limit = 7) {
+  return await adminFetch(`/getAllClient?page=${page}&limit=${limit}`);
 }
 export async function createClient(data) {
-  return await adminUpload("/clients", data);
+  return await adminUpload("/createClient", data, "POST");
 }
 export async function updateClient(id, data) {
-  return await adminUpload(`/clients/${id}`, data, "PUT");
+  return await adminUpload(`/editClientDetails/${id}`, data, "PATCH");
 }
 export async function deleteClient(id) {
-  return await adminFetch(`/clients/${id}`, { method: "DELETE" });
+  return await adminFetch(`/deleteClient/${id}`, { method: "DELETE" });
 }
 
 // ---- Team ----
-export async function getTeamMembers() {
-  return await adminFetch("/team");
+export async function getTeamMembers(page = 1, limit = 7) {
+  return await adminFetch(`/getAllteam?page=${page}&limit=${limit}`);
 }
 export async function createTeamMember(data) {
-  return await adminUpload("/team", data);
+  return await adminUpload("/createTeam", data, "POST");
 }
 export async function updateTeamMember(id, data) {
-  return await adminUpload(`/team/${id}`, data, "PUT");
+  return await adminUpload(`/editTeamDetails/${id}`, data, "PATCH");
 }
 export async function deleteTeamMember(id) {
-  return await adminFetch(`/team/${id}`, { method: "DELETE" });
+  return await adminFetch(`/deleteTeamDetails/${id}`, { method: "DELETE" });
 }
 
 // ---- Testimonials ----
-export async function getTestimonials() {
-  return await adminFetch("/testimonials");
+export async function getTestimonials(page = 1, limit = 7) {
+  return await adminFetch(`/getAlltestiomonail?page=${page}&limit=${limit}`);
 }
 export async function createTestimonial(data) {
-  return await adminUpload("/testimonials", data);
+  return await adminUpload("/createTestimonial", data, "POST");
 }
 export async function updateTestimonial(id, data) {
-  return await adminUpload(`/testimonials/${id}`, data, "PUT");
+  return await adminUpload(`/editTestiominial/${id}`, data, "PATCH");
 }
 export async function deleteTestimonial(id) {
-  return await adminFetch(`/testimonials/${id}`, { method: "DELETE" });
+  return await adminFetch(`/deleteTestiomonial/${id}`, { method: "DELETE" });
 }
 
 // ---- Gallery ----

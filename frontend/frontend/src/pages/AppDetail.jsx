@@ -22,7 +22,7 @@ function AppDetail() {
         setApp(found || null);
       }
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
   }, [id]);
 
   // loading
@@ -46,6 +46,15 @@ function AppDetail() {
     );
   }
 
+  // use backend screenshots/rating if present, otherwise show dummy placeholders
+  const screenshots = app.screenshots && app.screenshots.length > 0
+    ? app.screenshots
+    : [
+        "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=600&q=80",
+        "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=600&q=80",
+      ];
+  const rating = app.rating || 4.5;
+
   return (
     <div className="py-12">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -62,11 +71,11 @@ function AppDetail() {
         <div className="flex flex-col sm:flex-row items-start gap-6 mb-10">
           {/* app icon */}
           <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl overflow-hidden shadow-lg shrink-0">
-            <img src={app.icon} alt={app.name} className="w-full h-full object-cover" />
+            <img src={app.appIcon || app.icon} alt={app.appName || app.name} className="w-full h-full object-cover" />
           </div>
 
           <div className="flex-1">
-            <h1 className="text-3xl sm:text-4xl font-bold text-blue-900 mb-2">{app.name}</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold text-blue-900 mb-2">{app.appName || app.name}</h1>
 
             {/* platform + stats */}
             <div className="flex flex-wrap items-center gap-4 mb-4">
@@ -78,11 +87,9 @@ function AppDetail() {
                   <FiDownload size={14} /> {app.downloads} Downloads
                 </span>
               )}
-              {app.rating && (
-                <span className="flex items-center gap-1 text-yellow-500 text-sm">
-                  <FiStar size={14} className="fill-yellow-400" /> {app.rating}
-                </span>
-              )}
+              <span className="flex items-center gap-1 text-yellow-500 text-sm">
+                <FiStar size={14} className="fill-yellow-400" /> {rating}
+              </span>
             </div>
 
             <p className="text-gray-500">{app.description}</p>
@@ -98,18 +105,16 @@ function AppDetail() {
         </div>
 
         {/* screenshots */}
-        {app.screenshots && app.screenshots.length > 0 && (
-          <div className="mb-10">
-            <h2 className="text-xl font-semibold text-blue-900 mb-4">Screenshots</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {app.screenshots.map((src, i) => (
-                <div key={i} className="rounded-xl overflow-hidden shadow-md">
-                  <img src={src} alt={`${app.name} screenshot ${i + 1}`} className="w-full h-56 object-cover" />
-                </div>
-              ))}
-            </div>
+        <div className="mb-10">
+          <h2 className="text-xl font-semibold text-blue-900 mb-4">Screenshots</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {screenshots.map((src, i) => (
+              <div key={i} className="rounded-xl overflow-hidden shadow-md">
+                <img src={typeof src === "string" ? src : src.url} alt={`${app.appName || app.name} screenshot ${i + 1}`} className="w-full h-56 object-cover" />
+              </div>
+            ))}
           </div>
-        )}
+        </div>
 
         {/* info card */}
         <div className="bg-blue-50 rounded-xl p-6">
@@ -125,12 +130,10 @@ function AppDetail() {
                 <p className="text-gray-700 font-medium text-sm">{app.downloads}</p>
               </div>
             )}
-            {app.rating && (
-              <div>
-                <p className="text-gray-400 text-xs mb-1">Rating</p>
-                <p className="text-gray-700 font-medium text-sm">{app.rating} / 5.0</p>
-              </div>
-            )}
+            <div>
+              <p className="text-gray-400 text-xs mb-1">Rating</p>
+              <p className="text-gray-700 font-medium text-sm">{rating} / 5.0</p>
+            </div>
             {app.link && app.link !== "#" && (
               <div>
                 <p className="text-gray-400 text-xs mb-1">Link</p>

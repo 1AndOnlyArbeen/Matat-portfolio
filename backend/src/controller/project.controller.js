@@ -1,11 +1,11 @@
-import { Project } from "../models/project.model.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
-import { apiError } from "../utils/apiError.js";
-import { apiResponse } from "../utils/apiResponse.js";
+import { Project } from '../models/project.model.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
+import { apiError } from '../utils/apiError.js';
+import { apiResponse } from '../utils/apiResponse.js';
 import {
   deleteFromCloudinary,
   uploadOnCloudinary,
-} from "../utils/cloudinary.js";
+} from '../utils/cloudinary.js';
 
 {
   /*
@@ -25,15 +25,15 @@ const createProject = asyncHandler(async (req, res) => {
   const { title, description, tags, projectLink } = req.body;
 
   if (!title || !description || !tags || !projectLink) {
-    throw new apiError(400, "All fields are required !");
+    throw new apiError(400, 'All fields are required !');
   }
   const projectImagePath = req.file?.path;
   if (!projectImagePath) {
-    throw new apiError(400, " Please image field is required");
+    throw new apiError(400, ' Please image field is required');
   }
   const projectImage = await uploadOnCloudinary(projectImagePath);
   if (!projectImage) {
-    throw new apiError(500, " Failed while uploading image ");
+    throw new apiError(500, ' Failed while uploading image ');
   }
 
   let projectDetails;
@@ -51,7 +51,7 @@ const createProject = asyncHandler(async (req, res) => {
     if (publicId) {
       await deleteFromCloudinary(publicId);
     }
-    throw new apiError(500, error, " Failed to create project Details");
+    throw new apiError(500, error, ' Failed to create project Details');
   }
   return res
     .status(201)
@@ -59,7 +59,7 @@ const createProject = asyncHandler(async (req, res) => {
       new apiResponse(
         201,
         projectDetails,
-        " ProjectDetails created Successfully ",
+        ' ProjectDetails created Successfully ',
       ),
     );
 });
@@ -89,7 +89,7 @@ const getAllProject = asyncHandler(async (req, res) => {
           limit: hasLimit ? limit : total,
         },
       },
-      " Project Details Fetched Successfully",
+      ' Project Details Fetched Successfully',
     ),
   );
 });
@@ -101,7 +101,7 @@ const projectEdit = asyncHandler(async (req, res) => {
 
   const project = await Project.findById(req.params.id);
   if (!project) {
-    throw new apiError(404, " Project didint exits ");
+    throw new apiError(404, ' Project didint exits ');
   }
   project.title = title || project.title;
   project.description = description || project.description;
@@ -111,14 +111,14 @@ const projectEdit = asyncHandler(async (req, res) => {
   // if the new image is uploaded then replac the old one
   if (req.file) {
     if (project.projectImage) {
-      const publicId = project.projectImage.split("/").pop().split(".")[0];
+      const publicId = project.projectImage.split('/').pop().split('.')[0];
       await deleteFromCloudinary(publicId);
     }
 
     // upload the new image
     const cloudinaryResponse = await uploadOnCloudinary(req.file.path);
     if (!cloudinaryResponse) {
-      throw new apiError(500, "image upload failed ");
+      throw new apiError(500, 'image upload failed ');
     }
     project.projectImage = cloudinaryResponse.secure_url;
   }
@@ -127,16 +127,21 @@ const projectEdit = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(
-      new apiResponse(200, project, " Project Details updated successfully !"),
+      new apiResponse(200, project, ' Project Details updated successfully !'),
     );
 });
 
 // delete the details if the admin hit the delete
 
 const deleteProject = asyncHandler(async (req, res) => {
-  const deletedProject = await Project.findById(req.params.id);
+  const deletedProject = await Project.findByIdAndDelete(req.params.id);
   if (!deletedProject) {
-    throw new apiError(404, " project details didint exists ");
+    throw new apiError(404, ' project details didint exists ');
+  }
+  // also deleting from the cloudianry
+  if (deletedProject.projectImage) {
+    const publicId = deletedProject.projectImage.split('/').pop().split('.')[0];
+    await deleteFromCloudinary(publicId);
   }
   return res
     .status(200)
@@ -144,7 +149,7 @@ const deleteProject = asyncHandler(async (req, res) => {
       new apiResponse(
         200,
         deletedProject,
-        " ProjectDetails deleted Successfully ",
+        ' ProjectDetails deleted Successfully ',
       ),
     );
 });

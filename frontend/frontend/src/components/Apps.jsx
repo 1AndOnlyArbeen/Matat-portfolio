@@ -5,7 +5,7 @@ import { appsData as fallback } from "../data/placeholders";
 import { FiSmartphone, FiArrowRight } from "react-icons/fi";
 import useScrollAnimation from "../hooks/useScrollAnimation";
 
-// displays mobile/web apps in a continuous marquee
+// displays mobile/web apps — marquee when 4+, centered grid when fewer
 function Apps() {
   const [apps, setApps] = useState(fallback);
   const [headingRef, headingVisible] = useScrollAnimation();
@@ -13,18 +13,21 @@ function Apps() {
 
   useEffect(() => {
     getApps().then((res) => {
-      if (res && res.length > 0) setApps(res);
+      const list = res?.apps || (Array.isArray(res) ? res : []);
+      if (list.length > 0) setApps(list);
     });
   }, []);
+
+  if (apps.length === 0) return null;
 
   const appCard = (app) => (
     <div className="w-64 shrink-0 bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300 text-center group hover:-translate-y-1">
       {/* app icon */}
       <div className="w-20 h-20 mx-auto mb-4 rounded-2xl overflow-hidden shadow-sm group-hover:shadow-md transition-shadow">
-        <img src={app.icon} alt={app.name} className="w-full h-full object-cover" />
+        <img src={app.appIcon || app.icon} alt={app.appName || app.name} className="w-full h-full object-cover" />
       </div>
 
-      <h3 className="text-lg font-semibold text-blue-900 mb-1">{app.name}</h3>
+      <h3 className="text-lg font-semibold text-blue-900 mb-1">{app.appName || app.name}</h3>
 
       {/* platform badge */}
       <div className="flex items-center justify-center gap-1 text-blue-500 text-xs mb-3">
@@ -56,17 +59,27 @@ function Apps() {
           </p>
         </div>
 
-        {/* marquee - pauses on hover */}
-        <div ref={sliderRef} className={`overflow-hidden animate-fade-up ${sliderVisible ? "visible" : ""}`}>
-          <div className="flex gap-5 animate-marquee-apps hover:[animation-play-state:paused]">
-            {apps.map((app) => (
-              <div key={app._id}>{appCard(app)}</div>
-            ))}
-            {/* duplicate for seamless loop */}
-            {apps.map((app) => (
-              <div key={`dup-${app._id}`}>{appCard(app)}</div>
-            ))}
-          </div>
+        <div ref={sliderRef} className={`animate-fade-up ${sliderVisible ? "visible" : ""}`}>
+          {apps.length >= 4 ? (
+            /* continuous marquee — duplicates list for seamless loop */
+            <div className="overflow-hidden">
+              <div className="flex gap-5 animate-marquee-apps hover:[animation-play-state:paused]">
+                {apps.map((app) => (
+                  <div key={app._id}>{appCard(app)}</div>
+                ))}
+                {apps.map((app) => (
+                  <div key={`dup-${app._id}`}>{appCard(app)}</div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            /* fewer than 4 — just show centered, no duplication */
+            <div className="flex flex-wrap justify-center gap-5">
+              {apps.map((app) => (
+                <div key={app._id}>{appCard(app)}</div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </section>

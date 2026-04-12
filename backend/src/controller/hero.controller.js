@@ -1,8 +1,11 @@
-import { asyncHandler } from "../utils/asyncHandler.js";
-import { apiError } from "../utils/apiError.js";
-import { apiResponse } from "../utils/apiResponse.js";
-import { Hero } from "../models/hero.model.js";
-import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js";
+import { asyncHandler } from '../utils/asyncHandler.js';
+import { apiError } from '../utils/apiError.js';
+import { apiResponse } from '../utils/apiResponse.js';
+import { Hero } from '../models/hero.model.js';
+import {
+  uploadOnCloudinary,
+  deleteFromCloudinary,
+} from '../utils/cloudinary.js';
 
 {
   /*
@@ -21,16 +24,18 @@ const createHero = asyncHandler(async (req, res) => {
   const { title, subtitle, buttonText, buttonLink } = req.body;
 
   if (!title || !subtitle || !buttonText || !buttonLink) {
-    throw new apiError(400, "All fields are required");
+    throw new apiError(400, 'All fields are required');
   }
 
   const backgroundImagePath = req.file?.path;
   if (!backgroundImagePath) {
-    throw new apiError(400, "Background image is required");
+    throw new apiError(400, 'Background image is required');
   }
   const backgroundImage = await uploadOnCloudinary(backgroundImagePath);
+  console.debug(backgroundImage);
+
   if (!backgroundImage) {
-    throw new apiError(400, "Background image upload failed");
+    throw new apiError(400, 'Background image upload failed');
   }
 
   let heroDetails;
@@ -46,30 +51,34 @@ const createHero = asyncHandler(async (req, res) => {
     // cleanup cloudinary image if db save fails
     const publicId = backgroundImage.public_id;
     if (publicId) await deleteFromCloudinary(publicId);
-    throw new apiError(500, "Failed to create hero banner");
+    throw new apiError(500, 'Failed to create heroDetails');
   }
 
   return res
     .status(201)
-    .json(new apiResponse(201, heroDetails, "Hero banner created successfully"));
+    .json(
+      new apiResponse(201, heroDetails, 'Hero banner created successfully'),
+    );
 });
 
-// fetch the hero banner and give to router so the frontend can call it and save with the proper pagination 
-const getAllHero = asyncHandler(async (req, res) => {                                                                                                    
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) ||7;
-    const hasLimit = limit > 0;
-    const skip = hasLimit ? (page - 1) * limit : 0;
+// fetch the hero banner and give to router so the frontend can call it and save with the proper pagination
+const getAllHero = asyncHandler(async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 7;
+  const hasLimit = limit > 0;
+  const skip = hasLimit ? (page - 1) * limit : 0;
 
-    let query = Hero.find().sort({ createdAt: -1 });
-    if (hasLimit) {
-      query = query.skip(skip).limit(limit);
-    }
-    const heroes = await query;
-    const total = await Hero.countDocuments();
+  let query = Hero.find().sort({ createdAt: -1 });
+  if (hasLimit) {
+    query = query.skip(skip).limit(limit);
+  }
+  const heroes = await query;
+  const total = await Hero.countDocuments();
 
-    return res.status(200).json(
-      new apiResponse(200, {
+  return res.status(200).json(
+    new apiResponse(
+      200,
+      {
         heroes,
         pagination: {
           currentPage: hasLimit ? page : 1,
@@ -77,10 +86,11 @@ const getAllHero = asyncHandler(async (req, res) => {
           totalItems: total,
           limit: hasLimit ? limit : total,
         },
-      }, "Hero Banners fetched successfully")               
-    );
-  });
- 
+      },
+      'Hero Banners fetched successfully',
+    ),
+  );
+});
 
 // get the active data of the hero banner
 const getActiveHero = asyncHandler(async (req, res) => {
@@ -88,13 +98,17 @@ const getActiveHero = asyncHandler(async (req, res) => {
   if (!activeHero) {
     throw new apiError(
       404,
-      " Hero Banner which status is active didint found  ",
+      ' Hero Banner which status is active didint found  ',
     );
   }
   return res
     .status(200)
     .json(
-      new apiResponse(200, activeHero, "Active hero banner fetched successfully"),
+      new apiResponse(
+        200,
+        activeHero,
+        'Active hero banner fetched successfully',
+      ),
     );
 });
 
@@ -102,28 +116,25 @@ const getActiveHero = asyncHandler(async (req, res) => {
 
 const toggleHeroDetail = asyncHandler(async (req, res) => {
   const hero = await Hero.findById(req.params.id);
-  if (!hero) throw new apiError(400, "Banner not found !");
+  if (!hero) throw new apiError(400, 'Banner not found !');
 
   // chek is the banner on ?
   if (hero.isActive) {
-    // if on then make it off 
+    // if on then make it off
 
-    hero.isActive = false 
-    await hero.save()
-    
-    
+    hero.isActive = false;
+    await hero.save();
   } else {
-    // if off then first turn off every banner in db 
-    await Hero.updateMany({},{isActive:false})
-    // then trun on only this one 
-    hero.isActive = true
-    await hero.save()
-    
+    // if off then first turn off every banner in db
+    await Hero.updateMany({}, { isActive: false });
+    // then trun on only this one
+    hero.isActive = true;
+    await hero.save();
   }
   return res
     .status(200)
     .json(
-      new apiResponse(200, hero, " Hero banner status update successfull "),
+      new apiResponse(200, hero, ' Hero banner status update successfull '),
     );
 });
 
@@ -131,13 +142,11 @@ const toggleHeroDetail = asyncHandler(async (req, res) => {
 
 const editHeroDetails = asyncHandler(async (req, res) => {
   const { title, subtitle, buttonText, buttonLink } = req.body;
-  if (!title || !subtitle || !buttonText || !buttonLink) {
-    throw new apiError(400, " all field are required ");
-  }
+
   const hero = await Hero.findById(req.params.id);
 
   if (!hero) {
-    throw new apiError(404, " banner didint exits");
+    throw new apiError(404, ' banner didint exits');
   }
   hero.title = title || hero.title;
   hero.subtitle = subtitle || hero.subtitle;
@@ -148,14 +157,14 @@ const editHeroDetails = asyncHandler(async (req, res) => {
   if (req.file) {
     // delete old image from cloudinary
     if (hero.backgroundImage) {
-      const publicId = hero.backgroundImage.split("/").pop().split(".")[0];
+      const publicId = hero.backgroundImage.split('/').pop().split('.')[0];
       await deleteFromCloudinary(publicId);
     }
 
     // upload the new image
     const cloudinaryResponse = await uploadOnCloudinary(req.file.path);
     if (!cloudinaryResponse) {
-      throw new apiError(500, "Image upload failed");
+      throw new apiError(500, 'Image upload failed');
     }
     hero.backgroundImage = cloudinaryResponse.secure_url;
   }
@@ -163,20 +172,19 @@ const editHeroDetails = asyncHandler(async (req, res) => {
   await hero.save();
   return res
     .status(200)
-    .json(new apiResponse(200, hero, "Details updated successfully"));
+    .json(new apiResponse(200, hero, 'Details updated successfully'));
 });
 
 //delete hero
 
-
 const deleteHero = asyncHandler(async (req, res) => {
   const hero = await Hero.findByIdAndDelete(req.params.id);
   if (!hero) {
-    throw new apiError(404, " Banner didit Exist ");
+    throw new apiError(404, ' Banner didit Exist ');
   }
   return res
     .status(200)
-    .json(new apiResponse(200, hero, " Banner deleted successfully"));
+    .json(new apiResponse(200, hero, ' Banner deleted successfully'));
 });
 
 export {

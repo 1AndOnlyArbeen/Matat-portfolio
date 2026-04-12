@@ -64,9 +64,9 @@ function ClientDetail() {
           {/* header with logo */}
           <div className="bg-blue-50 p-8 sm:p-12 flex flex-col items-center text-center">
             {client.logo && (
-              <img src={client.logo} alt={client.name} className="h-16 sm:h-20 object-contain mb-4" />
+              <img src={client.logo} alt={client.clientName || client.name} className="h-16 sm:h-20 object-contain mb-4" />
             )}
-            <h1 className="text-3xl sm:text-4xl font-bold text-blue-900 mb-2">{client.name}</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold text-blue-900 mb-2">{client.clientName || client.name}</h1>
             {client.industry && (
               <span className="inline-flex items-center gap-1 bg-blue-100 text-blue-700 text-sm px-3 py-1 rounded-full font-medium">
                 <FiBriefcase size={12} /> {client.industry}

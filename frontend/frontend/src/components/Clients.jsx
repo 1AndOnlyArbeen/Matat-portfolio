@@ -1,14 +1,9 @@
 import { useState, useEffect } from "react";
 import { getClients } from "../api";
 import { clientsData as fallback } from "../data/placeholders";
-import { FiX, FiBriefcase, FiExternalLink, FiGrid, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { FiX } from "react-icons/fi";
 import useScrollAnimation from "../hooks/useScrollAnimation";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Autoplay } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
 
-// client logos slider - clicking a logo opens a popup with client details
 function Clients() {
   const [clients, setClients] = useState(fallback);
   const [selected, setSelected] = useState(null);
@@ -17,62 +12,60 @@ function Clients() {
 
   useEffect(() => {
     getClients().then((res) => {
-      if (res && res.length > 0) setClients(res);
+      const list = res?.clients || (Array.isArray(res) ? res : []);
+      if (list.length > 0) setClients(list);
     });
   }, []);
 
+  const clientCard = (client) => (
+    <button
+      onClick={() => setSelected(client)}
+      className="w-48 shrink-0 text-left bg-white rounded-xl border border-gray-100 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group hover:-translate-y-1 cursor-pointer"
+    >
+      <div className="h-28 overflow-hidden bg-gray-50">
+        <img
+          src={client.logo}
+          alt={client.clientName || client.name}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+        />
+      </div>
+      <div className="p-3">
+        <h3 className="text-xs font-semibold text-blue-900 mb-0.5 truncate">{client.clientName || client.name}</h3>
+        {(client.heading || client.industry) && (
+          <p className="text-blue-500 text-[11px] truncate">{client.heading || client.industry}</p>
+        )}
+        {(client.subtitle || client.description) && (
+          <p className="text-gray-500 text-[11px] line-clamp-1">{client.subtitle || client.description}</p>
+        )}
+      </div>
+    </button>
+  );
+
+
   return (
-    <section id="clients" className="py-16 bg-white">
+    <section id="clients" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* section heading */}
-        <div ref={headingRef} className={`text-center mb-10 animate-fade-up ${headingVisible ? "visible" : ""}`}>
+        <div ref={headingRef} className={`text-center mb-12 animate-fade-up ${headingVisible ? "visible" : ""}`}>
           <h2 className="text-3xl sm:text-4xl font-bold text-blue-900 mb-3">Our Clients</h2>
           <p className="text-gray-500 max-w-xl mx-auto">
             Trusted by businesses and startups around the world.
           </p>
         </div>
 
-        {/* logos slider */}
-        <div ref={sliderRef} className={`relative animate-fade-up ${sliderVisible ? "visible" : ""}`}>
-          <Swiper
-            modules={[Navigation, Autoplay]}
-            spaceBetween={20}
-            slidesPerView={2}
-            navigation={{
-              prevEl: ".clients-prev",
-              nextEl: ".clients-next",
-            }}
-            autoplay={{ delay: 3000, disableOnInteraction: false }}
-            loop={clients.length > 6}
-            breakpoints={{
-              640: { slidesPerView: 3 },
-              1024: { slidesPerView: 6 },
-            }}
-          >
-            {clients.map((client) => (
-              <SwiperSlide key={client._id}>
-                <button
-                  onClick={() => setSelected(client)}
-                  className="flex items-center justify-center p-4 bg-gray-50 rounded-lg hover:bg-blue-50 transition-all duration-300 h-20 w-full hover:scale-105 cursor-pointer"
-                >
-                  <img
-                    src={client.logo}
-                    alt={client.name}
-                    className="max-h-10 max-w-full object-contain grayscale hover:grayscale-0 transition-all duration-300 opacity-70 hover:opacity-100"
-                  />
-                </button>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-
-          {/* custom nav arrows */}
-          <button className="clients-prev absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-10 bg-white shadow-lg rounded-full p-2 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors cursor-pointer">
-            <FiChevronLeft size={22} />
-          </button>
-          <button className="clients-next absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-10 bg-white shadow-lg rounded-full p-2 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors cursor-pointer">
-            <FiChevronRight size={22} />
-          </button>
+        {/* client cards — single row, 6 visible, scrolls right to left then reverses */}
+        <div ref={sliderRef} className={`animate-fade-up ${sliderVisible ? "visible" : ""}`}>
+          <div className="overflow-hidden">
+            <div className="flex gap-4 animate-marquee-clients">
+              {clients.map((client) => (
+                <div key={client._id}>{clientCard(client)}</div>
+              ))}
+              {clients.map((client) => (
+                <div key={`dup-${client._id}`}>{clientCard(client)}</div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -83,60 +76,43 @@ function Clients() {
           onClick={() => setSelected(null)}
         >
           <div
-            className="bg-white rounded-xl w-full max-w-md shadow-2xl overflow-hidden animate-zoom-in visible"
+            className="bg-white rounded-xl w-full max-w-lg shadow-2xl overflow-hidden animate-zoom-in visible"
             onClick={(e) => e.stopPropagation()}
           >
             {/* cover image */}
-            {selected.image && (
-              <div className="relative h-40 overflow-hidden">
-                <img src={selected.image} alt={selected.name} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-                <button
-                  onClick={() => setSelected(null)}
-                  className="absolute top-3 right-3 bg-black/30 hover:bg-black/50 text-white p-1.5 rounded-full cursor-pointer transition-colors"
-                >
-                  <FiX size={16} />
-                </button>
+            <div className="relative h-52 overflow-hidden bg-gray-50">
+              <img
+                src={selected.logo}
+                alt={selected.clientName || selected.name}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+              <button
+                onClick={() => setSelected(null)}
+                className="absolute top-3 right-3 bg-black/30 hover:bg-black/50 text-white p-1.5 rounded-full cursor-pointer transition-colors"
+              >
+                <FiX size={16} />
+              </button>
+              <div className="absolute bottom-4 left-5 right-5">
+                <h3 className="text-2xl font-bold text-white">{selected.clientName || selected.name}</h3>
+                {(selected.heading || selected.industry) && (
+                  <p className="text-blue-200 text-sm mt-1">{selected.heading || selected.industry}</p>
+                )}
               </div>
-            )}
-
-            {/* logo + name + industry */}
-            <div className={`px-6 text-center relative ${selected.image ? "-mt-8" : "pt-6"}`}>
-              {!selected.image && (
-                <button
-                  onClick={() => setSelected(null)}
-                  className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 cursor-pointer transition-colors"
-                >
-                  <FiX size={20} />
-                </button>
-              )}
-              {selected.logo && (
-                <div className={`inline-block bg-white rounded-xl p-2 shadow-md ${selected.image ? "relative z-10" : "mb-2"}`}>
-                  <img src={selected.logo} alt={selected.name} className="h-10 object-contain" />
-                </div>
-              )}
-              <h3 className="text-xl font-bold text-blue-900 mt-2">{selected.name}</h3>
-              {selected.industry && (
-                <span className="inline-flex items-center gap-1 bg-blue-100 text-blue-700 text-xs px-3 py-1 rounded-full font-medium mt-2">
-                  <FiBriefcase size={10} /> {selected.industry}
-                </span>
-              )}
             </div>
 
             {/* popup body */}
             <div className="p-6">
-              {selected.description && (
-                <p className="text-gray-600 text-sm leading-relaxed mb-4">{selected.description}</p>
+              {(selected.subtitle || selected.description) && (
+                <p className="text-gray-600 leading-relaxed mb-4">{selected.subtitle || selected.description}</p>
               )}
 
               {selected.projects && selected.projects.length > 0 && (
                 <div className="mb-4">
-                  <h4 className="text-sm font-semibold text-gray-800 mb-2 flex items-center gap-1">
-                    <FiGrid size={14} /> Projects Together
-                  </h4>
+                  <h4 className="text-sm font-semibold text-gray-800 mb-2">Projects Together</h4>
                   <div className="flex flex-wrap gap-2">
                     {selected.projects.map((project, i) => (
-                      <span key={i} className="bg-gray-50 text-gray-700 text-xs px-3 py-1.5 rounded-lg border border-gray-200 font-medium">
+                      <span key={i} className="bg-blue-50 text-blue-600 text-xs px-3 py-1.5 rounded-full font-medium">
                         {project}
                       </span>
                     ))}
@@ -149,9 +125,9 @@ function Clients() {
                   href={selected.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors"
+                  className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2.5 rounded-lg text-sm transition-colors"
                 >
-                  Visit Website <FiExternalLink size={14} />
+                  Visit Website
                 </a>
               )}
             </div>

@@ -4,6 +4,11 @@ html {
   scroll-behavior: smooth;
 }
 
+/* offset scroll targets for sticky navbar */
+section[id] {
+  scroll-margin-top: 80px;
+}
+
 body {
   font-family: "Inter", system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -138,6 +143,35 @@ body {
 }
 
 .animate-marquee-apps:hover {
+  animation-play-state: paused;
+}
+
+/* Clients marquee animation */
+@keyframes marqueeClients {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.animate-marquee-clients {
+  animation: marqueeClients 40s linear infinite;
+}
+
+.animate-marquee-clients:hover {
+  animation-play-state: paused;
+}
+
+/* Clients bounce — slides left then back right, no duplication */
+@keyframes marqueeClientsBounce {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(calc(-100% + 100vw - 2rem)); }
+  100% { transform: translateX(0); }
+}
+
+.animate-marquee-clients-bounce {
+  animation: marqueeClientsBounce 25s ease-in-out infinite;
+}
+
+.animate-marquee-clients-bounce:hover {
   animation-play-state: paused;
 }
 
