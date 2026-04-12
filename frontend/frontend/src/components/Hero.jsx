@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { getHero } from "../api";
+import shopifyBadge from "../assets/shopify-partners.png";
+import wooBadge from "../assets/woocommerce.png";
 
 function Hero() {
   const [data, setData] = useState(null);
@@ -13,43 +15,43 @@ function Hero() {
   if (!data) return null;
 
   return (
-    <section
-      id="hero"
-      className="relative min-h-[75vh] flex items-center overflow-hidden"
-    >
-      {/* background image with dark overlay */}
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${data.backgroundImage})` }}
-      >
-        <div className="absolute inset-0 bg-black/60"></div>
-      </div>
+    <section id="hero" className="bg-white">
+      <div className="flex flex-col md:flex-row h-[88vh]">
 
-      {/* subtle floating shapes */}
-      <div className="absolute top-20 left-10 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl animate-float"></div>
-      <div className="absolute bottom-20 right-10 w-80 h-80 bg-blue-400/10 rounded-full blur-3xl animate-float" style={{ animationDelay: "1.5s" }}></div>
-
-      {/* hero content — left aligned */}
-      <div className="relative z-10 px-6 sm:px-10 lg:px-16 max-w-3xl">
-        <h1 className="hero-title text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
-          {data.title}
-        </h1>
-        <p className="hero-subtitle text-base sm:text-lg text-gray-200 mb-6 max-w-xl">
-          {data.subtitle}
-        </p>
-        <a
-          href={data.buttonLink}
-          className="hero-button inline-block bg-blue-600 hover:bg-blue-500 text-white font-semibold px-7 py-2.5 rounded-lg transition-all text-base shadow-lg hover:shadow-xl hover:-translate-y-0.5"
-        >
-          {data.buttonText}
-        </a>
-      </div>
-
-      {/* scroll down indicator */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10">
-        <div className="w-6 h-10 border-2 border-white/40 rounded-full flex justify-center pt-2">
-          <div className="w-1.5 h-3 bg-white/60 rounded-full" style={{ animation: "heroPulse 2s ease-in-out infinite" }}></div>
+        {/* left side — image (60%) */}
+        <div className="w-full md:w-[60%] relative overflow-hidden">
+          <img
+            src={data.backgroundImage}
+            alt={data.title}
+            className="w-full h-full object-contain"
+          />
         </div>
+
+        {/* right side — text + button (40%) */}
+        <div className="w-full md:w-[40%] flex items-center px-6 sm:px-10 lg:px-12 py-8 md:py-0">
+          <div>
+            <h1 className="hero-title text-3xl sm:text-4xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-1 leading-snug">
+              {data.title}
+            </h1>
+            <p className="hero-subtitle text-base sm:text-lg text-gray-700 mb-3">
+              {data.subtitle}
+            </p>
+
+            {/* partner badges */}
+            <div className="flex items-center gap-4 mb-4">
+              <img src={data.badgeImage1 || shopifyBadge} alt="Shopify Partners" className="h-12 object-contain" />
+              <img src={data.badgeImage2 || wooBadge} alt="WooCommerce" className="h-12 object-contain" />
+            </div>
+
+            <a
+              href={data.buttonLink}
+              className="hero-button inline-block bg-blue-600 hover:bg-blue-500 text-white font-semibold px-7 py-2.5 rounded-lg transition-all text-base shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+            >
+              {data.buttonText}
+            </a>
+          </div>
+        </div>
+
       </div>
     </section>
   );

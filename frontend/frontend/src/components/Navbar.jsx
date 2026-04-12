@@ -34,7 +34,7 @@ function Navbar() {
 
   // track scroll for shadow effect
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
+    const handleScroll = () => setScrolled(window.scrollY > 100);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -114,12 +114,12 @@ function Navbar() {
 
   return (
     <nav
-      className={`bg-white/80 backdrop-blur-sm sticky top-0 z-50 transition-all duration-300 ${
-        scrolled ? "shadow-[0_6px_30px_rgba(37,99,235,0.35)]" : "shadow-[0_4px_20px_rgba(37,99,235,0.2)]"
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        scrolled ? "bg-white/90 backdrop-blur-sm shadow-[0_6px_30px_rgba(37,99,235,0.35)]" : "bg-transparent"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-24">
 
           {/* logo - click goes to home and scrolls to top */}
           <a
@@ -131,7 +131,7 @@ function Navbar() {
             }}
             className="flex items-center gap-2 shrink-0 cursor-pointer"
           >
-            <img src={logo} alt="Matat" className="h-9 sm:h-10 w-auto" />
+            <img src={logo} alt="Matat" className="h-11 sm:h-14 w-auto" />
           </a>
 
           {/* desktop nav links */}
@@ -141,10 +141,10 @@ function Navbar() {
                 key={link.name}
                 href={link.path}
                 onClick={(e) => handleNavClick(e, link)}
-                className={`px-3 py-2 text-sm font-medium transition-colors ${
+                className={`px-3 py-2 text-base font-semibold transition-colors ${
                   isActive(link)
                     ? "text-blue-600"
-                    : "text-gray-700 hover:text-blue-600"
+                    : scrolled ? "text-gray-700 hover:text-blue-600" : "text-white hover:text-blue-300"
                 }`}
               >
                 {link.name}
@@ -154,7 +154,7 @@ function Navbar() {
 
           {/* mobile hamburger toggle */}
           <button
-            className="md:hidden text-gray-700 focus:outline-none cursor-pointer"
+            className={`md:hidden focus:outline-none cursor-pointer transition-colors ${scrolled ? "text-gray-700" : "text-white"}`}
             onClick={() => setMobileOpen(!mobileOpen)}
           >
             {mobileOpen ? <FiX size={24} /> : <FiMenu size={24} />}

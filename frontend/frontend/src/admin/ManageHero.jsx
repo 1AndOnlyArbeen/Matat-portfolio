@@ -10,6 +10,8 @@ function ManageHero() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ title: "", subtitle: "", buttonText: "", buttonLink: "" });
   const [imageFile, setImageFile] = useState(null);
+  const [badge1File, setBadge1File] = useState(null);
+  const [badge2File, setBadge2File] = useState(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [page, setPage] = useState(1);
@@ -35,10 +37,12 @@ function ManageHero() {
     setEditing(null);
     setForm({ title: "", subtitle: "", buttonText: "", buttonLink: "" });
     setImageFile(null);
+    setBadge1File(null);
+    setBadge2File(null);
     setShowModal(true);
   };
 
-  // open modal for editing (placeholder — backend edit route needed)
+  // open modal for editing
   const openEdit = (hero) => {
     setEditing(hero);
     setForm({
@@ -48,6 +52,8 @@ function ManageHero() {
       buttonLink: hero.buttonLink || "",
     });
     setImageFile(null);
+    setBadge1File(null);
+    setBadge2File(null);
     setShowModal(true);
   };
 
@@ -70,6 +76,8 @@ function ManageHero() {
     data.append("buttonText", form.buttonText);
     data.append("buttonLink", form.buttonLink);
     if (imageFile) data.append("backgroundImage", imageFile);
+    if (badge1File) data.append("badgeImage1", badge1File);
+    if (badge2File) data.append("badgeImage2", badge2File);
 
     let result;
     if (editing) {
@@ -318,6 +326,19 @@ function ManageHero() {
                 onFileSelect={setImageFile}
                 currentImage={editing?.backgroundImage}
               />
+
+              <div className="grid grid-cols-2 gap-4">
+                <ImageDropzone
+                  label="Badge Image 1"
+                  onFileSelect={setBadge1File}
+                  currentImage={editing?.badgeImage1}
+                />
+                <ImageDropzone
+                  label="Badge Image 2"
+                  onFileSelect={setBadge2File}
+                  currentImage={editing?.badgeImage2}
+                />
+              </div>
 
               {/* error message */}
               {message && (
