@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { getApps, createApp, updateApp, deleteApp } from "../api/admin";
+import { getApps, createApp, updateApp, deleteApp, replaceAppScreenshots } from "../api/admin";
 import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiEye, FiUploadCloud, FiStar, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import ImageDropzone from "./ImageDropzone";
 import ConfirmModal from "./ConfirmModal";
@@ -20,9 +20,36 @@ function ManageApps() {
   const [viewAll, setViewAll] = useState(false);
   const ssInputRef = useRef(null);
 
+  // bulk selection
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
   useEffect(() => {
     loadApps(page);
+    setSelectedIds(new Set());
   }, [page, viewAll]);
+
+  const toggleSelect = (id) =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  const toggleSelectAll = () =>
+    setSelectedIds((prev) =>
+      prev.size === apps.length ? new Set() : new Set(apps.map((a) => a._id)),
+    );
+  const allSelected = apps.length > 0 && selectedIds.size === apps.length;
+  const someSelected = selectedIds.size > 0 && selectedIds.size < apps.length;
+  const confirmBulkDelete = async () => {
+    setBulkDeleting(true);
+    await Promise.all(Array.from(selectedIds).map((id) => deleteApp(id)));
+    setSelectedIds(new Set());
+    setBulkDeleteOpen(false);
+    setBulkDeleting(false);
+    await loadApps(page);
+  };
 
   const loadApps = async (p = 1) => {
     const res = await getApps(viewAll ? 1 : p, viewAll ? 1000 : 14);
@@ -58,11 +85,18 @@ function ManageApps() {
     setShowModal(true);
   };
 
+  // APPENDS new files to the existing selection (admin can keep clicking to add more)
   const handleScreenshots = (e) => {
-    const files = Array.from(e.target.files).filter(f => f.type.startsWith("image/"));
-    if (files.length === 0) return;
-    setScreenshotFiles(files);
-    setScreenshotPreviews(files.map(f => URL.createObjectURL(f)));
+    const incoming = Array.from(e.target.files).filter((f) => f.type.startsWith("image/"));
+    if (incoming.length === 0) return;
+    setScreenshotFiles((prev) => {
+      const existingKeys = new Set(prev.map((f) => `${f.name}-${f.size}`));
+      const fresh = incoming.filter((f) => !existingKeys.has(`${f.name}-${f.size}`));
+      const merged = [...prev, ...fresh];
+      setScreenshotPreviews(merged.map((f) => URL.createObjectURL(f)));
+      return merged;
+    });
+    e.target.value = "";
   };
 
   const removeScreenshot = (index) => {
@@ -70,10 +104,12 @@ function ManageApps() {
     setScreenshotPreviews(prev => prev.filter((_, i) => i !== index));
   };
 
+  // two-step save so screenshots go through their dedicated endpoint
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
 
+    // step 1 — save main app fields (no screenshots in this payload)
     const data = new FormData();
     data.append("appName", form.name);
     data.append("description", form.description);
@@ -81,9 +117,6 @@ function ManageApps() {
     data.append("link", form.link);
     data.append("rating", form.rating);
     if (iconFile) data.append("appIcon", iconFile);
-    for (const file of screenshotFiles) {
-      data.append("screenshots", file);
-    }
 
     let result;
     if (editing) {
@@ -92,10 +125,25 @@ function ManageApps() {
       result = await createApp(data);
     }
 
-    if (result) {
-      await loadApps(page);
-      setShowModal(false);
+    if (!result) {
+      setSaving(false);
+      return;
     }
+
+    // step 2 — push screenshots to dedicated endpoint (if any picked)
+    if (screenshotFiles.length > 0) {
+      const appId = result?.data?._id || editing?._id;
+      if (appId) {
+        const ssData = new FormData();
+        for (const f of screenshotFiles) {
+          ssData.append("screenshots", f);
+        }
+        await replaceAppScreenshots(appId, ssData);
+      }
+    }
+
+    await loadApps(page);
+    setShowModal(false);
     setSaving(false);
   };
 
@@ -119,6 +167,22 @@ function ManageApps() {
       <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-4 bg-white border-b border-blue-100/60 flex items-center justify-between">
         <h2 className="text-xl font-bold text-gray-800">Manage Apps</h2>
         <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <>
+              <button
+                onClick={() => setSelectedIds(new Set())}
+                className="bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium px-3 py-2 rounded-lg text-xs cursor-pointer inline-flex items-center gap-1 transition-colors"
+              >
+                <FiX size={13} /> Unselect All ({selectedIds.size})
+              </button>
+              <button
+                onClick={() => setBulkDeleteOpen(true)}
+                className="bg-red-600 hover:bg-red-700 text-white font-medium px-3 py-2 rounded-lg text-xs cursor-pointer inline-flex items-center gap-1 transition-colors"
+              >
+                <FiTrash2 size={13} /> Delete Selected ({selectedIds.size})
+              </button>
+            </>
+          )}
           <button
             onClick={() => { setViewAll((v) => !v); setPage(1); }}
             className="bg-white border border-blue-300 text-blue-600 hover:bg-blue-50 font-medium px-3 py-2 rounded-lg text-xs cursor-pointer transition-colors"
@@ -136,6 +200,9 @@ function ManageApps() {
         <table className="w-full text-xs text-left">
           <thead className="sticky top-14 z-20 bg-blue-50 text-gray-700 text-[11px] uppercase tracking-wide shadow-[0_2px_6px_rgba(30,64,175,0.08)]">
             <tr>
+              <th className="px-3 py-2 w-8">
+                <input type="checkbox" checked={allSelected} ref={(el) => el && (el.indeterminate = someSelected)} onChange={toggleSelectAll} className="w-4 h-4 accent-blue-600 cursor-pointer" title="Select all on this page" />
+              </th>
               <th className="px-3 py-2 font-semibold">Icon</th>
               <th className="px-3 py-2 font-semibold">Name</th>
               <th className="px-3 py-2 font-semibold">Platform</th>
@@ -146,7 +213,10 @@ function ManageApps() {
           </thead>
           <tbody className="divide-y divide-blue-100/60">
             {apps.map((app) => (
-              <tr key={app._id} className="hover:bg-blue-50/40 transition-colors">
+              <tr key={app._id} className={`transition-colors ${selectedIds.has(app._id) ? "bg-red-50/60 hover:bg-red-50" : "hover:bg-blue-50/40"}`}>
+                <td className="px-3 py-2 w-8">
+                  <input type="checkbox" checked={selectedIds.has(app._id)} onChange={() => toggleSelect(app._id)} className="w-4 h-4 accent-blue-600 cursor-pointer" />
+                </td>
                 <td className="px-3 py-2">
                   {(app.appIcon || app.icon) && (
                     <img
@@ -187,7 +257,7 @@ function ManageApps() {
 
             {apps.length === 0 && (
               <tr>
-                <td colSpan={6} className="text-center py-10 text-gray-400">
+                <td colSpan={7} className="text-center py-10 text-gray-400">
                   No apps yet. Click "Add App" to create one.
                 </td>
               </tr>
@@ -279,13 +349,13 @@ function ManageApps() {
 
               {/* screenshots */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Screenshots (up to 6)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Snapshots (up to 12)</label>
 
                 {/* existing screenshots when editing */}
                 {editing && existingScreenshots.length > 0 && screenshotFiles.length === 0 && (
                   <div className="grid grid-cols-3 gap-2 mb-2">
                     {existingScreenshots.map((src, i) => (
-                      <img key={i} src={src} alt={`Screenshot ${i + 1}`} className="w-full h-20 object-cover rounded-lg border border-gray-200" />
+                      <img key={i} src={src} alt={`Snapshot ${i + 1}`} className="w-full h-20 object-cover rounded-lg border border-gray-200" />
                     ))}
                   </div>
                 )}
@@ -322,7 +392,13 @@ function ManageApps() {
                   className="w-full rounded-lg cursor-pointer transition-all border-2 border-dashed border-blue-300 bg-white/20 hover:border-blue-400 flex flex-col items-center justify-center py-5 text-gray-400"
                 >
                   <FiUploadCloud size={24} className="mb-1" />
-                  <p className="text-xs font-medium">{editing && existingScreenshots.length > 0 ? "Upload new screenshots to replace" : "Click to upload screenshots"}</p>
+                  <p className="text-xs font-medium">
+                    {screenshotFiles.length > 0
+                      ? `${screenshotFiles.length} snapshot(s) selected — click to add more`
+                      : editing && existingScreenshots.length > 0
+                      ? "Click to upload new snapshots (will replace existing)"
+                      : "Click to upload snapshots"}
+                  </p>
                 </button>
               </div>
 
@@ -339,6 +415,14 @@ function ManageApps() {
 
       {deleteId && (
         <ConfirmModal message="This app will be permanently deleted." onConfirm={confirmDelete} onCancel={() => setDeleteId(null)} />
+      )}
+
+      {bulkDeleteOpen && (
+        <ConfirmModal
+          message={`${selectedIds.size} app${selectedIds.size > 1 ? "s" : ""} will be permanently deleted.${bulkDeleting ? " Deleting…" : ""}`}
+          onConfirm={confirmBulkDelete}
+          onCancel={() => !bulkDeleting && setBulkDeleteOpen(false)}
+        />
       )}
     </div>
   );

@@ -32,12 +32,17 @@ function Navbar() {
     return null;
   }, [location.pathname]);
 
-  // track scroll for shadow effect + reset active to "hero" near top of page
+  // track scroll for shadow effect + reset active (and URL) to "hero" near top of page
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 100);
-      // if user scrolls back near the top, force "hero" as active
-      if (window.scrollY < 200) setActiveSection("hero");
+      // if user scrolls back near the top, force "hero" as active + reset URL to "/"
+      if (window.scrollY < 200) {
+        setActiveSection("hero");
+        if (window.location.pathname !== "/") {
+          window.history.replaceState(null, "", "/");
+        }
+      }
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -60,11 +65,14 @@ function Navbar() {
 
       const observer = new IntersectionObserver(
         ([entry]) => {
-          // when section enters viewport, mark it as active (highlight nav link)
-          // do NOT rewrite the URL — that would make refresh land on the section
-          // instead of home
+          // when section enters viewport, highlight its nav link AND update the
+          // URL so the address bar reflects the section being scrolled through
           if (entry.isIntersecting) {
             setActiveSection(id);
+            const link = navLinks.find((l) => l.section === id);
+            if (link && window.location.pathname !== link.path) {
+              window.history.replaceState(null, "", link.path);
+            }
           }
         },
         { rootMargin: "-30% 0px -50% 0px" } // trigger when section enters upper portion of screen
@@ -90,9 +98,9 @@ function Navbar() {
       return;
     }
 
-    // on homepage, just scroll to the section — keep URL at "/" so refresh
-    // always lands on home. Force the active section immediately so the
-    // highlight doesn't lag behind the smooth scroll.
+    // on homepage, scroll to the section and update the URL so the user sees
+    // /projects, /apps, etc. in the address bar (shareable links).
+    // Force the active section immediately so highlight doesn't lag.
     setActiveSection(link.section);
     if (link.section === "hero") {
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -104,6 +112,8 @@ function Navbar() {
         window.scrollTo({ top, behavior: "smooth" });
       }
     }
+    // update address bar without full navigation (keeps React state intact)
+    window.history.replaceState(null, "", link.path);
   };
 
   // figure out if a nav link is the "active" one

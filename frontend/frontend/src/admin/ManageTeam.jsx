@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { getTeamMembers, createTeamMember, updateTeamMember, deleteTeamMember } from "../api/admin";
-import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiChevronLeft, FiChevronRight, FiGlobe } from "react-icons/fi";
+import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiChevronLeft, FiChevronRight, FiGlobe, FiEye, FiLinkedin, FiGithub, FiTwitter } from "react-icons/fi";
 import ImageDropzone from "./ImageDropzone";
 import ConfirmModal from "./ConfirmModal";
 
@@ -16,9 +16,39 @@ function ManageTeam() {
   const [totalPages, setTotalPages] = useState(1);
   const [viewAll, setViewAll] = useState(false);
 
+  // bulk selection
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
+  // view modal
+  const [viewItem, setViewItem] = useState(null);
+
   useEffect(() => {
     loadMembers(page);
+    setSelectedIds(new Set());
   }, [page, viewAll]);
+
+  const toggleSelect = (id) =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  const toggleSelectAll = () =>
+    setSelectedIds((prev) =>
+      prev.size === members.length ? new Set() : new Set(members.map((m) => m._id)),
+    );
+  const allSelected = members.length > 0 && selectedIds.size === members.length;
+  const someSelected = selectedIds.size > 0 && selectedIds.size < members.length;
+  const confirmBulkDelete = async () => {
+    setBulkDeleting(true);
+    await Promise.all(Array.from(selectedIds).map((id) => deleteTeamMember(id)));
+    setSelectedIds(new Set());
+    setBulkDeleteOpen(false);
+    setBulkDeleting(false);
+    await loadMembers(page);
+  };
 
   const loadMembers = async (p = 1) => {
     const res = await getTeamMembers(viewAll ? 1 : p, viewAll ? 1000 : 14);
@@ -96,6 +126,22 @@ function ManageTeam() {
       <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-4 bg-white border-b border-blue-100/60 flex items-center justify-between">
         <h2 className="text-xl font-bold text-gray-800">Manage Team</h2>
         <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <>
+              <button
+                onClick={() => setSelectedIds(new Set())}
+                className="bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium px-3 py-2 rounded-lg text-xs cursor-pointer inline-flex items-center gap-1 transition-colors"
+              >
+                <FiX size={13} /> Unselect All ({selectedIds.size})
+              </button>
+              <button
+                onClick={() => setBulkDeleteOpen(true)}
+                className="bg-red-600 hover:bg-red-700 text-white font-medium px-3 py-2 rounded-lg text-xs cursor-pointer inline-flex items-center gap-1 transition-colors"
+              >
+                <FiTrash2 size={13} /> Delete Selected ({selectedIds.size})
+              </button>
+            </>
+          )}
           <button
             onClick={() => { setViewAll((v) => !v); setPage(1); }}
             className="bg-white border border-blue-300 text-blue-600 hover:bg-blue-50 font-medium px-3 py-2 rounded-lg text-xs cursor-pointer transition-colors"
@@ -113,6 +159,9 @@ function ManageTeam() {
         <table className="w-full text-xs text-left">
           <thead className="sticky top-14 z-20 bg-blue-50 text-gray-700 text-[11px] uppercase tracking-wide shadow-[0_2px_6px_rgba(30,64,175,0.08)]">
             <tr>
+              <th className="px-3 py-2 w-8">
+                <input type="checkbox" checked={allSelected} ref={(el) => el && (el.indeterminate = someSelected)} onChange={toggleSelectAll} className="w-4 h-4 accent-blue-600 cursor-pointer" title="Select all on this page" />
+              </th>
               <th className="px-3 py-2 font-semibold">Photo</th>
               <th className="px-3 py-2 font-semibold">Name</th>
               <th className="px-3 py-2 font-semibold">Role</th>
@@ -129,7 +178,10 @@ function ManageTeam() {
               const github = member.githubUrl || member.social?.github || "";
               const twitter = member.twitterUrl || member.social?.twitter || "";
               return (
-                <tr key={member._id} className="hover:bg-blue-50/40 transition-colors">
+                <tr key={member._id} className={`transition-colors ${selectedIds.has(member._id) ? "bg-red-50/60 hover:bg-red-50" : "hover:bg-blue-50/40"}`}>
+                  <td className="px-3 py-2 w-8">
+                    <input type="checkbox" checked={selectedIds.has(member._id)} onChange={() => toggleSelect(member._id)} className="w-4 h-4 accent-blue-600 cursor-pointer" />
+                  </td>
                   <td className="px-3 py-2">
                     {(member.teamImage || member.image) && (
                       <img
@@ -157,8 +209,9 @@ function ManageTeam() {
                   </td>
                   <td className="px-3 py-2">
                     <div className="flex items-center justify-end gap-1">
-                      <button onClick={() => openEdit(member)} className="text-blue-600 hover:bg-blue-50 p-1.5 rounded-lg cursor-pointer"><FiEdit2 size={14} /></button>
-                      <button onClick={() => setDeleteId(member._id)} className="text-red-500 hover:bg-red-50 p-1.5 rounded-lg cursor-pointer"><FiTrash2 size={14} /></button>
+                      <button onClick={() => setViewItem(member)} className="text-gray-500 hover:bg-gray-50 p-1.5 rounded-lg cursor-pointer" title="View"><FiEye size={14} /></button>
+                      <button onClick={() => openEdit(member)} className="text-blue-600 hover:bg-blue-50 p-1.5 rounded-lg cursor-pointer" title="Edit"><FiEdit2 size={14} /></button>
+                      <button onClick={() => setDeleteId(member._id)} className="text-red-500 hover:bg-red-50 p-1.5 rounded-lg cursor-pointer" title="Delete"><FiTrash2 size={14} /></button>
                     </div>
                   </td>
                 </tr>
@@ -167,7 +220,7 @@ function ManageTeam() {
 
             {members.length === 0 && (
               <tr>
-                <td colSpan={8} className="text-center py-10 text-gray-400">No team members yet.</td>
+                <td colSpan={9} className="text-center py-10 text-gray-400">No team members yet.</td>
               </tr>
             )}
           </tbody>
@@ -255,6 +308,67 @@ function ManageTeam() {
 
       {deleteId && (
         <ConfirmModal message="This team member will be permanently deleted." onConfirm={confirmDelete} onCancel={() => setDeleteId(null)} />
+      )}
+
+      {bulkDeleteOpen && (
+        <ConfirmModal
+          message={`${selectedIds.size} team member${selectedIds.size > 1 ? "s" : ""} will be permanently deleted.${bulkDeleting ? " Deleting…" : ""}`}
+          onConfirm={confirmBulkDelete}
+          onCancel={() => !bulkDeleting && setBulkDeleteOpen(false)}
+        />
+      )}
+
+      {/* VIEW modal */}
+      {viewItem && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setViewItem(null)}>
+          <div
+            className="relative bg-white rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-[0_4px_30px_rgba(37,99,235,0.3)] border border-blue-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-5 border-b border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-800">Team Member — Details</h3>
+              <button onClick={() => setViewItem(null)} className="text-gray-400 hover:text-gray-600 cursor-pointer"><FiX size={20} /></button>
+            </div>
+            <div className="p-5 space-y-4 text-sm">
+              <div className="flex flex-col items-center text-center pb-4 border-b border-gray-100">
+                {(viewItem.teamImage || viewItem.image) ? (
+                  <img src={viewItem.teamImage || viewItem.image} alt={viewItem.name} className="w-28 h-28 rounded-full object-cover border-4 border-blue-100 mb-3" />
+                ) : (
+                  <div className="w-28 h-28 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 mb-3">No photo</div>
+                )}
+                <h4 className="text-xl font-bold text-gray-800">{viewItem.name}</h4>
+                <p className="text-blue-500 text-sm">{viewItem.role}</p>
+                {viewItem.country && (
+                  <p className="text-gray-500 text-xs inline-flex items-center gap-1 mt-1">
+                    <FiGlobe size={12} /> {viewItem.country}
+                  </p>
+                )}
+              </div>
+              {(viewItem.linkedinUrl || viewItem.githubUrl || viewItem.twitterUrl) && (
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-gray-400 mb-2">Social</p>
+                  <div className="flex flex-col gap-2">
+                    {viewItem.linkedinUrl && (
+                      <a href={viewItem.linkedinUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 break-all">
+                        <FiLinkedin size={14} className="shrink-0" /> {viewItem.linkedinUrl}
+                      </a>
+                    )}
+                    {viewItem.githubUrl && (
+                      <a href={viewItem.githubUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900 break-all">
+                        <FiGithub size={14} className="shrink-0" /> {viewItem.githubUrl}
+                      </a>
+                    )}
+                    {viewItem.twitterUrl && (
+                      <a href={viewItem.twitterUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm text-sky-500 hover:text-sky-700 break-all">
+                        <FiTwitter size={14} className="shrink-0" /> {viewItem.twitterUrl}
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

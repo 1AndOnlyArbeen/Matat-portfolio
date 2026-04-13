@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { getAllAbout, createAbout, editAbout, deleteAbout } from "../api/admin";
+import { getAllAbout, createAbout, editAbout, deleteAbout, toggleAbout } from "../api/admin";
 import {
   FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiInfo,
-  FiChevronLeft, FiChevronRight, FiEye,
+  FiChevronLeft, FiChevronRight, FiEye, FiToggleLeft, FiToggleRight,
 } from "react-icons/fi";
 import ConfirmModal from "./ConfirmModal";
 
@@ -22,9 +22,36 @@ function ManageAbout() {
   const [totalPages, setTotalPages] = useState(1);
   const [viewAll, setViewAll] = useState(false);
 
+  // bulk selection
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
   useEffect(() => {
     load(page);
+    setSelectedIds(new Set());
   }, [page, viewAll]);
+
+  const toggleSelect = (id) =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  const toggleSelectAll = () =>
+    setSelectedIds((prev) =>
+      prev.size === items.length ? new Set() : new Set(items.map((i) => i._id)),
+    );
+  const allSelected = items.length > 0 && selectedIds.size === items.length;
+  const someSelected = selectedIds.size > 0 && selectedIds.size < items.length;
+  const confirmBulkDelete = async () => {
+    setBulkDeleting(true);
+    await Promise.all(Array.from(selectedIds).map((id) => deleteAbout(id)));
+    setSelectedIds(new Set());
+    setBulkDeleteOpen(false);
+    setBulkDeleting(false);
+    await load(page);
+  };
 
   const load = async (p = 1) => {
     const res = await getAllAbout(viewAll ? 1 : p, viewAll ? 1000 : 14);
@@ -96,12 +123,34 @@ function ManageAbout() {
     }
   };
 
+  // toggle active/inactive — only one about can be active at a time
+  const handleToggle = async (id) => {
+    const result = await toggleAbout(id);
+    if (result) await load(page);
+  };
+
   return (
     <div>
       {/* sticky header */}
       <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-4 bg-white border-b border-blue-100/60 flex items-center justify-between">
         <h2 className="text-xl font-bold text-gray-800">Manage About</h2>
         <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <>
+              <button
+                onClick={() => setSelectedIds(new Set())}
+                className="bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium px-3 py-2 rounded-lg text-xs cursor-pointer inline-flex items-center gap-1 transition-colors"
+              >
+                <FiX size={13} /> Unselect All ({selectedIds.size})
+              </button>
+              <button
+                onClick={() => setBulkDeleteOpen(true)}
+                className="bg-red-600 hover:bg-red-700 text-white font-medium px-3 py-2 rounded-lg text-xs cursor-pointer inline-flex items-center gap-1 transition-colors"
+              >
+                <FiTrash2 size={13} /> Delete Selected ({selectedIds.size})
+              </button>
+            </>
+          )}
           <button
             onClick={() => { setViewAll((v) => !v); setPage(1); }}
             className="bg-white border border-blue-300 text-blue-600 hover:bg-blue-50 font-medium px-3 py-2 rounded-lg text-xs cursor-pointer transition-colors"
@@ -122,16 +171,26 @@ function ManageAbout() {
         <table className="w-full text-xs text-left">
           <thead className="sticky top-14 z-20 bg-blue-50 text-gray-700 text-[11px] uppercase tracking-wide shadow-[0_2px_6px_rgba(30,64,175,0.08)]">
             <tr>
+              <th className="px-3 py-2 w-8">
+                <input type="checkbox" checked={allSelected} ref={(el) => el && (el.indeterminate = someSelected)} onChange={toggleSelectAll} className="w-4 h-4 accent-blue-600 cursor-pointer" title="Select all on this page" />
+              </th>
               <th className="px-3 py-2 font-semibold">Title</th>
               <th className="px-3 py-2 font-semibold">Description</th>
               <th className="px-3 py-2 font-semibold">Mission</th>
               <th className="px-3 py-2 font-semibold">Stats</th>
+              <th className="px-3 py-2 font-semibold">Status</th>
               <th className="px-3 py-2 font-semibold text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-blue-100/60">
             {items.map((item) => (
-              <tr key={item._id} className="hover:bg-blue-50/40 transition-colors">
+              <tr
+                key={item._id}
+                className={`transition-colors ${selectedIds.has(item._id) ? "bg-red-50/60 hover:bg-red-50" : item.isActive ? "bg-green-50/40 hover:bg-green-50/70" : "hover:bg-blue-50/40"}`}
+              >
+                <td className="px-3 py-2 w-8">
+                  <input type="checkbox" checked={selectedIds.has(item._id)} onChange={() => toggleSelect(item._id)} className="w-4 h-4 accent-blue-600 cursor-pointer" />
+                </td>
                 <td className="px-3 py-2 font-medium text-gray-800 max-w-[180px] truncate">{item.title || "-"}</td>
                 <td className="px-3 py-2 text-gray-500 max-w-[260px] truncate">{item.description || "-"}</td>
                 <td className="px-3 py-2 text-gray-500 max-w-[220px] truncate">{item.mission || "-"}</td>
@@ -141,7 +200,29 @@ function ManageAbout() {
                   </span>
                 </td>
                 <td className="px-3 py-2">
+                  <span
+                    className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
+                      item.isActive
+                        ? "bg-green-100 text-green-700"
+                        : "bg-gray-100 text-gray-500"
+                    }`}
+                  >
+                    {item.isActive ? "Active" : "Inactive"}
+                  </span>
+                </td>
+                <td className="px-3 py-2">
                   <div className="flex items-center justify-end gap-1">
+                    <button
+                      onClick={() => handleToggle(item._id)}
+                      className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                        item.isActive
+                          ? "text-green-600 hover:bg-green-100"
+                          : "text-gray-400 hover:bg-gray-100"
+                      }`}
+                      title={item.isActive ? "Deactivate" : "Activate"}
+                    >
+                      {item.isActive ? <FiToggleRight size={16} /> : <FiToggleLeft size={16} />}
+                    </button>
                     <button onClick={() => setViewItem(item)} className="text-gray-500 hover:bg-gray-50 p-1.5 rounded-lg cursor-pointer" title="View"><FiEye size={14} /></button>
                     <button onClick={() => openEdit(item)} className="text-blue-600 hover:bg-blue-50 p-1.5 rounded-lg cursor-pointer" title="Edit"><FiEdit2 size={14} /></button>
                     <button onClick={() => setDeleteId(item._id)} className="text-red-500 hover:bg-red-50 p-1.5 rounded-lg cursor-pointer" title="Delete"><FiTrash2 size={14} /></button>
@@ -152,7 +233,7 @@ function ManageAbout() {
 
             {items.length === 0 && (
               <tr>
-                <td colSpan={5} className="text-center py-10 text-gray-400">
+                <td colSpan={7} className="text-center py-10 text-gray-400">
                   No About section yet. Click "Add About" to create one.
                 </td>
               </tr>
@@ -206,15 +287,18 @@ function ManageAbout() {
             </div>
             <form onSubmit={handleSubmit} className="p-5 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title (headline)</label>
                 <input
                   type="text"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                   required
-                  placeholder="About Us"
+                  placeholder="e.g. Who We Are, Our Story, Matat Digital"
                   className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 />
+                <p className="text-xs text-gray-400 mt-1">
+                  Shown as the big headline on the public About section. The "About" section label itself is already fixed.
+                </p>
               </div>
 
               <div>
@@ -337,6 +421,14 @@ function ManageAbout() {
 
       {deleteId && (
         <ConfirmModal message="This About entry will be permanently deleted." onConfirm={confirmDelete} onCancel={() => setDeleteId(null)} />
+      )}
+
+      {bulkDeleteOpen && (
+        <ConfirmModal
+          message={`${selectedIds.size} About entr${selectedIds.size > 1 ? "ies" : "y"} will be permanently deleted.${bulkDeleting ? " Deleting…" : ""}`}
+          onConfirm={confirmBulkDelete}
+          onCancel={() => !bulkDeleting && setBulkDeleteOpen(false)}
+        />
       )}
     </div>
   );

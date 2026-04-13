@@ -1,6 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import { getGalleryImages, uploadGalleryImage, updateGalleryImage, deleteGalleryImage } from "../api/admin";
-import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiUploadCloud, FiMapPin, FiCalendar, FiImage, FiTag } from "react-icons/fi";
+import {
+  getGalleryImages,
+  uploadGalleryImage,
+  updateGalleryImage,
+  deleteGalleryImage,
+  replaceGalleryImagesById,
+} from "../api/admin";
+import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiUploadCloud, FiMapPin, FiCalendar, FiImage, FiTag, FiEye } from "react-icons/fi";
 import ImageDropzone from "./ImageDropzone";
 import ConfirmModal from "./ConfirmModal";
 
@@ -16,13 +22,45 @@ function ManageGallery() {
   const [deleteId, setDeleteId] = useState(null);
   const fileInputRef = useRef(null);
 
+  // bulk selection
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
+  // view modal
+  const [viewItem, setViewItem] = useState(null);
+
   useEffect(() => {
     loadImages();
   }, []);
 
+  const toggleSelect = (id) =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  const toggleSelectAll = () =>
+    setSelectedIds((prev) =>
+      prev.size === images.length ? new Set() : new Set(images.map((i) => i._id)),
+    );
+  const allSelected = images.length > 0 && selectedIds.size === images.length;
+  const someSelected = selectedIds.size > 0 && selectedIds.size < images.length;
+  const confirmBulkDelete = async () => {
+    setBulkDeleting(true);
+    await Promise.all(Array.from(selectedIds).map((id) => deleteGalleryImage(id)));
+    setSelectedIds(new Set());
+    setBulkDeleteOpen(false);
+    setBulkDeleting(false);
+    await loadImages();
+  };
+
+  // backend returns { data: { albums: [...], pagination: {...} } }
   const loadImages = async () => {
-    const res = await getGalleryImages();
-    if (res) setImages(res);
+    const res = await getGalleryImages(1, 1000);
+    const data = res?.data;
+    const list = data?.albums || (Array.isArray(data) ? data : []);
+    setImages(list);
   };
 
   const openCreate = () => {
@@ -47,12 +85,19 @@ function ManageGallery() {
     setShowModal(true);
   };
 
-  // pick multiple files at once
+  // pick multiple files — APPENDS to the existing selection so admin can add
+  // another batch by clicking the picker again. dedup by name+size.
   const handleMultiSelect = (e) => {
-    const files = Array.from(e.target.files).filter((f) => f.type.startsWith("image/"));
-    if (files.length === 0) return;
-    setMultiFiles(files);
-    setPreviews(files.map((f) => URL.createObjectURL(f)));
+    const incoming = Array.from(e.target.files).filter((f) => f.type.startsWith("image/"));
+    if (incoming.length === 0) return;
+    setMultiFiles((prev) => {
+      const existingKeys = new Set(prev.map((f) => `${f.name}-${f.size}`));
+      const fresh = incoming.filter((f) => !existingKeys.has(`${f.name}-${f.size}`));
+      const merged = [...prev, ...fresh];
+      setPreviews(merged.map((f) => URL.createObjectURL(f)));
+      return merged;
+    });
+    e.target.value = "";
   };
 
   const removeOne = (index) => {
@@ -64,27 +109,43 @@ function ManageGallery() {
     e.preventDefault();
     setSaving(true);
 
+    if (editing) {
+      // edit mode — only main fields + optional thumbnail swap (no album images here)
+      const data = new FormData();
+      data.append("caption", form.caption);
+      data.append("place", form.place);
+      data.append("date", form.date);
+      if (thumbnailFile) data.append("thumbnail", thumbnailFile);
+
+      const result = await updateGalleryImage(editing._id, data);
+      if (!result) { setSaving(false); return; }
+
+      // if admin picked new album images, replace the existing array via dedicated endpoint
+      if (multiFiles.length > 0) {
+        const ssData = new FormData();
+        for (const f of multiFiles) ssData.append("images", f);
+        await replaceGalleryImagesById(editing._id, ssData);
+      }
+
+      await loadImages();
+      setShowModal(false);
+      setSaving(false);
+      return;
+    }
+
+    // create mode — single request: caption + place + date + thumbnail + images[]
+    if (!thumbnailFile && multiFiles.length === 0) {
+      setSaving(false);
+      return;
+    }
     const data = new FormData();
     data.append("caption", form.caption);
     data.append("place", form.place);
     data.append("date", form.date);
     if (thumbnailFile) data.append("thumbnail", thumbnailFile);
-    for (const file of multiFiles) {
-      data.append("images", file);
-    }
+    for (const file of multiFiles) data.append("images", file);
 
-    let result;
-    if (editing) {
-      result = await updateGalleryImage(editing._id, data);
-    } else {
-      // require at least the thumbnail OR some images
-      if (!thumbnailFile && multiFiles.length === 0) {
-        setSaving(false);
-        return;
-      }
-      result = await uploadGalleryImage(data);
-    }
-
+    const result = await uploadGalleryImage(data);
     if (result) {
       await loadImages();
       setShowModal(false);
@@ -103,9 +164,27 @@ function ManageGallery() {
     <div>
       <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-4 bg-white border-b border-blue-100/60 flex items-center justify-between">
         <h2 className="text-xl font-bold text-gray-800">Manage Gallery</h2>
-        <button onClick={openCreate} className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-sm flex items-center gap-2 cursor-pointer transition-colors">
-          <FiPlus size={16} /> Add Album
-        </button>
+        <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <>
+              <button
+                onClick={() => setSelectedIds(new Set())}
+                className="bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium px-3 py-2 rounded-lg text-xs cursor-pointer inline-flex items-center gap-1 transition-colors"
+              >
+                <FiX size={13} /> Unselect All ({selectedIds.size})
+              </button>
+              <button
+                onClick={() => setBulkDeleteOpen(true)}
+                className="bg-red-600 hover:bg-red-700 text-white font-medium px-3 py-2 rounded-lg text-xs cursor-pointer inline-flex items-center gap-1 transition-colors"
+              >
+                <FiTrash2 size={13} /> Delete Selected ({selectedIds.size})
+              </button>
+            </>
+          )}
+          <button onClick={openCreate} className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-sm flex items-center gap-2 cursor-pointer transition-colors">
+            <FiPlus size={16} /> Add Album
+          </button>
+        </div>
       </div>
 
       {/* gallery table */}
@@ -113,6 +192,9 @@ function ManageGallery() {
         <table className="w-full text-xs text-left">
           <thead className="sticky top-14 z-20 bg-blue-50 text-gray-700 text-[11px] uppercase tracking-wide shadow-[0_2px_6px_rgba(30,64,175,0.08)]">
             <tr>
+              <th className="px-3 py-2 w-8">
+                <input type="checkbox" checked={allSelected} ref={(el) => el && (el.indeterminate = someSelected)} onChange={toggleSelectAll} className="w-4 h-4 accent-blue-600 cursor-pointer" title="Select all on this page" />
+              </th>
               <th className="px-3 py-2 font-semibold">Thumbnail</th>
               <th className="px-3 py-2 font-semibold">Event Tag</th>
               <th className="px-3 py-2 font-semibold">Place</th>
@@ -123,10 +205,16 @@ function ManageGallery() {
           </thead>
           <tbody className="divide-y divide-blue-100/60">
             {images.map((img) => {
-              const cover = img.thumbnail || img.image || img.images?.[0];
+              // images may be [{url, publicId}] objects or plain strings — normalize
+              const firstImage = img.images?.[0];
+              const firstImageUrl = typeof firstImage === "string" ? firstImage : firstImage?.url;
+              const cover = img.thumbnail || img.image || firstImageUrl;
               const photoCount = img.images?.length || (img.image ? 1 : 0);
               return (
-                <tr key={img._id} className="hover:bg-blue-50/40 transition-colors">
+                <tr key={img._id} className={`transition-colors ${selectedIds.has(img._id) ? "bg-red-50/60 hover:bg-red-50" : "hover:bg-blue-50/40"}`}>
+                  <td className="px-3 py-2 w-8">
+                    <input type="checkbox" checked={selectedIds.has(img._id)} onChange={() => toggleSelect(img._id)} className="w-4 h-4 accent-blue-600 cursor-pointer" />
+                  </td>
                   <td className="px-3 py-2">
                     {cover ? (
                       <img src={cover} alt={img.caption} className="w-9 h-9 object-cover rounded-lg border border-gray-200" />
@@ -156,8 +244,9 @@ function ManageGallery() {
                   </td>
                   <td className="px-3 py-2">
                     <div className="flex items-center justify-end gap-1">
-                      <button onClick={() => openEdit(img)} className="text-blue-600 hover:bg-blue-50 p-1.5 rounded-lg cursor-pointer"><FiEdit2 size={14} /></button>
-                      <button onClick={() => setDeleteId(img._id)} className="text-red-500 hover:bg-red-50 p-1.5 rounded-lg cursor-pointer"><FiTrash2 size={14} /></button>
+                      <button onClick={() => setViewItem(img)} className="text-gray-500 hover:bg-gray-50 p-1.5 rounded-lg cursor-pointer" title="View"><FiEye size={14} /></button>
+                      <button onClick={() => openEdit(img)} className="text-blue-600 hover:bg-blue-50 p-1.5 rounded-lg cursor-pointer" title="Edit"><FiEdit2 size={14} /></button>
+                      <button onClick={() => setDeleteId(img._id)} className="text-red-500 hover:bg-red-50 p-1.5 rounded-lg cursor-pointer" title="Delete"><FiTrash2 size={14} /></button>
                     </div>
                   </td>
                 </tr>
@@ -166,7 +255,7 @@ function ManageGallery() {
 
             {images.length === 0 && (
               <tr>
-                <td colSpan={6} className="text-center py-10 text-gray-400">No gallery albums yet.</td>
+                <td colSpan={7} className="text-center py-10 text-gray-400">No gallery albums yet.</td>
               </tr>
             )}
           </tbody>
@@ -241,15 +330,18 @@ function ManageGallery() {
               {/* album photos — the photos shown when the user opens this album */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Album Photos (push as many as you want at once)
+                  Album Photos (add as many as you want)
                 </label>
 
-                {/* existing photos (when editing) */}
+                {/* existing photos (when editing) — handle both {url, publicId} and plain strings */}
                 {editing && editing.images?.length > 0 && multiFiles.length === 0 && (
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-3">
-                    {editing.images.map((src, i) => (
-                      <img key={i} src={src} alt={`Existing ${i + 1}`} className="w-full h-20 object-cover rounded-lg border border-gray-200" />
-                    ))}
+                    {editing.images.map((src, i) => {
+                      const url = typeof src === "string" ? src : src?.url;
+                      return (
+                        <img key={i} src={url} alt={`Existing ${i + 1}`} className="w-full h-20 object-cover rounded-lg border border-gray-200" />
+                      );
+                    })}
                   </div>
                 )}
 
@@ -288,9 +380,9 @@ function ManageGallery() {
                   <FiUploadCloud size={28} className="mb-1 text-blue-500" />
                   <p className="text-sm font-medium">
                     {multiFiles.length > 0
-                      ? `${multiFiles.length} photo(s) selected — click to replace`
+                      ? `${multiFiles.length} photo(s) selected — click to add more`
                       : editing && editing.images?.length > 0
-                      ? "Click to upload new photos (replaces current)"
+                      ? "Click to upload new photos (will replace current)"
                       : "Click to select multiple photos"}
                   </p>
                   <p className="text-xs text-gray-400 mt-0.5">These open inside the album when the thumbnail is clicked</p>
@@ -315,6 +407,66 @@ function ManageGallery() {
       {deleteId && (
         <ConfirmModal message="This album will be permanently deleted." onConfirm={confirmDelete} onCancel={() => setDeleteId(null)} />
       )}
+
+      {bulkDeleteOpen && (
+        <ConfirmModal
+          message={`${selectedIds.size} album${selectedIds.size > 1 ? "s" : ""} will be permanently deleted.${bulkDeleting ? " Deleting…" : ""}`}
+          onConfirm={confirmBulkDelete}
+          onCancel={() => !bulkDeleting && setBulkDeleteOpen(false)}
+        />
+      )}
+
+      {/* VIEW modal — shows full album with all photos */}
+      {viewItem && (() => {
+        const cover = viewItem.thumbnail || viewItem.image || (typeof viewItem.images?.[0] === "string" ? viewItem.images[0] : viewItem.images?.[0]?.url);
+        const photos = (viewItem.images || []).map((s) => (typeof s === "string" ? s : s?.url)).filter(Boolean);
+        return (
+          <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setViewItem(null)}>
+            <div
+              className="relative bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-[0_4px_30px_rgba(37,99,235,0.3)] border border-blue-300"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between p-5 border-b border-gray-100">
+                <h3 className="text-lg font-semibold text-gray-800">Gallery Album — Details</h3>
+                <button onClick={() => setViewItem(null)} className="text-gray-400 hover:text-gray-600 cursor-pointer"><FiX size={20} /></button>
+              </div>
+              <div className="p-5 space-y-4 text-sm">
+                {cover && (
+                  <img src={cover} alt={viewItem.caption} className="w-full h-56 object-cover rounded-lg border border-gray-200" />
+                )}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wide text-gray-400 mb-1 inline-flex items-center gap-1"><FiTag size={11} /> Event Tag</p>
+                    <p className="text-blue-700 font-semibold">{viewItem.caption || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wide text-gray-400 mb-1 inline-flex items-center gap-1"><FiMapPin size={11} /> Place</p>
+                    <p className="text-gray-700">{viewItem.place || "-"}</p>
+                  </div>
+                </div>
+                {viewItem.date && (
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wide text-gray-400 mb-1 inline-flex items-center gap-1"><FiCalendar size={11} /> Date</p>
+                    <p className="text-gray-700">{new Date(viewItem.date).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}</p>
+                  </div>
+                )}
+                {photos.length > 0 && (
+                  <div>
+                    <p className="text-[11px] uppercase tracking-wide text-gray-400 mb-2 inline-flex items-center gap-1">
+                      <FiImage size={11} /> Album Photos ({photos.length})
+                    </p>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                      {photos.map((src, i) => (
+                        <img key={i} src={src} alt={`Photo ${i + 1}`} className="w-full h-20 object-cover rounded-lg border border-gray-200" />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

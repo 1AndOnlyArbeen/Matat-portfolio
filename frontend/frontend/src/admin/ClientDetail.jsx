@@ -1,16 +1,17 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getClients } from "../api/admin";
-import { FiArrowLeft, FiEdit2, FiBriefcase, FiExternalLink } from "react-icons/fi";
+import { FiArrowLeft, FiEdit2, FiClock } from "react-icons/fi";
 
-// admin client detail view
+// admin client detail view — matches the actual schema (clientName + heading + subtitle + logo)
 function AdminClientDetail() {
   const { id } = useParams();
   const [client, setClient] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getClients(1, 0).then((res) => {
+    // fetch all clients (backend supports limit=0 → no pagination) and find by id
+    getClients(1, 1000).then((res) => {
       const list = res?.data?.clients || [];
       const found = list.find((c) => c._id === id);
       setClient(found || null);
@@ -49,44 +50,50 @@ function AdminClientDetail() {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        {/* client header */}
+        {/* client header — logo + name */}
         <div className="flex flex-col items-center text-center mb-6 pb-6 border-b border-gray-100">
-          {client.logo && (
-            <img src={client.logo} alt={client.clientName || client.name} className="h-14 object-contain mb-3" />
+          {client.logo ? (
+            <div className="w-28 h-28 rounded-2xl bg-gray-50 border border-gray-200 flex items-center justify-center mb-4 p-3">
+              <img src={client.logo} alt={client.clientName} className="max-w-full max-h-full object-contain" />
+            </div>
+          ) : (
+            <div className="w-28 h-28 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-400 mb-4">
+              No logo
+            </div>
           )}
-          <h1 className="text-2xl font-bold text-gray-800 mb-1">{client.clientName || client.name}</h1>
-          {client.industry && (
-            <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-600 text-sm px-3 py-1 rounded-full font-medium">
-              <FiBriefcase size={12} /> {client.industry}
-            </span>
-          )}
+          <h1 className="text-2xl font-bold text-gray-800">{client.clientName || "-"}</h1>
         </div>
 
-        {/* description */}
-        {client.description && (
+        {/* heading */}
+        {client.heading && (
           <div className="mb-6">
-            <h3 className="font-semibold text-gray-800 mb-2">About</h3>
-            <p className="text-gray-600 leading-relaxed">{client.description}</p>
+            <p className="text-[11px] uppercase tracking-wide text-gray-400 mb-1">Heading</p>
+            <p className="text-gray-800 font-semibold text-lg">{client.heading}</p>
           </div>
         )}
 
-        {/* projects */}
-        {client.projects && client.projects.length > 0 && (
+        {/* subtitle */}
+        {client.subtitle && (
           <div className="mb-6">
-            <h3 className="font-semibold text-gray-800 mb-2">Projects Together</h3>
-            <div className="flex flex-wrap gap-2">
-              {client.projects.map((p, i) => (
-                <span key={i} className="bg-gray-50 text-gray-700 text-sm px-3 py-1.5 rounded-lg border border-gray-200">{p}</span>
-              ))}
-            </div>
+            <p className="text-[11px] uppercase tracking-wide text-gray-400 mb-1">Subtitle</p>
+            <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{client.subtitle}</p>
           </div>
         )}
 
-        {/* website */}
-        {client.website && client.website !== "#" && (
-          <a href={client.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm font-medium">
-            Visit Website <FiExternalLink size={14} />
-          </a>
+        {/* metadata */}
+        {(client.createdAt || client.updatedAt) && (
+          <div className="pt-4 border-t border-gray-100 text-xs text-gray-400 space-y-1">
+            {client.createdAt && (
+              <p className="inline-flex items-center gap-1.5">
+                <FiClock size={11} /> Created: {new Date(client.createdAt).toLocaleString()}
+              </p>
+            )}
+            {client.updatedAt && client.updatedAt !== client.createdAt && (
+              <p className="inline-flex items-center gap-1.5 ml-4">
+                <FiClock size={11} /> Last updated: {new Date(client.updatedAt).toLocaleString()}
+              </p>
+            )}
+          </div>
         )}
       </div>
     </div>

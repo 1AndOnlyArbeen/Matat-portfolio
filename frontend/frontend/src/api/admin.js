@@ -217,6 +217,21 @@ export async function updateApp(id, data) {
 export async function deleteApp(id) {
   return await adminFetch(`/deleteApp/${id}`, { method: "DELETE" });
 }
+// ---- App Screenshots (separate endpoints) ----
+export async function addAppScreenshots(id, formData) {
+  return await adminUpload(`/addAppScreenshots/${id}`, formData, "PATCH");
+}
+export async function replaceAppScreenshots(id, formData) {
+  return await adminUpload(`/replaceAppScreenshots/${id}`, formData, "PATCH");
+}
+export async function removeAppScreenshot(id, publicId) {
+  return await adminFetch(`/removeAppScreenshot/${id}/${encodeURIComponent(publicId)}`, {
+    method: "DELETE",
+  });
+}
+export async function getAppScreenshots(id) {
+  return await adminFetch(`/getAppScreenshots/${id}`);
+}
 
 // ---- Clients ----
 export async function getClients(page = 1, limit = 7) {
@@ -257,21 +272,40 @@ export async function updateTestimonial(id, data) {
   return await adminUpload(`/editTestiominial/${id}`, data, "PATCH");
 }
 export async function deleteTestimonial(id) {
-  return await adminFetch(`/deleteTestiomonial/${id}`, { method: "DELETE" });
+  // backend route is `/deleteTestiomonail/:id` (note the "il" not "ial")
+  return await adminFetch(`/deleteTestiomonail/${id}`, { method: "DELETE" });
 }
 
-// ---- Gallery ----
-export async function getGalleryImages() {
-  return await adminFetch("/gallery");
+// ---- Gallery (albums) ----
+// thumbnail = cover photo on the gallery card; images = photos inside the album
+export async function getGalleryImages(page = 1, limit = 14) {
+  return await adminFetch(`/getAllGallery?page=${page}&limit=${limit}`);
 }
 export async function uploadGalleryImage(data) {
-  return await adminUpload("/gallery", data);
+  // FormData should contain: caption, place, date, thumbnail (file), images[] (files)
+  return await adminUpload("/createGallery", data, "POST");
 }
 export async function updateGalleryImage(id, data) {
-  return await adminUpload(`/gallery/${id}`, data, "PUT");
+  // FormData should contain: caption, place, date, thumbnail (optional file)
+  return await adminUpload(`/editGallery/${id}`, data, "PATCH");
 }
 export async function deleteGalleryImage(id) {
-  return await adminFetch(`/gallery/${id}`, { method: "DELETE" });
+  return await adminFetch(`/deleteGallery/${id}`, { method: "DELETE" });
+}
+// album-content helpers (up to 12 per album)
+export async function addGalleryImagesById(id, formData) {
+  return await adminUpload(`/addGalleryImages/${id}`, formData, "PATCH");
+}
+export async function replaceGalleryImagesById(id, formData) {
+  return await adminUpload(`/replaceGalleryImages/${id}`, formData, "PATCH");
+}
+export async function removeGalleryImageById(id, publicId) {
+  return await adminFetch(`/removeGalleryImage/${id}/${encodeURIComponent(publicId)}`, {
+    method: "DELETE",
+  });
+}
+export async function getGalleryImagesByAlbumId(id) {
+  return await adminFetch(`/getGalleryImagesById/${id}`);
 }
 
 // ---- About ----
@@ -292,6 +326,9 @@ export async function editAbout(id, data) {
     method: "PATCH",
     body: JSON.stringify(data),
   });
+}
+export async function toggleAbout(id) {
+  return await adminFetch(`/toggleAbout/${id}`, { method: "PATCH" });
 }
 export async function deleteAbout(id) {
   return await adminFetch(`/deleteAbout/${id}`, { method: "DELETE" });

@@ -20,7 +20,16 @@ import {
     removeProjectScreenshot,
     getProjectScreenshots,
 } from '../controller/project.controller.js';
-import { createApp, getAllApp, editApp, deleteApp } from '../controller/app.controller.js';
+import {
+    createApp,
+    getAllApp,
+    editApp,
+    deleteApp,
+    addAppScreenshots,
+    replaceAppScreenshots,
+    removeAppScreenshot,
+    getAppScreenshots,
+} from '../controller/app.controller.js';
 import {
     createClient,
     getAllClient,
@@ -47,11 +56,24 @@ import {
     getAbout,
     editAbout,
     deleteAbout,
+    toggleAbout,
 } from '../controller/about.controller.js';
 
 import {
   createMessageDetails,getMessageDetails,deleteMessageDetails
 } from '../controller/message.controller.js';
+
+import {
+    createGallery,
+    getAllGallery,
+    getGallery,
+    editGallery,
+    deleteGallery,
+    addGalleryImages,
+    replaceGalleryImages,
+    removeGalleryImage,
+    getGalleryImagesById,
+} from '../controller/gallery.controller.js';
 
 const adminRouter = Router();
 
@@ -74,19 +96,20 @@ adminRouter.route('/editHeroDetails/:id').patch(heroUpload, verifyJwt, editHeroD
 adminRouter.route('/deleteHero/:id').delete(verifyJwt, deleteHero);
 
 // router for the projectdetails upload
+// list is PUBLIC (used by the live site); writes require admin auth
 adminRouter.route('/createProject').post(upload.single('projectImage'), verifyJwt, createProject);
-adminRouter.route('/getAllProject').get(verifyJwt, getAllProject);
+adminRouter.route('/getAllProject').get(getAllProject);
 adminRouter.route('/projectEdit/:id').patch(upload.single('projectImage'), verifyJwt, projectEdit);
 adminRouter.route('/deleteProject/:id').delete(verifyJwt, deleteProject);
 
-// project screenshot endpoints — handled by separate functions in the same controller
-// upload.array('screenshots', 8) → req.files is a plain array (one field, many files)
+// project snapshot endpoints — handled by separate functions in the same controller
+// upload.array('screenshots', 12) → req.files is a plain array (one field, up to 12 files)
 adminRouter
     .route('/addProjectScreenshots/:id')
-    .patch(upload.array('screenshots', 8), verifyJwt, addProjectScreenshots);
+    .patch(upload.array('screenshots', 12), verifyJwt, addProjectScreenshots);
 adminRouter
     .route('/replaceProjectScreenshots/:id')
-    .patch(upload.array('screenshots', 8), verifyJwt, replaceProjectScreenshots);
+    .patch(upload.array('screenshots', 12), verifyJwt, replaceProjectScreenshots);
 adminRouter
     .route('/removeProjectScreenshot/:id/:publicId')
     .delete(verifyJwt, removeProjectScreenshot);
@@ -96,14 +119,26 @@ adminRouter.route('/getProjectScreenshots/:id').get(getProjectScreenshots);
 // router for appDetails upload
 
 adminRouter.route('/createApp').post(upload.single('appIcon'), verifyJwt, createApp);
-adminRouter.route('/getAllApp').get(verifyJwt, getAllApp);
+adminRouter.route('/getAllApp').get(getAllApp); // public — used by live site
 adminRouter.route('/editApp/:id').patch(upload.single('appIcon'), verifyJwt, editApp);
 adminRouter.route('/deleteApp/:id').delete(verifyJwt, deleteApp);
+
+// app snapshot endpoints — handled by separate functions in the same controller (up to 12 files)
+adminRouter
+    .route('/addAppScreenshots/:id')
+    .patch(upload.array('screenshots', 12), verifyJwt, addAppScreenshots);
+adminRouter
+    .route('/replaceAppScreenshots/:id')
+    .patch(upload.array('screenshots', 12), verifyJwt, replaceAppScreenshots);
+adminRouter
+    .route('/removeAppScreenshot/:id/:publicId')
+    .delete(verifyJwt, removeAppScreenshot);
+adminRouter.route('/getAppScreenshots/:id').get(getAppScreenshots);
 
 // router for clientDetails
 
 adminRouter.route('/createClient').post(upload.single('logo'), verifyJwt, createClient);
-adminRouter.route('/getAllClient').get(verifyJwt, getAllClient);
+adminRouter.route('/getAllClient').get(getAllClient); // public — used by live site
 adminRouter
     .route('/editClientDetails/:id')
     .patch(upload.single('logo'), verifyJwt, editClientDetails);
@@ -112,7 +147,7 @@ adminRouter.route('/deleteClient/:id').delete(verifyJwt, deleteClient);
 // router for teamdetails
 
 adminRouter.route('/createTeam').post(upload.single('teamImage'), verifyJwt, createTeam);
-adminRouter.route('/getAllteam').get(verifyJwt, getAllteam);
+adminRouter.route('/getAllteam').get(getAllteam); // public — used by live site
 adminRouter
     .route('/editTeamDetails/:id')
     .patch(upload.single('teamImage'), verifyJwt, editTeamDetails);
@@ -121,7 +156,7 @@ adminRouter.route('/deleteTeamDetails/:id').delete(verifyJwt, deleteTeamDetails)
 // router for testiomonail
 
 adminRouter.route('/createTestimonial').post(upload.single('avatar'), verifyJwt, createTestimonial);
-adminRouter.route('/getAlltestiomonail').get(verifyJwt, getAlltestiomonail);
+adminRouter.route('/getAlltestiomonail').get(getAlltestiomonail); // public — used by live site
 adminRouter
     .route('/editTestiominial/:id')
     .patch(upload.single('avatar'), verifyJwt, editTestiominial);
@@ -133,6 +168,7 @@ adminRouter.route('/deleteTestiomonail/:id').delete(verifyJwt, deleteTestiomonia
 adminRouter.route('/createAbout').post(verifyJwt, createAbout);
 adminRouter.route('/getAllAbout').get(verifyJwt, getAllAbout);
 adminRouter.route('/about').get(getAbout);
+adminRouter.route('/toggleAbout/:id').patch(verifyJwt, toggleAbout);
 adminRouter.route('/editAbout/:id').patch(verifyJwt, editAbout);
 adminRouter.route('/deleteAbout/:id').delete(verifyJwt, deleteAbout);
 
@@ -141,5 +177,32 @@ adminRouter.route('/deleteAbout/:id').delete(verifyJwt, deleteAbout);
 adminRouter.route('/createMessageDetails').post(createMessageDetails);
 adminRouter.route('/getMessageDetails').get(verifyJwt, getMessageDetails);
 adminRouter.route('/deleteMessageDetails/:id').delete(verifyJwt, deleteMessageDetails);
+
+// router for gallery
+// thumbnail is single (just one cover); images are unlimited (capped at 100 for safety)
+// public reads (getGallery + getGalleryImagesById), admin writes for the rest
+const galleryUpload = upload.fields([
+    { name: 'thumbnail', maxCount: 1 },
+    { name: 'images', maxCount: 100 },
+]);
+adminRouter.route('/createGallery').post(galleryUpload, verifyJwt, createGallery);
+adminRouter.route('/getAllGallery').get(verifyJwt, getAllGallery);
+adminRouter.route('/gallery').get(getGallery);
+adminRouter
+    .route('/editGallery/:id')
+    .patch(upload.single('thumbnail'), verifyJwt, editGallery);
+adminRouter.route('/deleteGallery/:id').delete(verifyJwt, deleteGallery);
+
+// gallery image (album content) helpers — unlimited (capped at 100 for safety)
+adminRouter
+    .route('/addGalleryImages/:id')
+    .patch(upload.array('images', 100), verifyJwt, addGalleryImages);
+adminRouter
+    .route('/replaceGalleryImages/:id')
+    .patch(upload.array('images', 100), verifyJwt, replaceGalleryImages);
+adminRouter
+    .route('/removeGalleryImage/:id/:publicId')
+    .delete(verifyJwt, removeGalleryImage);
+adminRouter.route('/getGalleryImagesById/:id').get(getGalleryImagesById);
 
 export { adminRouter };

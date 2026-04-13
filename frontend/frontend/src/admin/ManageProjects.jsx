@@ -20,9 +20,36 @@ function ManageProjects() {
   const [viewAll, setViewAll] = useState(false);
   const ssInputRef = useRef(null);
 
+  // bulk selection
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
   useEffect(() => {
     loadProjects(page);
+    setSelectedIds(new Set());
   }, [page, viewAll]);
+
+  const toggleSelect = (id) =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  const toggleSelectAll = () =>
+    setSelectedIds((prev) =>
+      prev.size === projects.length ? new Set() : new Set(projects.map((p) => p._id)),
+    );
+  const allSelected = projects.length > 0 && selectedIds.size === projects.length;
+  const someSelected = selectedIds.size > 0 && selectedIds.size < projects.length;
+  const confirmBulkDelete = async () => {
+    setBulkDeleting(true);
+    await Promise.all(Array.from(selectedIds).map((id) => deleteProject(id)));
+    setSelectedIds(new Set());
+    setBulkDeleteOpen(false);
+    setBulkDeleting(false);
+    await loadProjects(page);
+  };
 
   const loadProjects = async (p = 1) => {
     const res = await getProjects(viewAll ? 1 : p, viewAll ? 1000 : 14);
@@ -59,12 +86,23 @@ function ManageProjects() {
     setShowModal(true);
   };
 
-  // pick multiple screenshot files at once
+  // pick multiple screenshot files — APPENDS to the existing selection so admin
+  // can keep clicking the picker to add another batch. dedup by name+size.
   const handleScreenshots = (e) => {
-    const files = Array.from(e.target.files).filter((f) => f.type.startsWith("image/"));
-    if (files.length === 0) return;
-    setScreenshotFiles(files);
-    setScreenshotPreviews(files.map((f) => URL.createObjectURL(f)));
+    const incoming = Array.from(e.target.files).filter((f) => f.type.startsWith("image/"));
+    if (incoming.length === 0) return;
+
+    setScreenshotFiles((prev) => {
+      const existingKeys = new Set(prev.map((f) => `${f.name}-${f.size}`));
+      const fresh = incoming.filter((f) => !existingKeys.has(`${f.name}-${f.size}`));
+      const merged = [...prev, ...fresh];
+      // sync previews using the merged file list as source of truth
+      setScreenshotPreviews(merged.map((f) => URL.createObjectURL(f)));
+      return merged;
+    });
+
+    // reset input so picking the same file again later still triggers onChange
+    e.target.value = "";
   };
 
   const removeScreenshot = (index) => {
@@ -136,6 +174,22 @@ function ManageProjects() {
       <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-4 bg-white border-b border-blue-100/60 flex items-center justify-between">
         <h2 className="text-xl font-bold text-gray-800">Manage Projects</h2>
         <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <>
+              <button
+                onClick={() => setSelectedIds(new Set())}
+                className="bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium px-3 py-2 rounded-lg text-xs cursor-pointer inline-flex items-center gap-1 transition-colors"
+              >
+                <FiX size={13} /> Unselect All ({selectedIds.size})
+              </button>
+              <button
+                onClick={() => setBulkDeleteOpen(true)}
+                className="bg-red-600 hover:bg-red-700 text-white font-medium px-3 py-2 rounded-lg text-xs cursor-pointer inline-flex items-center gap-1 transition-colors"
+              >
+                <FiTrash2 size={13} /> Delete Selected ({selectedIds.size})
+              </button>
+            </>
+          )}
           <button
             onClick={() => { setViewAll((v) => !v); setPage(1); }}
             className="bg-white border border-blue-300 text-blue-600 hover:bg-blue-50 font-medium px-3 py-2 rounded-lg text-xs cursor-pointer transition-colors"
@@ -156,6 +210,16 @@ function ManageProjects() {
         <table className="w-full text-xs text-left">
           <thead className="sticky top-14 z-20 bg-blue-50 text-gray-700 text-[11px] uppercase tracking-wide shadow-[0_2px_6px_rgba(30,64,175,0.08)]">
             <tr>
+              <th className="px-3 py-2 w-8">
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  ref={(el) => el && (el.indeterminate = someSelected)}
+                  onChange={toggleSelectAll}
+                  className="w-4 h-4 accent-blue-600 cursor-pointer"
+                  title="Select all on this page"
+                />
+              </th>
               <th className="px-3 py-2 font-semibold">Image</th>
               <th className="px-3 py-2 font-semibold">Title</th>
               <th className="px-3 py-2 font-semibold">Description</th>
@@ -170,7 +234,15 @@ function ManageProjects() {
                 ? project.tags
                 : project.tags?.split(",").map((t) => t.trim()).filter(Boolean) || [];
               return (
-                <tr key={project._id} className="hover:bg-blue-50/40 transition-colors">
+                <tr key={project._id} className={`transition-colors ${selectedIds.has(project._id) ? "bg-red-50/60 hover:bg-red-50" : "hover:bg-blue-50/40"}`}>
+                  <td className="px-3 py-2 w-8">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(project._id)}
+                      onChange={() => toggleSelect(project._id)}
+                      className="w-4 h-4 accent-blue-600 cursor-pointer"
+                    />
+                  </td>
                   <td className="px-3 py-2">
                     {(project.projectImage || project.image) && (
                       <img
@@ -222,7 +294,7 @@ function ManageProjects() {
 
             {projects.length === 0 && (
               <tr>
-                <td colSpan={6} className="text-center py-10 text-gray-400">
+                <td colSpan={7} className="text-center py-10 text-gray-400">
                   No projects yet. Click "Add Project" to get started.
                 </td>
               </tr>
@@ -334,9 +406,9 @@ function ManageProjects() {
                 currentImage={editing?.projectImage || editing?.image}
               />
 
-              {/* screenshots - multi-file picker (shown on ProjectDetail page) */}
+              {/* snapshots - multi-file picker (shown on ProjectDetail page) */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Screenshots (up to 8)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Snapshots (up to 12)</label>
 
                 {/* existing screenshots when editing */}
                 {editing && editing?.screenshots?.length > 0 && screenshotFiles.length === 0 && (
@@ -385,9 +457,11 @@ function ManageProjects() {
                 >
                   <FiUploadCloud size={24} className="mb-1" />
                   <p className="text-xs font-medium">
-                    {editing && editing?.screenshots?.length > 0
-                      ? "Upload new screenshots to replace"
-                      : "Click to upload screenshots"}
+                    {screenshotFiles.length > 0
+                      ? `${screenshotFiles.length} snapshot(s) selected — click to add more`
+                      : editing && editing?.screenshots?.length > 0
+                      ? "Click to upload new snapshots (will replace existing)"
+                      : "Click to upload snapshots"}
                   </p>
                 </button>
               </div>
@@ -420,6 +494,14 @@ function ManageProjects() {
           message="This project will be permanently deleted."
           onConfirm={confirmDelete}
           onCancel={() => setDeleteId(null)}
+        />
+      )}
+
+      {bulkDeleteOpen && (
+        <ConfirmModal
+          message={`${selectedIds.size} project${selectedIds.size > 1 ? "s" : ""} will be permanently deleted.${bulkDeleting ? " Deleting…" : ""}`}
+          onConfirm={confirmBulkDelete}
+          onCancel={() => !bulkDeleting && setBulkDeleteOpen(false)}
         />
       )}
     </div>

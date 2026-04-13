@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { getClients } from "../api";
-import { clientsData as fallback } from "../data/placeholders";
 import { FiX } from "react-icons/fi";
 import useScrollAnimation from "../hooks/useScrollAnimation";
 
 function Clients() {
-  const [clients, setClients] = useState(fallback);
+  const [clients, setClients] = useState([]);
   const [selected, setSelected] = useState(null);
   const [headingRef, headingVisible] = useScrollAnimation();
   const [sliderRef, sliderVisible] = useScrollAnimation(0.1);
@@ -16,6 +15,9 @@ function Clients() {
       if (list.length > 0) setClients(list);
     });
   }, []);
+
+  // hide section if no clients returned
+  if (clients.length === 0) return null;
 
   const clientCard = (client) => (
     <button
@@ -54,18 +56,29 @@ function Clients() {
           </p>
         </div>
 
-        {/* client cards — single row, 6 visible, scrolls right to left then reverses */}
+        {/* client cards — animate as a marquee only when there are enough cards
+            to fill a row; with fewer, show a centered static grid (no scroll). */}
         <div ref={sliderRef} className={`animate-fade-up ${sliderVisible ? "visible" : ""}`}>
-          <div className="overflow-hidden">
-            <div className="flex gap-4 animate-marquee-clients">
+          {clients.length >= 7 ? (
+            // marquee — duplicate the list so the scroll loops seamlessly
+            <div className="overflow-hidden">
+              <div className="flex gap-4 animate-marquee-clients">
+                {clients.map((client) => (
+                  <div key={client._id}>{clientCard(client)}</div>
+                ))}
+                {clients.map((client) => (
+                  <div key={`dup-${client._id}`}>{clientCard(client)}</div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            // static — center the cards, no animation, no duplication
+            <div className="flex flex-wrap justify-center gap-4">
               {clients.map((client) => (
                 <div key={client._id}>{clientCard(client)}</div>
               ))}
-              {clients.map((client) => (
-                <div key={`dup-${client._id}`}>{clientCard(client)}</div>
-              ))}
             </div>
-          </div>
+          )}
         </div>
       </div>
 

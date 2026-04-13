@@ -1,26 +1,20 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getClientById } from "../api";
-import { clientsData } from "../data/placeholders";
 import { FiArrowLeft, FiExternalLink, FiBriefcase, FiGrid } from "react-icons/fi";
 
-// single client detail page
-// shows client logo, description, industry, and projects we did for them
+// single client detail page — fully dynamic from backend
 function ClientDetail() {
   const { id } = useParams();
   const [client, setClient] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // try backend first
     getClientById(id).then((res) => {
-      if (res) {
-        setClient(res);
-      } else {
-        // fallback to placeholder
-        const found = clientsData.find((c) => c._id === id);
-        setClient(found || null);
-      }
+      setClient(res || null);
+      setLoading(false);
+    }).catch(() => {
+      setClient(null);
       setLoading(false);
     });
   }, [id]);

@@ -67,16 +67,20 @@ function AdminAppDetail() {
         {/* description */}
         <p className="text-gray-600 leading-relaxed mb-6">{app.longDescription || app.description}</p>
 
-        {/* screenshots */}
+        {/* snapshots — normalize because backend returns [{url, publicId}] objects */}
         {app.screenshots && app.screenshots.length > 0 && (
           <div>
-            <h3 className="font-semibold text-gray-800 mb-3">Screenshots</h3>
-            <div className="grid grid-cols-2 gap-4">
-              {app.screenshots.map((src, i) => (
-                <div key={i} className="rounded-lg overflow-hidden shadow-sm">
-                  <img src={src} alt={`Screenshot ${i + 1}`} className="w-full h-40 object-cover" />
-                </div>
-              ))}
+            <h3 className="font-semibold text-gray-800 mb-3">Snapshots ({app.screenshots.length})</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {app.screenshots.map((src, i) => {
+                const url = typeof src === "string" ? src : src?.url;
+                if (!url) return null;
+                return (
+                  <div key={i} className="rounded-lg overflow-hidden shadow-sm border border-gray-200">
+                    <img src={url} alt={`Snapshot ${i + 1}`} className="w-full h-40 object-cover" />
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

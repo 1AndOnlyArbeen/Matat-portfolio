@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getProjectById } from "../api";
-import { projectsData } from "../data/placeholders";
 import { FiArrowLeft, FiExternalLink, FiCalendar, FiUser, FiX, FiChevronLeft, FiChevronRight, FiImage } from "react-icons/fi";
 
-// single project detail page
-// tries to fetch from backend, falls back to placeholder data by matching id
+// single project detail page — fully dynamic from backend
 function ProjectDetail() {
   const { id } = useParams();
   const [project, setProject] = useState(null);
@@ -15,12 +13,10 @@ function ProjectDetail() {
   useEffect(() => {
     getProjectById(id).then((res) => {
       const list = res?.project || (Array.isArray(res) ? res : []);
-      const found = list.find((p) => p._id === id);
-      // fallback to placeholder data if backend returned nothing
-      setProject(found || projectsData.find((p) => p._id === id) || null);
+      setProject(list.find((p) => p._id === id) || null);
       setLoading(false);
     }).catch(() => {
-      setProject(projectsData.find((p) => p._id === id) || null);
+      setProject(null);
       setLoading(false);
     });
   }, [id]);
@@ -169,12 +165,12 @@ function ProjectDetail() {
           </div>
         </div>
 
-        {/* work screenshots — full-width section below the main grid */}
+        {/* work snapshots — full-width section below the main grid */}
         {screenshots.length > 0 && (
           <div className="mt-12">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-xl sm:text-2xl font-bold text-blue-900 inline-flex items-center gap-2">
-                <FiImage className="text-blue-500" /> Work Screenshots
+                <FiImage className="text-blue-500" /> Snapshots
               </h2>
               <span className="text-xs text-gray-400">{screenshots.length} image{screenshots.length > 1 ? "s" : ""}</span>
             </div>
@@ -187,7 +183,7 @@ function ProjectDetail() {
                 >
                   <img
                     src={src}
-                    alt={`${project.title} screenshot ${i + 1}`}
+                    alt={`${project.title} snapshot ${i + 1}`}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-blue-900/0 group-hover:bg-blue-900/30 transition-colors" />
@@ -215,7 +211,7 @@ function ProjectDetail() {
           <div className="flex-1 relative flex items-center justify-center px-4 sm:px-12" onClick={(e) => e.stopPropagation()}>
             <img
               src={screenshots[lightboxIndex]}
-              alt={`Screenshot ${lightboxIndex + 1}`}
+              alt={`Snapshot ${lightboxIndex + 1}`}
               className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
             />
             {screenshots.length > 1 && (

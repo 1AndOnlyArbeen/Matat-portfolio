@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getApps } from "../api";
-import { appsData as fallback } from "../data/placeholders";
 import { FiSmartphone, FiArrowRight } from "react-icons/fi";
 import useScrollAnimation from "../hooks/useScrollAnimation";
 
 // displays mobile/web apps — marquee when 4+, centered grid when fewer
 function Apps() {
-  const [apps, setApps] = useState(fallback);
+  const [apps, setApps] = useState([]);
   const [headingRef, headingVisible] = useScrollAnimation();
   const [sliderRef, sliderVisible] = useScrollAnimation(0.1);
 

@@ -5,7 +5,7 @@ import {
   FiChevronLeft, FiChevronRight, FiUser, FiCheckCircle,
 } from "react-icons/fi";
 import ConfirmModal from "./ConfirmModal";
-import { isRead, markRead, markUnread, markAllRead, onReadChange } from "./messageReadStore";
+import { isRead, markRead, markUnread, markAllRead, onReadChange, getReadIds } from "./messageReadStore";
 
 function ManageMessages() {
   const [messages, setMessages] = useState([]);
@@ -17,13 +17,46 @@ function ManageMessages() {
   const [totalItems, setTotalItems] = useState(0);
   const [viewAll, setViewAll] = useState(false);
 
+  // bulk selection
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
   // trigger re-render when read state changes (counts + badges update)
   const [, setReadTick] = useState(0);
   useEffect(() => onReadChange(() => setReadTick((t) => t + 1)), []);
 
   useEffect(() => {
     loadMessages(page);
+    // clear selection whenever page changes
+    setSelectedIds(new Set());
   }, [page, viewAll]);
+
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+  const toggleSelectAll = () => {
+    setSelectedIds((prev) => {
+      if (prev.size === messages.length) return new Set();
+      return new Set(messages.map((m) => m._id));
+    });
+  };
+  const allSelected = messages.length > 0 && selectedIds.size === messages.length;
+  const someSelected = selectedIds.size > 0 && selectedIds.size < messages.length;
+
+  const confirmBulkDelete = async () => {
+    setBulkDeleting(true);
+    await Promise.all(Array.from(selectedIds).map((id) => deleteMessage(id)));
+    setSelectedIds(new Set());
+    setBulkDeleteOpen(false);
+    setBulkDeleting(false);
+    await loadMessages(page);
+  };
 
   // backend returns { data: { message: [...], pagination: {...} } }
   // note: field name is singular `message` even though it's an array
@@ -65,6 +98,35 @@ function ManageMessages() {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-400">{totalItems} total</span>
+          {selectedIds.size > 0 && (
+            <>
+              <button
+                onClick={() => setSelectedIds(new Set())}
+                className="bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium px-3 py-2 rounded-lg text-xs cursor-pointer inline-flex items-center gap-1 transition-colors"
+              >
+                <FiX size={13} /> Unselect All ({selectedIds.size})
+              </button>
+              <button
+                onClick={() => {
+                  const ids = Array.from(selectedIds);
+                  // if every selected is already read → mark them ALL as unread; otherwise mark them all as read
+                  const allRead = ids.every((id) => isRead(id));
+                  if (allRead) ids.forEach((id) => markUnread(id));
+                  else markAllRead(ids);
+                }}
+                className="bg-white border border-blue-300 text-blue-600 hover:bg-blue-50 font-medium px-3 py-2 rounded-lg text-xs cursor-pointer inline-flex items-center gap-1 transition-colors"
+              >
+                <FiCheckCircle size={13} />
+                {Array.from(selectedIds).every((id) => isRead(id)) ? "Mark as Unread" : "Mark as Read"} ({selectedIds.size})
+              </button>
+              <button
+                onClick={() => setBulkDeleteOpen(true)}
+                className="bg-red-600 hover:bg-red-700 text-white font-medium px-3 py-2 rounded-lg text-xs cursor-pointer inline-flex items-center gap-1 transition-colors"
+              >
+                <FiTrash2 size={13} /> Delete Selected ({selectedIds.size})
+              </button>
+            </>
+          )}
           <button
             onClick={() => markAllRead(messages.map((m) => m._id))}
             disabled={messages.every((m) => isRead(m._id))}
@@ -87,6 +149,16 @@ function ManageMessages() {
         <table className="w-full text-xs text-left">
           <thead className="sticky top-14 z-20 bg-blue-50 text-gray-700 text-[11px] uppercase tracking-wide shadow-[0_2px_6px_rgba(30,64,175,0.08)]">
             <tr>
+              <th className="px-3 py-2 w-8">
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  ref={(el) => el && (el.indeterminate = someSelected)}
+                  onChange={toggleSelectAll}
+                  className="w-4 h-4 accent-blue-600 cursor-pointer"
+                  title="Select all on this page"
+                />
+              </th>
               <th className="px-3 py-2 font-semibold">Name</th>
               <th className="px-3 py-2 font-semibold">Email</th>
               <th className="px-3 py-2 font-semibold">Subject</th>
@@ -98,11 +170,20 @@ function ManageMessages() {
           <tbody className="divide-y divide-blue-100/60">
             {messages.map((msg) => {
               const read = isRead(msg._id);
+              const isSelected = selectedIds.has(msg._id);
               return (
                 <tr
                   key={msg._id}
-                  className={`transition-colors ${read ? "hover:bg-blue-50/40" : "bg-blue-50/70 hover:bg-blue-100/60 font-semibold"}`}
+                  className={`transition-colors ${isSelected ? "bg-red-50/60 hover:bg-red-50" : read ? "hover:bg-blue-50/40" : "bg-blue-50/70 hover:bg-blue-100/60 font-semibold"}`}
                 >
+                  <td className="px-3 py-2 w-8">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggleSelect(msg._id)}
+                      className="w-4 h-4 accent-blue-600 cursor-pointer"
+                    />
+                  </td>
                   <td className="px-3 py-2">
                     <div className="flex items-center gap-2">
                       {!read && <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" title="Unread" />}
@@ -164,7 +245,7 @@ function ManageMessages() {
 
             {messages.length === 0 && (
               <tr>
-                <td colSpan={6} className="text-center py-12 text-gray-400">
+                <td colSpan={7} className="text-center py-12 text-gray-400">
                   <FiMail size={32} className="mx-auto mb-2 opacity-40" />
                   <p>No messages yet. Messages from the contact form will appear here.</p>
                 </td>
@@ -264,6 +345,14 @@ function ManageMessages() {
 
       {deleteId && (
         <ConfirmModal message="This message will be permanently deleted." onConfirm={confirmDelete} onCancel={() => setDeleteId(null)} />
+      )}
+
+      {bulkDeleteOpen && (
+        <ConfirmModal
+          message={`${selectedIds.size} message${selectedIds.size > 1 ? "s" : ""} will be permanently deleted.${bulkDeleting ? " Deleting…" : ""}`}
+          onConfirm={confirmBulkDelete}
+          onCancel={() => !bulkDeleting && setBulkDeleteOpen(false)}
+        />
       )}
     </div>
   );

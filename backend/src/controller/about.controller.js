@@ -84,15 +84,41 @@ const getAllAbout = asyncHandler(async (req, res) => {
   );
 });
 
-// get a single about — used by the public site (returns the latest one)
+// get the active about — used by the public site (only one is active at a time)
 const getAbout = asyncHandler(async (req, res) => {
-  const about = await About.findOne().sort({ createdAt: -1 });
+  const about = await About.findOne({ isActive: true });
   if (!about) {
-    throw new apiError(404, 'About didint exits');
+    throw new apiError(
+      404,
+      'About which status is active didint found',
+    );
   }
   return res
     .status(200)
-    .json(new apiResponse(200, about, 'About fetched successfully'));
+    .json(new apiResponse(200, about, 'Active about fetched successfully'));
+});
+
+// toggle the active about into inactive and inactive into the active
+// only one about can be active at a time, so flipping one ON flips all others OFF
+const toggleAbout = asyncHandler(async (req, res) => {
+  const about = await About.findById(req.params.id);
+  if (!about) throw new apiError(400, 'About not found !');
+
+  // check is the about on ?
+  if (about.isActive) {
+    // if on then make it off
+    about.isActive = false;
+    await about.save();
+  } else {
+    // if off then first turn off every about in db
+    await About.updateMany({}, { isActive: false });
+    // then turn on only this one
+    about.isActive = true;
+    await about.save();
+  }
+  return res
+    .status(200)
+    .json(new apiResponse(200, about, ' About status update successfull '));
 });
 
 // editing the about details after the save
@@ -132,4 +158,4 @@ const deleteAbout = asyncHandler(async (req, res) => {
     .json(new apiResponse(200, about, 'About deleted successfully'));
 });
 
-export { createAbout, getAllAbout, getAbout, editAbout, deleteAbout };
+export { createAbout, getAllAbout, getAbout, editAbout, deleteAbout, toggleAbout };

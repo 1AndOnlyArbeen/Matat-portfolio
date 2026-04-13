@@ -67,6 +67,7 @@ export async function getTestimonials() {
 }
 
 export async function getGallery() {
+  // public list — backend returns the array directly under .data
   return await fetchData("/gallery");
 }
 

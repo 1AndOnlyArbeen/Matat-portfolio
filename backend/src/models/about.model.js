@@ -21,6 +21,11 @@ const about = new mongoose.Schema(
         order: Number,
       },
     ],
+    isActive: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
   },
   { timestamps: true },
 );

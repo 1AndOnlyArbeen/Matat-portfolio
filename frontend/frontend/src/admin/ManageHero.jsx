@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { getAllHeroes, createHero, updateHero, toggleHero, deleteHero } from "../api/admin";
-import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiToggleLeft, FiToggleRight, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiToggleLeft, FiToggleRight, FiChevronLeft, FiChevronRight, FiEye, FiExternalLink } from "react-icons/fi";
 import ImageDropzone from "./ImageDropzone";
 import ConfirmModal from "./ConfirmModal";
 
@@ -19,9 +19,42 @@ function ManageHero() {
   const [deleteId, setDeleteId] = useState(null);
   const [viewAll, setViewAll] = useState(false);
 
+  // bulk selection
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
+  // view modal
+  const [viewItem, setViewItem] = useState(null);
+
   useEffect(() => {
     loadHeroes(page);
+    setSelectedIds(new Set());
   }, [page, viewAll]);
+
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+  const toggleSelectAll = () => {
+    setSelectedIds((prev) =>
+      prev.size === heroes.length ? new Set() : new Set(heroes.map((h) => h._id)),
+    );
+  };
+  const allSelected = heroes.length > 0 && selectedIds.size === heroes.length;
+  const someSelected = selectedIds.size > 0 && selectedIds.size < heroes.length;
+  const confirmBulkDelete = async () => {
+    setBulkDeleting(true);
+    await Promise.all(Array.from(selectedIds).map((id) => deleteHero(id)));
+    setSelectedIds(new Set());
+    setBulkDeleteOpen(false);
+    setBulkDeleting(false);
+    await loadHeroes(page);
+  };
 
   const loadHeroes = async (p = 1) => {
     const res = await getAllHeroes(viewAll ? 1 : p, viewAll ? 1000 : 14);
@@ -123,6 +156,22 @@ function ManageHero() {
       <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-4 bg-white border-b border-blue-100/60 flex items-center justify-between">
         <h2 className="text-xl font-bold text-gray-800">Manage Hero Banners</h2>
         <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <>
+              <button
+                onClick={() => setSelectedIds(new Set())}
+                className="bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium px-3 py-2 rounded-lg text-xs cursor-pointer inline-flex items-center gap-1 transition-colors"
+              >
+                <FiX size={13} /> Unselect All ({selectedIds.size})
+              </button>
+              <button
+                onClick={() => setBulkDeleteOpen(true)}
+                className="bg-red-600 hover:bg-red-700 text-white font-medium px-3 py-2 rounded-lg text-xs cursor-pointer inline-flex items-center gap-1 transition-colors"
+              >
+                <FiTrash2 size={13} /> Delete Selected ({selectedIds.size})
+              </button>
+            </>
+          )}
           <button
             onClick={() => { setViewAll((v) => !v); setPage(1); }}
             className="bg-white border border-blue-300 text-blue-600 hover:bg-blue-50 font-medium px-3 py-2 rounded-lg text-xs cursor-pointer transition-colors"
@@ -143,6 +192,16 @@ function ManageHero() {
         <table className="w-full text-xs text-left">
           <thead className="sticky top-14 z-20 bg-blue-50 text-gray-700 text-[11px] uppercase tracking-wide shadow-[0_2px_6px_rgba(30,64,175,0.08)]">
             <tr>
+              <th className="px-3 py-2 w-8">
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  ref={(el) => el && (el.indeterminate = someSelected)}
+                  onChange={toggleSelectAll}
+                  className="w-4 h-4 accent-blue-600 cursor-pointer"
+                  title="Select all on this page"
+                />
+              </th>
               <th className="px-3 py-2 font-semibold">Image</th>
               <th className="px-3 py-2 font-semibold">Title</th>
               <th className="px-3 py-2 font-semibold">Subtitle</th>
@@ -153,7 +212,15 @@ function ManageHero() {
           </thead>
           <tbody className="divide-y divide-blue-100/60">
             {heroes.map((hero) => (
-              <tr key={hero._id} className="hover:bg-blue-50/40 transition-colors">
+              <tr key={hero._id} className={`transition-colors ${selectedIds.has(hero._id) ? "bg-red-50/60 hover:bg-red-50" : "hover:bg-blue-50/40"}`}>
+                <td className="px-3 py-2 w-8">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(hero._id)}
+                    onChange={() => toggleSelect(hero._id)}
+                    className="w-4 h-4 accent-blue-600 cursor-pointer"
+                  />
+                </td>
                 <td className="px-3 py-2">
                   {hero.backgroundImage && (
                     <img
@@ -195,6 +262,14 @@ function ManageHero() {
                     </button>
                     <button
                       type="button"
+                      onClick={() => setViewItem(hero)}
+                      className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-50 transition-colors cursor-pointer"
+                      title="View"
+                    >
+                      <FiEye size={14} />
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => openEdit(hero)}
                       className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
                       title="Edit"
@@ -216,7 +291,7 @@ function ManageHero() {
 
             {heroes.length === 0 && (
               <tr>
-                <td colSpan={6} className="text-center py-10 text-gray-400">
+                <td colSpan={7} className="text-center py-10 text-gray-400">
                   No hero banners yet. Click "Add Banner" to get started.
                 </td>
               </tr>
@@ -388,6 +463,71 @@ function ManageHero() {
           onConfirm={confirmDelete}
           onCancel={() => setDeleteId(null)}
         />
+      )}
+
+      {bulkDeleteOpen && (
+        <ConfirmModal
+          message={`${selectedIds.size} banner${selectedIds.size > 1 ? "s" : ""} will be permanently deleted.${bulkDeleting ? " Deleting…" : ""}`}
+          onConfirm={confirmBulkDelete}
+          onCancel={() => !bulkDeleting && setBulkDeleteOpen(false)}
+        />
+      )}
+
+      {/* VIEW modal */}
+      {viewItem && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setViewItem(null)}>
+          <div
+            className="relative bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-[0_4px_30px_rgba(37,99,235,0.3)] border border-blue-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-5 border-b border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-800">Hero Banner — Details</h3>
+              <button onClick={() => setViewItem(null)} className="text-gray-400 hover:text-gray-600 cursor-pointer"><FiX size={20} /></button>
+            </div>
+            <div className="p-5 space-y-4 text-sm">
+              {viewItem.backgroundImage && (
+                <img src={viewItem.backgroundImage} alt={viewItem.title} className="w-full rounded-lg border border-gray-200" />
+              )}
+              <div>
+                <p className="text-[11px] uppercase tracking-wide text-gray-400 mb-1">Title</p>
+                <p className="text-gray-800 font-semibold text-lg">{viewItem.title || "-"}</p>
+              </div>
+              <div>
+                <p className="text-[11px] uppercase tracking-wide text-gray-400 mb-1">Subtitle</p>
+                <p className="text-gray-700 whitespace-pre-wrap">{viewItem.subtitle || "-"}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-gray-400 mb-1">Button Text</p>
+                  <p className="text-gray-700">{viewItem.buttonText || "-"}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-gray-400 mb-1">Button Link</p>
+                  {viewItem.buttonLink ? (
+                    <a href={viewItem.buttonLink} target="_blank" rel="noreferrer" className="text-blue-600 hover:text-blue-800 inline-flex items-center gap-1 break-all">
+                      {viewItem.buttonLink} <FiExternalLink size={12} />
+                    </a>
+                  ) : "-"}
+                </div>
+              </div>
+              {(viewItem.badgeImage1 || viewItem.badgeImage2) && (
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-gray-400 mb-2">Badge Images</p>
+                  <div className="flex gap-3">
+                    {viewItem.badgeImage1 && <img src={viewItem.badgeImage1} alt="Badge 1" className="h-14 object-contain bg-gray-50 rounded border border-gray-200 p-2" />}
+                    {viewItem.badgeImage2 && <img src={viewItem.badgeImage2} alt="Badge 2" className="h-14 object-contain bg-gray-50 rounded border border-gray-200 p-2" />}
+                  </div>
+                </div>
+              )}
+              <div>
+                <p className="text-[11px] uppercase tracking-wide text-gray-400 mb-1">Status</p>
+                <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${viewItem.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                  {viewItem.isActive ? "Active" : "Inactive"}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

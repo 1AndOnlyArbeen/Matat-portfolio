@@ -10,7 +10,7 @@ import {
 // making the app
 
 const createApp = asyncHandler(async (req, res) => {
-  const { appName, description, platform, link } = req.body;
+  const { appName, description, platform, link, rating } = req.body;
 
   if (!appName || !description || !platform || !link) {
     throw new apiError(400, ' All field are required !');
@@ -22,7 +22,6 @@ const createApp = asyncHandler(async (req, res) => {
     throw new apiError(400, ' appIcon is required !');
   }
   const appIcon = await uploadOnCloudinary(appIconPath);
-  console.log(appIcon);
 
   if (!appIcon) {
     throw new apiError(400, ' image upload failed to cloduinary');
@@ -36,6 +35,7 @@ const createApp = asyncHandler(async (req, res) => {
       description,
       platform,
       link,
+      rating: rating ? Number(rating) : 0,
       appIcon: appIcon.secure_url,
       appIconId: appIcon.public_id,
     });
@@ -90,7 +90,7 @@ const getAllApp = asyncHandler(async (req, res) => {
 //   edit the apps details
 
 const editApp = asyncHandler(async (req, res) => {
-  const { appName, description, platform, link } = req.body;
+  const { appName, description, platform, link, rating } = req.body;
   const apps = await App.findById(req.params.id);
   if (!apps) {
     throw new apiError(404, ' AppsDetails didint exits into db');
@@ -99,6 +99,7 @@ const editApp = asyncHandler(async (req, res) => {
   apps.description = description || apps.description;
   apps.platform = platform || apps.platform;
   apps.link = link || apps.link;
+  if (rating !== undefined) apps.rating = Number(rating);
 
   // if the new image is uplodaed then replace with old one first delete the old one
   // if the new one exits when the user hit another file or image then find the public id from the db and delet from the cloudinary using publicID:
@@ -140,9 +141,133 @@ const deleteApp = asyncHandler(async (req, res) => {
   if (app.appIconId) {
     await deleteFromCloudinary(app.appIconId);
   }
+  // cleanup extra screenshots from cloudinary too
+  for (const s of app.screenshots || []) {
+    if (s.publicId) await deleteFromCloudinary(s.publicId);
+  }
   return res
     .status(200)
     .json(new apiResponse(200, app, 'Apps details deleted successfully '));
 });
 
-export { createApp, getAllApp, editApp, deleteApp };
+{
+  /*
+    screenshot helpers for apps — separate endpoints so the main create/edit stays clean
+
+    1. addAppScreenshots     → append new screenshots to an existing app
+    2. replaceAppScreenshots → wipe old ones and upload fresh
+    3. removeAppScreenshot   → delete one screenshot by its publicId
+    4. getAppScreenshots     → return just the screenshots array (public read)
+
+    all use upload.array('screenshots', 8) on the route → req.files is an array
+  */
+}
+
+// append new screenshots — keeps the old ones
+const addAppScreenshots = asyncHandler(async (req, res) => {
+  const app = await App.findById(req.params.id);
+  if (!app) {
+    throw new apiError(404, ' AppDetails didnt exits in the db');
+  }
+
+  const files = req.files || [];
+  if (files.length === 0) {
+    throw new apiError(400, ' No screenshot files uploaded ');
+  }
+
+  const uploaded = await Promise.all(
+    files.map((f) => uploadOnCloudinary(f.path)),
+  );
+  const newShots = uploaded
+    .filter(Boolean)
+    .map((r) => ({ url: r.secure_url, publicId: r.public_id }));
+
+  app.screenshots = [...(app.screenshots || []), ...newShots];
+  await app.save();
+
+  return res
+    .status(200)
+    .json(new apiResponse(200, app, ' Screenshots added successfully !'));
+});
+
+// replace the whole screenshots array
+const replaceAppScreenshots = asyncHandler(async (req, res) => {
+  const app = await App.findById(req.params.id);
+  if (!app) {
+    throw new apiError(404, ' AppDetails didnt exits in the db');
+  }
+
+  const files = req.files || [];
+  if (files.length === 0) {
+    throw new apiError(400, ' No screenshot files uploaded ');
+  }
+
+  // delete old ones from cloudinary
+  for (const s of app.screenshots || []) {
+    if (s.publicId) await deleteFromCloudinary(s.publicId);
+  }
+
+  // upload fresh ones
+  const uploaded = await Promise.all(
+    files.map((f) => uploadOnCloudinary(f.path)),
+  );
+  app.screenshots = uploaded
+    .filter(Boolean)
+    .map((r) => ({ url: r.secure_url, publicId: r.public_id }));
+
+  await app.save();
+
+  return res
+    .status(200)
+    .json(new apiResponse(200, app, ' Screenshots replaced successfully !'));
+});
+
+// delete one screenshot by its publicId
+const removeAppScreenshot = asyncHandler(async (req, res) => {
+  const { id, publicId } = req.params;
+  const app = await App.findById(id);
+  if (!app) {
+    throw new apiError(404, ' AppDetails didnt exits in the db');
+  }
+
+  const found = app.screenshots?.find((s) => s.publicId === publicId);
+  if (!found) {
+    throw new apiError(404, ' Screenshot not found in this app ');
+  }
+
+  await deleteFromCloudinary(publicId);
+  app.screenshots = app.screenshots.filter((s) => s.publicId !== publicId);
+  await app.save();
+
+  return res
+    .status(200)
+    .json(new apiResponse(200, app, ' Screenshot removed successfully !'));
+});
+
+// return just the screenshots for an app (public read)
+const getAppScreenshots = asyncHandler(async (req, res) => {
+  const app = await App.findById(req.params.id).select('screenshots');
+  if (!app) {
+    throw new apiError(404, ' AppDetails didnt exits in the db');
+  }
+  return res
+    .status(200)
+    .json(
+      new apiResponse(
+        200,
+        { screenshots: app.screenshots || [] },
+        ' Screenshots fetched successfully',
+      ),
+    );
+});
+
+export {
+  createApp,
+  getAllApp,
+  editApp,
+  deleteApp,
+  addAppScreenshots,
+  replaceAppScreenshots,
+  removeAppScreenshot,
+  getAppScreenshots,
+};

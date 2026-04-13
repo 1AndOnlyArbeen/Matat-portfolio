@@ -48,19 +48,25 @@ function Team() {
         <div ref={sliderRef} className={`relative animate-fade-up ${sliderVisible ? "visible" : ""}`}>
           <div className="relative mx-auto" style={{ height: "420px" }}>
             {members.map((member, i) => {
-              // angle relative to front (0 = front, PI = back)
-              const relAngle = ((i - currentIndex) * angleStep * Math.PI) / 180;
-              const x = Math.sin(relAngle) * 650; // wider spread to fit 12 cards
-              const zRaw = Math.cos(relAngle); // -1 (back) to 1 (front)
+              // signed distance from the front card (negative = left, positive = right)
+              // wraps around so the carousel loops smoothly
+              const halfTotal = total / 2;
+              const rawDiff = ((i - currentIndex) % total + total) % total;
+              const signedDist = rawDiff > halfTotal ? rawDiff - total : rawDiff;
+              const absDist = Math.abs(signedDist);
 
-              // hide only the very back cards
-              if (zRaw < -0.35) return null;
+              // show only 4 on each side + 1 in the middle (max 9 cards visible)
+              if (absDist > 4) return null;
 
-              const scale = 0.55 + 0.45 * ((zRaw + 0.35) / 1.35);
-              const opacity = 0.4 + 0.6 * ((zRaw + 0.35) / 1.35);
-              const zIndex = Math.round((zRaw + 1) * 50);
-              const diff = ((i - currentIndex + total) % total + total) % total;
-              const isFront = diff === 0 || diff === total;
+              // linear horizontal positioning: each step is 120px apart
+              const x = signedDist * 120;
+              // shrink as cards move away from center: 1.0 at front → 0.6 at the edges
+              const scale = 1 - absDist * 0.1;
+              // fade as cards move away: 1.0 at front → 0.45 at the edges
+              const opacity = 1 - absDist * 0.13;
+              // front card sits highest, layers cascade behind it
+              const zIndex = 100 - absDist * 10;
+              const isFront = absDist === 0;
 
               return (
                 <div

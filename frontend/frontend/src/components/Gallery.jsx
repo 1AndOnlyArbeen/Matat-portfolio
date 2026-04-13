@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import { getGallery } from "../api";
-import { galleryData as fallback } from "../data/placeholders";
-import { FiX, FiChevronLeft, FiChevronRight, FiMapPin, FiCalendar, FiImage, FiArrowUpRight } from "react-icons/fi";
+import { FiX, FiChevronLeft, FiChevronRight, FiMapPin, FiCalendar, FiImage, FiArrowUpRight, FiTag } from "react-icons/fi";
 import useScrollAnimation from "../hooks/useScrollAnimation";
 
 // modern gallery — masonry-ish grid of album cards with stacked photo previews
 function Gallery() {
-  const [albums, setAlbums] = useState(fallback);
+  const [albums, setAlbums] = useState([]);
   const [openAlbum, setOpenAlbum] = useState(null);
   const [photoIndex, setPhotoIndex] = useState(0);
   const [headingRef, headingVisible] = useScrollAnimation();
@@ -25,14 +24,22 @@ function Gallery() {
 
   const close = () => setOpenAlbum(null);
 
+  // images may come as [{url, publicId}] objects (new backend) OR plain string URLs
+  // (legacy/dummy data). Normalize to a flat array of strings either way.
+  const toUrl = (i) => (typeof i === "string" ? i : i?.url);
   const photos = openAlbum?.images?.length
-    ? openAlbum.images
-    : openAlbum
+    ? openAlbum.images.map(toUrl).filter(Boolean)
+    : openAlbum?.thumbnail
+    ? [openAlbum.thumbnail]
+    : openAlbum?.image
     ? [openAlbum.image]
     : [];
 
   const prev = () => setPhotoIndex((i) => (i - 1 + photos.length) % photos.length);
   const next = () => setPhotoIndex((i) => (i + 1) % photos.length);
+
+  // hide the section entirely if no albums returned from backend
+  if (albums.length === 0) return null;
 
   return (
     <section id="gallery" className="relative py-20 sm:py-28 bg-gradient-to-br from-blue-50 via-white to-blue-50 overflow-hidden">
@@ -74,63 +81,132 @@ function Gallery() {
               >
                 {/* stacked photo deck preview */}
                 <div className={`relative ${isWide ? "aspect-[16/9]" : "aspect-[4/3]"} overflow-hidden bg-blue-100`}>
-                  {/* back layers — peeking from behind */}
-                  {album.images?.[2] && (
-                    <img
-                      src={album.images[2]}
-                      alt=""
-                      aria-hidden
-                      className="absolute inset-0 w-full h-full object-cover scale-95 -rotate-2 opacity-40 blur-sm"
-                    />
-                  )}
-                  {album.images?.[1] && (
-                    <img
-                      src={album.images[1]}
-                      alt=""
-                      aria-hidden
-                      className="absolute inset-0 w-full h-full object-cover scale-[0.98] rotate-1 opacity-60"
-                    />
-                  )}
-                  {/* main cover — prefer thumbnail uploaded in admin, fall back to first photo */}
-                  <img
-                    src={album.thumbnail || album.image || album.images?.[0]}
-                    alt={album.place}
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-                  />
+                  {/* normalize each image — supports both {url, publicId} objects and plain strings */}
+                  {(() => {
+                    const imgs = (album.images || []).map(toUrl).filter(Boolean);
+                    const cover = album.thumbnail || album.image || imgs[0];
+                    return (
+                      <>
+                        {/* back layers — peeking from behind */}
+                        {imgs[2] && (
+                          <img
+                            src={imgs[2]}
+                            alt=""
+                            aria-hidden
+                            className="absolute inset-0 w-full h-full object-cover scale-95 -rotate-2 opacity-40 blur-sm"
+                          />
+                        )}
+                        {imgs[1] && (
+                          <img
+                            src={imgs[1]}
+                            alt=""
+                            aria-hidden
+                            className="absolute inset-0 w-full h-full object-cover scale-[0.98] rotate-1 opacity-60"
+                          />
+                        )}
+                        {/* main cover — prefer thumbnail uploaded in admin, fall back to first photo */}
+                        {cover && (
+                          <img
+                            src={cover}
+                            alt={album.place}
+                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                          />
+                        )}
+                      </>
+                    );
+                  })()}
 
-                  {/* gradient + count badge */}
+                  {/* gradient overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-blue-950/85 via-blue-950/20 to-transparent" />
 
-                  <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-md text-blue-700 text-xs font-bold px-3 py-1.5 rounded-full inline-flex items-center gap-1.5 shadow-md">
-                    <FiImage size={13} />
-                    {count} photo{count > 1 ? "s" : ""}
+                  {/* top row — flex layout; tag lives here ONLY on small cards */}
+                  <div className="absolute top-3 left-3 right-3 flex items-start gap-2">
+                    {/* hover arrow — fixed 28px on the left */}
+                    <div className="w-7 h-7 rounded-full bg-white/95 backdrop-blur-md flex items-center justify-center text-blue-700 shadow-md opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 shrink-0">
+                      <FiArrowUpRight size={14} />
+                    </div>
+
+                    {/* tag sits in the middle on SMALL cards; empty spacer on wide cards (tag goes to bottom there) */}
+                    {!isWide && album.caption ? (
+                      <div className="flex-1 min-w-0 flex justify-center">
+                        <div className="bg-blue-600/95 backdrop-blur-sm text-white text-[11px] sm:text-xs font-bold px-3 py-1 rounded-full shadow-lg inline-flex items-center gap-1 max-w-full">
+                          <FiTag size={11} className="shrink-0" />
+                          <span className="truncate">{album.caption}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex-1" />
+                    )}
+
+                    {/* photo count — fixed-width on the right */}
+                    <div className="bg-white/95 backdrop-blur-md text-blue-700 text-[11px] font-bold px-2 py-1 rounded-full inline-flex items-center gap-1 shadow-md shrink-0">
+                      <FiImage size={11} />
+                      {count}
+                    </div>
                   </div>
 
-                  {/* hover arrow indicator */}
-                  <div className="absolute top-4 left-4 w-10 h-10 rounded-full bg-white/95 backdrop-blur-md flex items-center justify-center text-blue-700 shadow-md opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                    <FiArrowUpRight size={18} />
-                  </div>
-
-                  {/* place + date overlaid on the image */}
-                  <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6 text-white">
-                    {album.date && (
-                      <p className="text-[11px] sm:text-xs font-semibold tracking-widest uppercase text-blue-200 mb-1.5 inline-flex items-center gap-1.5">
-                        <FiCalendar size={12} />
-                        {new Date(album.date).toLocaleDateString(undefined, {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </p>
-                    )}
-                    <h3 className="text-xl sm:text-2xl font-bold leading-snug inline-flex items-center gap-2">
-                      <FiMapPin size={18} className="text-blue-300 shrink-0" />
-                      <span className="truncate">{album.place || album.caption}</span>
-                    </h3>
-                    {album.caption && album.place && (
-                      <p className="text-sm text-white/80 mt-1 line-clamp-1">{album.caption}</p>
-                    )}
-                  </div>
+                  {/* bottom area */}
+                  {/* WIDE card → date+place on one row, tag centered below them */}
+                  {isWide ? (
+                    <>
+                      {(album.date || album.place) && (
+                        <div className="absolute bottom-14 left-4 right-4 flex items-end justify-between gap-2">
+                          {album.date ? (
+                            <p className="text-xs sm:text-sm font-extrabold tracking-wide uppercase text-white inline-flex items-center gap-1 drop-shadow-md min-w-0 flex-1 truncate">
+                              <FiCalendar size={13} className="shrink-0" />
+                              <span className="truncate">
+                                {new Date(album.date).toLocaleDateString(undefined, {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                })}
+                              </span>
+                            </p>
+                          ) : (
+                            <span className="flex-1" />
+                          )}
+                          {album.place && (
+                            <p className="text-xs sm:text-sm font-extrabold tracking-wide uppercase text-white inline-flex items-center gap-1 drop-shadow-md min-w-0 flex-1 truncate justify-end text-right">
+                              <FiMapPin size={13} className="text-blue-300 shrink-0" />
+                              <span className="truncate">{album.place}</span>
+                            </p>
+                          )}
+                        </div>
+                      )}
+                      {album.caption && (
+                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-blue-600/95 backdrop-blur-sm text-white text-sm font-bold px-5 py-1.5 rounded-full shadow-lg inline-flex items-center gap-1.5 max-w-[85%]">
+                          <FiTag size={13} className="shrink-0" />
+                          <span className="truncate">{album.caption}</span>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    /* SMALL card → tag already on top; just date+place in one bottom row */
+                    (album.date || album.place) && (
+                      <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-2">
+                        {album.date ? (
+                          <p className="text-[10px] sm:text-xs font-extrabold tracking-wide uppercase text-white inline-flex items-center gap-1 drop-shadow-md min-w-0 flex-1 truncate">
+                            <FiCalendar size={12} className="shrink-0" />
+                            <span className="truncate">
+                              {new Date(album.date).toLocaleDateString(undefined, {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                              })}
+                            </span>
+                          </p>
+                        ) : (
+                          <span className="flex-1" />
+                        )}
+                        {album.place && (
+                          <p className="text-[10px] sm:text-xs font-extrabold tracking-wide uppercase text-white inline-flex items-center gap-1 drop-shadow-md min-w-0 flex-1 truncate justify-end text-right">
+                            <FiMapPin size={12} className="text-blue-300 shrink-0" />
+                            <span className="truncate">{album.place}</span>
+                          </p>
+                        )}
+                      </div>
+                    )
+                  )}
                 </div>
               </button>
             );

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { getTestimonials, createTestimonial, updateTestimonial, deleteTestimonial } from "../api/admin";
-import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiStar, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiStar, FiChevronLeft, FiChevronRight, FiEye } from "react-icons/fi";
 import ImageDropzone from "./ImageDropzone";
 import ConfirmModal from "./ConfirmModal";
 
@@ -16,9 +16,39 @@ function ManageTestimonials() {
   const [totalPages, setTotalPages] = useState(1);
   const [viewAll, setViewAll] = useState(false);
 
+  // bulk selection
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
+  // view modal
+  const [viewItem, setViewItem] = useState(null);
+
   useEffect(() => {
     loadTestimonials(page);
+    setSelectedIds(new Set());
   }, [page, viewAll]);
+
+  const toggleSelect = (id) =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  const toggleSelectAll = () =>
+    setSelectedIds((prev) =>
+      prev.size === testimonials.length ? new Set() : new Set(testimonials.map((t) => t._id)),
+    );
+  const allSelected = testimonials.length > 0 && selectedIds.size === testimonials.length;
+  const someSelected = selectedIds.size > 0 && selectedIds.size < testimonials.length;
+  const confirmBulkDelete = async () => {
+    setBulkDeleting(true);
+    await Promise.all(Array.from(selectedIds).map((id) => deleteTestimonial(id)));
+    setSelectedIds(new Set());
+    setBulkDeleteOpen(false);
+    setBulkDeleting(false);
+    await loadTestimonials(page);
+  };
 
   const loadTestimonials = async (p = 1) => {
     const res = await getTestimonials(viewAll ? 1 : p, viewAll ? 1000 : 14);
@@ -92,6 +122,22 @@ function ManageTestimonials() {
       <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-4 bg-white border-b border-blue-100/60 flex items-center justify-between">
         <h2 className="text-xl font-bold text-gray-800">Manage Testimonials</h2>
         <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <>
+              <button
+                onClick={() => setSelectedIds(new Set())}
+                className="bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium px-3 py-2 rounded-lg text-xs cursor-pointer inline-flex items-center gap-1 transition-colors"
+              >
+                <FiX size={13} /> Unselect All ({selectedIds.size})
+              </button>
+              <button
+                onClick={() => setBulkDeleteOpen(true)}
+                className="bg-red-600 hover:bg-red-700 text-white font-medium px-3 py-2 rounded-lg text-xs cursor-pointer inline-flex items-center gap-1 transition-colors"
+              >
+                <FiTrash2 size={13} /> Delete Selected ({selectedIds.size})
+              </button>
+            </>
+          )}
           <button
             onClick={() => { setViewAll((v) => !v); setPage(1); }}
             className="bg-white border border-blue-300 text-blue-600 hover:bg-blue-50 font-medium px-3 py-2 rounded-lg text-xs cursor-pointer transition-colors"
@@ -109,6 +155,9 @@ function ManageTestimonials() {
         <table className="w-full text-xs text-left">
           <thead className="sticky top-14 z-20 bg-blue-50 text-gray-700 text-[11px] uppercase tracking-wide shadow-[0_2px_6px_rgba(30,64,175,0.08)]">
             <tr>
+              <th className="px-3 py-2 w-8">
+                <input type="checkbox" checked={allSelected} ref={(el) => el && (el.indeterminate = someSelected)} onChange={toggleSelectAll} className="w-4 h-4 accent-blue-600 cursor-pointer" title="Select all on this page" />
+              </th>
               <th className="px-3 py-2 font-semibold">Avatar</th>
               <th className="px-3 py-2 font-semibold">Name</th>
               <th className="px-3 py-2 font-semibold">Company</th>
@@ -119,7 +168,10 @@ function ManageTestimonials() {
           </thead>
           <tbody className="divide-y divide-blue-100/60">
             {testimonials.map((item) => (
-              <tr key={item._id} className="hover:bg-blue-50/40 transition-colors">
+              <tr key={item._id} className={`transition-colors ${selectedIds.has(item._id) ? "bg-red-50/60 hover:bg-red-50" : "hover:bg-blue-50/40"}`}>
+                <td className="px-3 py-2 w-8">
+                  <input type="checkbox" checked={selectedIds.has(item._id)} onChange={() => toggleSelect(item._id)} className="w-4 h-4 accent-blue-600 cursor-pointer" />
+                </td>
                 <td className="px-3 py-2">
                   {item.avatar && (
                     <img src={item.avatar} alt={item.name} className="w-9 h-9 rounded-full object-cover border border-gray-200" />
@@ -137,8 +189,9 @@ function ManageTestimonials() {
                 <td className="px-3 py-2 text-gray-500 max-w-[240px] truncate">{item.reviewText || item.text}</td>
                 <td className="px-3 py-2">
                   <div className="flex items-center justify-end gap-1">
-                    <button onClick={() => openEdit(item)} className="text-blue-600 hover:bg-blue-50 p-1.5 rounded-lg cursor-pointer"><FiEdit2 size={14} /></button>
-                    <button onClick={() => setDeleteId(item._id)} className="text-red-500 hover:bg-red-50 p-1.5 rounded-lg cursor-pointer"><FiTrash2 size={14} /></button>
+                    <button onClick={() => setViewItem(item)} className="text-gray-500 hover:bg-gray-50 p-1.5 rounded-lg cursor-pointer" title="View"><FiEye size={14} /></button>
+                    <button onClick={() => openEdit(item)} className="text-blue-600 hover:bg-blue-50 p-1.5 rounded-lg cursor-pointer" title="Edit"><FiEdit2 size={14} /></button>
+                    <button onClick={() => setDeleteId(item._id)} className="text-red-500 hover:bg-red-50 p-1.5 rounded-lg cursor-pointer" title="Delete"><FiTrash2 size={14} /></button>
                   </div>
                 </td>
               </tr>
@@ -146,7 +199,7 @@ function ManageTestimonials() {
 
             {testimonials.length === 0 && (
               <tr>
-                <td colSpan={6} className="text-center py-10 text-gray-400">No testimonials yet.</td>
+                <td colSpan={7} className="text-center py-10 text-gray-400">No testimonials yet.</td>
               </tr>
             )}
           </tbody>
@@ -222,6 +275,51 @@ function ManageTestimonials() {
 
       {deleteId && (
         <ConfirmModal message="This testimonial will be permanently deleted." onConfirm={confirmDelete} onCancel={() => setDeleteId(null)} />
+      )}
+
+      {bulkDeleteOpen && (
+        <ConfirmModal
+          message={`${selectedIds.size} testimonial${selectedIds.size > 1 ? "s" : ""} will be permanently deleted.${bulkDeleting ? " Deleting…" : ""}`}
+          onConfirm={confirmBulkDelete}
+          onCancel={() => !bulkDeleting && setBulkDeleteOpen(false)}
+        />
+      )}
+
+      {/* VIEW modal */}
+      {viewItem && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setViewItem(null)}>
+          <div
+            className="relative bg-white rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-[0_4px_30px_rgba(37,99,235,0.3)] border border-blue-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-5 border-b border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-800">Testimonial — Details</h3>
+              <button onClick={() => setViewItem(null)} className="text-gray-400 hover:text-gray-600 cursor-pointer"><FiX size={20} /></button>
+            </div>
+            <div className="p-5 space-y-4 text-sm">
+              <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
+                {viewItem.avatar ? (
+                  <img src={viewItem.avatar} alt={viewItem.name} className="w-16 h-16 rounded-full object-cover border-2 border-blue-200" />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 text-xs">No avatar</div>
+                )}
+                <div className="min-w-0">
+                  <p className="text-gray-800 font-bold text-lg truncate">{viewItem.name}</p>
+                  {viewItem.company && <p className="text-gray-500 text-sm truncate">{viewItem.company}</p>}
+                  <div className="flex gap-1 mt-1">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <FiStar key={i} size={13} className={i < viewItem.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div>
+                <p className="text-[11px] uppercase tracking-wide text-gray-400 mb-2">Review</p>
+                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{viewItem.reviewText || viewItem.text || "-"}</p>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

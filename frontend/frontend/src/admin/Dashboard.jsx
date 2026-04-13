@@ -1,52 +1,85 @@
 import { useState, useEffect } from "react";
-import { getDashboardStats } from "../api/admin";
+import {
+  getAllHeroes,
+  getProjects,
+  getApps,
+  getClients,
+  getTeamMembers,
+  getTestimonials,
+  getGalleryImages,
+  getMessages,
+  getAllAbout,
+} from "../api/admin";
 import {
   FiGrid, FiSmartphone, FiUsers, FiImage,
-  FiStar, FiCamera, FiMail, FiTrendingUp
+  FiStar, FiCamera, FiMail, FiMonitor, FiInfo,
 } from "react-icons/fi";
 
-// fallback stats when backend isnt connected
-const defaultStats = {
-  projects: 0,
-  apps: 0,
-  clients: 0,
-  team: 0,
-  testimonials: 0,
-  gallery: 0,
-  messages: 0,
-};
-
-// maps stat key to icon and color
+// each card maps to a list endpoint; we read pagination.totalItems from the
+// response (or fall back to the array length if no pagination block was sent)
 const statCards = [
-  { key: "projects", label: "Projects", icon: FiGrid, color: "bg-blue-500" },
-  { key: "apps", label: "Apps", icon: FiSmartphone, color: "bg-indigo-500" },
-  { key: "clients", label: "Clients", icon: FiImage, color: "bg-green-500" },
-  { key: "team", label: "Team Members", icon: FiUsers, color: "bg-purple-500" },
-  { key: "testimonials", label: "Testimonials", icon: FiStar, color: "bg-yellow-500" },
-  { key: "gallery", label: "Gallery Images", icon: FiCamera, color: "bg-pink-500" },
-  { key: "messages", label: "Messages", icon: FiMail, color: "bg-red-500" },
+  { key: "hero",         label: "Hero Banners", icon: FiMonitor,    color: "bg-cyan-500",   fetch: () => getAllHeroes(1, 1),     listKey: "heroes" },
+  { key: "projects",     label: "Projects",     icon: FiGrid,       color: "bg-blue-500",   fetch: () => getProjects(1, 1),      listKey: "project" },
+  { key: "apps",         label: "Apps",         icon: FiSmartphone, color: "bg-indigo-500", fetch: () => getApps(1, 1),          listKey: "apps" },
+  { key: "clients",      label: "Clients",      icon: FiImage,      color: "bg-green-500",  fetch: () => getClients(1, 1),       listKey: "clients" },
+  { key: "team",         label: "Team Members", icon: FiUsers,      color: "bg-purple-500", fetch: () => getTeamMembers(1, 1),   listKey: "teams" },
+  { key: "testimonials", label: "Testimonials", icon: FiStar,       color: "bg-yellow-500", fetch: () => getTestimonials(1, 1),  listKey: "testimonial" },
+  { key: "gallery",      label: "Gallery Albums", icon: FiCamera,   color: "bg-pink-500",   fetch: () => getGalleryImages(1, 1), listKey: "albums" },
+  { key: "about",        label: "About Entries", icon: FiInfo,      color: "bg-orange-500", fetch: () => getAllAbout(1, 1),      listKey: "abouts" },
+  { key: "messages",     label: "Messages",     icon: FiMail,       color: "bg-red-500",    fetch: () => getMessages(1, 1),      listKey: "message" },
 ];
 
 function Dashboard() {
-  const [stats, setStats] = useState(defaultStats);
+  const [stats, setStats] = useState({});
+  const [loading, setLoading] = useState(true);
 
-  // load dashboard stats on mount
+  // fetch every list in parallel and pull the count from pagination.totalItems
   useEffect(() => {
-    getDashboardStats().then((res) => {
-      if (res) setStats(res);
-    });
+    let isMounted = true;
+    const loadStats = async () => {
+      const results = await Promise.all(
+        statCards.map(async (card) => {
+          try {
+            const res = await card.fetch();
+            const data = res?.data;
+            // prefer pagination.totalItems (cheap — only ships 1 row)
+            // fall back to list length for endpoints that don't paginate
+            const total =
+              data?.pagination?.totalItems ??
+              data?.[card.listKey]?.length ??
+              (Array.isArray(data) ? data.length : 0);
+            return [card.key, total];
+          } catch {
+            return [card.key, 0];
+          }
+        }),
+      );
+      if (!isMounted) return;
+      setStats(Object.fromEntries(results));
+      setLoading(false);
+    };
+    loadStats();
+    return () => { isMounted = false; };
   }, []);
 
   return (
     <div>
       {/* welcome header */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-1">Welcome back!</h2>
-        <p className="text-gray-500 text-sm">Here's an overview of your portfolio content.</p>
+      <div className="mb-8 flex items-end justify-between flex-wrap gap-3">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-1">Welcome back!</h2>
+          <p className="text-gray-500 text-sm">Here's an overview of your portfolio content.</p>
+        </div>
+        {loading && (
+          <span className="text-xs text-gray-400 inline-flex items-center gap-2">
+            <span className="w-3 h-3 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
+            Loading counts...
+          </span>
+        )}
       </div>
 
       {/* stat cards grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {statCards.map((card) => (
           <div
             key={card.key}
@@ -56,9 +89,14 @@ function Dashboard() {
               <div className={`${card.color} p-2.5 rounded-lg text-white`}>
                 <card.icon size={20} />
               </div>
-              <FiTrendingUp className="text-green-400" size={16} />
             </div>
-            <p className="text-2xl font-bold text-gray-800">{stats[card.key] ?? 0}</p>
+            <p className="text-2xl font-bold text-gray-800">
+              {loading ? (
+                <span className="inline-block w-10 h-6 bg-gray-100 rounded animate-pulse" />
+              ) : (
+                stats[card.key] ?? 0
+              )}
+            </p>
             <p className="text-gray-500 text-sm">{card.label}</p>
           </div>
         ))}

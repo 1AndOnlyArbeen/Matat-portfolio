@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getAppById } from "../api";
-import { appsData } from "../data/placeholders";
 import { FiArrowLeft, FiExternalLink, FiSmartphone, FiStar, FiDownload, FiX, FiChevronLeft, FiChevronRight, FiImage } from "react-icons/fi";
 
-// single app detail page
-// shows app icon, screenshots, description, rating, downloads
+// single app detail page — fully dynamic from backend
 function AppDetail() {
   const { id } = useParams();
   const [app, setApp] = useState(null);
@@ -13,17 +11,13 @@ function AppDetail() {
   const [lightboxIndex, setLightboxIndex] = useState(null);
 
   useEffect(() => {
-    // try backend first
     getAppById(id).then((res) => {
-      if (res) {
-        setApp(res);
-      } else {
-        // fallback to placeholder
-        const found = appsData.find((a) => a._id === id);
-        setApp(found || null);
-      }
+      setApp(res || null);
       setLoading(false);
-    }).catch(() => setLoading(false));
+    }).catch(() => {
+      setApp(null);
+      setLoading(false);
+    });
   }, [id]);
 
   // loading
@@ -47,15 +41,11 @@ function AppDetail() {
     );
   }
 
-  // use backend screenshots/rating if present, otherwise show dummy placeholders
-  const screenshots = (app.screenshots && app.screenshots.length > 0
-    ? app.screenshots
-    : [
-        "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=1200&q=80",
-        "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1200&q=80",
-      ]
-  ).map((s) => (typeof s === "string" ? s : s?.url)).filter(Boolean);
-  const rating = app.rating || 4.5;
+  // normalize screenshots — backend returns {url, publicId} objects, may also get plain strings
+  const screenshots = (app.screenshots || [])
+    .map((s) => (typeof s === "string" ? s : s?.url))
+    .filter(Boolean);
+  const rating = app.rating || 0;
 
   const openLightbox = (i) => setLightboxIndex(i);
   const closeLightbox = () => setLightboxIndex(null);
@@ -113,31 +103,33 @@ function AppDetail() {
           </p>
         </div>
 
-        {/* screenshots */}
-        <div className="mb-10">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-blue-900 inline-flex items-center gap-2">
-              <FiImage className="text-blue-500" /> Screenshots
-            </h2>
-            <span className="text-xs text-gray-400">{screenshots.length} image{screenshots.length > 1 ? "s" : ""}</span>
+        {/* snapshots — only render if the backend has any */}
+        {screenshots.length > 0 && (
+          <div className="mb-10">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-blue-900 inline-flex items-center gap-2">
+                <FiImage className="text-blue-500" /> Snapshots
+              </h2>
+              <span className="text-xs text-gray-400">{screenshots.length} image{screenshots.length > 1 ? "s" : ""}</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {screenshots.map((src, i) => (
+                <button
+                  key={i}
+                  onClick={() => openLightbox(i)}
+                  className="group relative aspect-video rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-gray-100"
+                >
+                  <img
+                    src={src}
+                    alt={`${app.appName || app.name} snapshot ${i + 1}`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-blue-900/0 group-hover:bg-blue-900/30 transition-colors" />
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {screenshots.map((src, i) => (
-              <button
-                key={i}
-                onClick={() => openLightbox(i)}
-                className="group relative aspect-video rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-gray-100"
-              >
-                <img
-                  src={src}
-                  alt={`${app.appName || app.name} screenshot ${i + 1}`}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-blue-900/0 group-hover:bg-blue-900/30 transition-colors" />
-              </button>
-            ))}
-          </div>
-        </div>
+        )}
 
         {/* lightbox — click a screenshot to zoom */}
         {lightboxIndex !== null && (
@@ -151,7 +143,7 @@ function AppDetail() {
             <div className="flex-1 relative flex items-center justify-center px-4 sm:px-12" onClick={(e) => e.stopPropagation()}>
               <img
                 src={screenshots[lightboxIndex]}
-                alt={`Screenshot ${lightboxIndex + 1}`}
+                alt={`Snapshot ${lightboxIndex + 1}`}
                 className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
               />
               {screenshots.length > 1 && (

@@ -17,9 +17,36 @@ function ManageClients() {
   const [totalPages, setTotalPages] = useState(1);
   const [viewAll, setViewAll] = useState(false);
 
+  // bulk selection
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
   useEffect(() => {
     loadClients(page);
+    setSelectedIds(new Set());
   }, [page, viewAll]);
+
+  const toggleSelect = (id) =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  const toggleSelectAll = () =>
+    setSelectedIds((prev) =>
+      prev.size === clients.length ? new Set() : new Set(clients.map((c) => c._id)),
+    );
+  const allSelected = clients.length > 0 && selectedIds.size === clients.length;
+  const someSelected = selectedIds.size > 0 && selectedIds.size < clients.length;
+  const confirmBulkDelete = async () => {
+    setBulkDeleting(true);
+    await Promise.all(Array.from(selectedIds).map((id) => deleteClient(id)));
+    setSelectedIds(new Set());
+    setBulkDeleteOpen(false);
+    setBulkDeleting(false);
+    await loadClients(page);
+  };
 
   const loadClients = async (p = 1) => {
     const res = await getClients(viewAll ? 1 : p, viewAll ? 1000 : 14);
@@ -91,6 +118,22 @@ function ManageClients() {
       <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-4 bg-white border-b border-blue-100/60 flex items-center justify-between">
         <h2 className="text-xl font-bold text-gray-800">Manage Clients</h2>
         <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <>
+              <button
+                onClick={() => setSelectedIds(new Set())}
+                className="bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium px-3 py-2 rounded-lg text-xs cursor-pointer inline-flex items-center gap-1 transition-colors"
+              >
+                <FiX size={13} /> Unselect All ({selectedIds.size})
+              </button>
+              <button
+                onClick={() => setBulkDeleteOpen(true)}
+                className="bg-red-600 hover:bg-red-700 text-white font-medium px-3 py-2 rounded-lg text-xs cursor-pointer inline-flex items-center gap-1 transition-colors"
+              >
+                <FiTrash2 size={13} /> Delete Selected ({selectedIds.size})
+              </button>
+            </>
+          )}
           <button
             onClick={() => { setViewAll((v) => !v); setPage(1); }}
             className="bg-white border border-blue-300 text-blue-600 hover:bg-blue-50 font-medium px-3 py-2 rounded-lg text-xs cursor-pointer transition-colors"
@@ -108,6 +151,9 @@ function ManageClients() {
         <table className="w-full text-xs text-left">
           <thead className="sticky top-14 z-20 bg-blue-50 text-gray-700 text-[11px] uppercase tracking-wide shadow-[0_2px_6px_rgba(30,64,175,0.08)]">
             <tr>
+              <th className="px-3 py-2 w-8">
+                <input type="checkbox" checked={allSelected} ref={(el) => el && (el.indeterminate = someSelected)} onChange={toggleSelectAll} className="w-4 h-4 accent-blue-600 cursor-pointer" title="Select all on this page" />
+              </th>
               <th className="px-3 py-2 font-semibold">Logo</th>
               <th className="px-3 py-2 font-semibold">Name</th>
               <th className="px-3 py-2 font-semibold">Heading</th>
@@ -117,7 +163,10 @@ function ManageClients() {
           </thead>
           <tbody className="divide-y divide-blue-100/60">
             {clients.map((client) => (
-              <tr key={client._id} className="hover:bg-blue-50/40 transition-colors">
+              <tr key={client._id} className={`transition-colors ${selectedIds.has(client._id) ? "bg-red-50/60 hover:bg-red-50" : "hover:bg-blue-50/40"}`}>
+                <td className="px-3 py-2 w-8">
+                  <input type="checkbox" checked={selectedIds.has(client._id)} onChange={() => toggleSelect(client._id)} className="w-4 h-4 accent-blue-600 cursor-pointer" />
+                </td>
                 <td className="px-3 py-2">
                   {client.logo && (
                     <img src={client.logo} alt={client.clientName || client.name} className="w-9 h-9 object-contain rounded-lg border border-gray-200 bg-white p-0.5" />
@@ -128,9 +177,9 @@ function ManageClients() {
                 <td className="px-3 py-2 text-gray-400 max-w-[240px] truncate">{client.subtitle || "-"}</td>
                 <td className="px-3 py-2">
                   <div className="flex items-center justify-end gap-1">
-                    <Link to={`/matat-admin/clients/${client._id}`} className="text-gray-500 hover:bg-gray-50 p-1.5 rounded-lg"><FiEye size={14} /></Link>
-                    <button onClick={() => openEdit(client)} className="text-blue-600 hover:bg-blue-50 p-1.5 rounded-lg cursor-pointer"><FiEdit2 size={14} /></button>
-                    <button onClick={() => setDeleteId(client._id)} className="text-red-500 hover:bg-red-50 p-1.5 rounded-lg cursor-pointer"><FiTrash2 size={14} /></button>
+                    <Link to={`/matat-admin/clients/${client._id}`} className="text-gray-500 hover:bg-gray-50 p-1.5 rounded-lg" title="View"><FiEye size={14} /></Link>
+                    <button onClick={() => openEdit(client)} className="text-blue-600 hover:bg-blue-50 p-1.5 rounded-lg cursor-pointer" title="Edit"><FiEdit2 size={14} /></button>
+                    <button onClick={() => setDeleteId(client._id)} className="text-red-500 hover:bg-red-50 p-1.5 rounded-lg cursor-pointer" title="Delete"><FiTrash2 size={14} /></button>
                   </div>
                 </td>
               </tr>
@@ -138,7 +187,7 @@ function ManageClients() {
 
             {clients.length === 0 && (
               <tr>
-                <td colSpan={5} className="text-center py-10 text-gray-400">No clients yet.</td>
+                <td colSpan={6} className="text-center py-10 text-gray-400">No clients yet.</td>
               </tr>
             )}
           </tbody>
@@ -202,6 +251,14 @@ function ManageClients() {
 
       {deleteId && (
         <ConfirmModal message="This client will be permanently deleted." onConfirm={confirmDelete} onCancel={() => setDeleteId(null)} />
+      )}
+
+      {bulkDeleteOpen && (
+        <ConfirmModal
+          message={`${selectedIds.size} client${selectedIds.size > 1 ? "s" : ""} will be permanently deleted.${bulkDeleting ? " Deleting…" : ""}`}
+          onConfirm={confirmBulkDelete}
+          onCancel={() => !bulkDeleting && setBulkDeleteOpen(false)}
+        />
       )}
     </div>
   );

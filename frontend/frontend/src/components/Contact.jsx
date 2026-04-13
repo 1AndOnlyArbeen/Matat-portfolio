@@ -92,7 +92,16 @@ function Contact() {
 
           {/* right side - contact form */}
           <div className="lg:col-span-3">
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="relative space-y-4">
+              {/* sending overlay — covers the whole form while submitting */}
+              {status === "sending" && (
+                <div className="absolute inset-0 z-10 bg-white/80 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center gap-3">
+                  <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                  <p className="text-sm font-medium text-gray-700">Sending your message...</p>
+                  <p className="text-xs text-gray-400">This may take a few seconds</p>
+                </div>
+              )}
+
               {/* name and email side by side */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <input
@@ -102,7 +111,8 @@ function Contact() {
                   onChange={handleChange}
                   placeholder="Your Name"
                   required
-                  className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-shadow"
+                  disabled={status === "sending"}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-shadow disabled:opacity-60"
                 />
                 <input
                   type="email"
@@ -111,7 +121,8 @@ function Contact() {
                   onChange={handleChange}
                   placeholder="Your Email"
                   required
-                  className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-shadow"
+                  disabled={status === "sending"}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-shadow disabled:opacity-60"
                 />
               </div>
 
@@ -123,7 +134,8 @@ function Contact() {
                 onChange={handleChange}
                 placeholder="Subject"
                 required
-                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-shadow"
+                disabled={status === "sending"}
+                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-shadow disabled:opacity-60"
               />
 
               {/* message */}
@@ -134,17 +146,27 @@ function Contact() {
                 placeholder="Your Message"
                 rows={5}
                 required
-                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none transition-shadow"
+                disabled={status === "sending"}
+                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none transition-shadow disabled:opacity-60"
               />
 
-              {/* send button */}
+              {/* send button — spinner appears when sending */}
               <button
                 type="submit"
                 disabled={status === "sending"}
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold px-8 py-3 rounded-lg transition-all flex items-center gap-2 cursor-pointer hover:-translate-y-0.5 hover:shadow-lg"
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white font-semibold px-8 py-3 rounded-lg transition-all flex items-center gap-2 cursor-pointer hover:-translate-y-0.5 hover:shadow-lg"
               >
-                <FiSend size={16} />
-                {status === "sending" ? "Sending..." : "Send Message"}
+                {status === "sending" ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <FiSend size={16} />
+                    Send Message
+                  </>
+                )}
               </button>
 
               {/* success/error feedback */}

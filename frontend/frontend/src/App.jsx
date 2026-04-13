@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 
 // public site components
@@ -11,17 +11,45 @@ import ClientDetail from "./pages/ClientDetail";
 import NotFound from "./pages/NotFound";
 import AdminNotFound from "./admin/AdminNotFound";
 
-// home wrapper — refresh always lands at the top of the page
-// (we no longer auto-scroll to a section based on the URL path; the user wants
-//  refresh to behave like "go to home")
+// maps section paths to their DOM element IDs so we can scroll to them
+const sectionMap = {
+  "/projects":      "projects",
+  "/apps":          "apps",
+  "/clients":       "clients",
+  "/about":         "about",
+  "/team":          "team",
+  "/testimonials":  "testimonials",
+  "/gallery":       "gallery",
+  "/contact":       "contact",
+};
+
+// home wrapper — on mount, scrolls to the section that matches the current URL
+// so that /projects lands in the Projects section, /apps in Apps, etc.
+// Landing on "/" just scrolls to the top.
 function HomeWithScroll() {
+  const location = useLocation();
+
   useEffect(() => {
-    // normalize URL back to "/" if user landed on /apps, /team, etc.
-    if (window.location.pathname !== "/") {
-      window.history.replaceState(null, "", "/");
+    const sectionId = sectionMap[location.pathname];
+    if (!sectionId) {
+      window.scrollTo(0, 0);
+      return;
     }
-    window.scrollTo(0, 0);
-  }, []);
+    // retry until the section exists (async data may delay render)
+    let attempts = 0;
+    const tryScroll = () => {
+      const el = document.getElementById(sectionId);
+      if (el) {
+        const offset = 80;
+        const top = el.getBoundingClientRect().top + window.scrollY - offset;
+        window.scrollTo({ top, behavior: "smooth" });
+      } else if (attempts < 20) {
+        attempts++;
+        setTimeout(tryScroll, 200);
+      }
+    };
+    setTimeout(tryScroll, 300);
+  }, [location.pathname]);
 
   return <Home />;
 }
