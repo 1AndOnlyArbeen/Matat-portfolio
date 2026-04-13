@@ -24,6 +24,10 @@ const testimonial = new mongoose.Schema(
       type: String,
       required: true,
     },
+    avatarId: {
+      type: String,
+      default: '',
+    },
   },
   { timestamps: true },
 );

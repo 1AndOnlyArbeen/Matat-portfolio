@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { getTeamMembers } from "../api";
-import { FiLinkedin, FiGithub, FiTwitter, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { FiLinkedin, FiGithub, FiTwitter, FiChevronLeft, FiChevronRight, FiGlobe } from "react-icons/fi";
 import useScrollAnimation from "../hooks/useScrollAnimation";
 
 function Team() {
@@ -86,6 +86,11 @@ function Team() {
                       <div className="absolute bottom-0 left-0 right-0 p-5 text-left">
                         <h3 className="text-lg font-bold text-white">{member.name}</h3>
                         <p className="text-blue-300 text-sm">{member.role}</p>
+                        {member.country && (
+                          <p className="text-white/80 text-xs mt-1 inline-flex items-center gap-1">
+                            <FiGlobe size={11} /> {member.country}
+                          </p>
+                        )}
                       </div>
                     </div>
                     <div className="flex justify-center gap-4 py-4 bg-white">

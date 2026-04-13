@@ -1,76 +1,78 @@
 import { useState, useEffect } from "react";
-import { getMessages, updateMessage, deleteMessage } from "../api/admin";
+import { getMessages, deleteMessage } from "../api/admin";
 import {
-  FiTrash2, FiMail, FiClock, FiEye, FiEdit2, FiX, FiSave,
-  FiChevronLeft, FiChevronRight, FiUser,
+  FiTrash2, FiMail, FiClock, FiEye, FiX,
+  FiChevronLeft, FiChevronRight, FiUser, FiCheckCircle,
 } from "react-icons/fi";
 import ConfirmModal from "./ConfirmModal";
+import { isRead, markRead, markUnread, markAllRead, onReadChange } from "./messageReadStore";
 
 function ManageMessages() {
   const [messages, setMessages] = useState([]);
   const [deleteId, setDeleteId] = useState(null);
   const [viewMsg, setViewMsg] = useState(null);
-  const [editMsg, setEditMsg] = useState(null);
-  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
-  const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState("");
 
   const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [viewAll, setViewAll] = useState(false);
-  const perPage = 14;
+
+  // trigger re-render when read state changes (counts + badges update)
+  const [, setReadTick] = useState(0);
+  useEffect(() => onReadChange(() => setReadTick((t) => t + 1)), []);
 
   useEffect(() => {
-    loadMessages();
-  }, []);
+    loadMessages(page);
+  }, [page, viewAll]);
 
-  const loadMessages = async () => {
-    const res = await getMessages();
-    if (res) setMessages(res);
-  };
-
-  const openEdit = (msg) => {
-    setEditMsg(msg);
-    setForm({
-      name: msg.name || "",
-      email: msg.email || "",
-      subject: msg.subject || "",
-      message: msg.message || "",
-    });
-    setSaveError("");
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSaving(true);
-    setSaveError("");
-    const result = await updateMessage(editMsg._id, form);
-    if (result) {
-      await loadMessages();
-      setEditMsg(null);
-    } else {
-      setSaveError("Failed to update. Backend may not support message editing yet.");
+  // backend returns { data: { message: [...], pagination: {...} } }
+  // note: field name is singular `message` even though it's an array
+  const loadMessages = async (p = 1) => {
+    const res = await getMessages(viewAll ? 1 : p, viewAll ? 1000 : 14);
+    const data = res?.data;
+    const list = data?.message || [];
+    setMessages(Array.isArray(list) ? list : []);
+    if (data?.pagination) {
+      setTotalPages(data.pagination.totalPages || 1);
+      setTotalItems(data.pagination.totalItems || 0);
     }
-    setSaving(false);
   };
 
   const confirmDelete = async () => {
     if (!deleteId) return;
     const result = await deleteMessage(deleteId);
     setDeleteId(null);
-    if (result) await loadMessages();
+    if (result) {
+      if (messages.length === 1 && page > 1) setPage(page - 1);
+      else await loadMessages(page);
+    }
   };
-
-  // pagination
-  const totalPages = viewAll ? 1 : Math.max(1, Math.ceil(messages.length / perPage));
-  const visible = viewAll ? messages : messages.slice((page - 1) * perPage, page * perPage);
 
   return (
     <div>
       {/* sticky header */}
       <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-4 bg-white border-b border-blue-100/60 flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-800">Contact Messages</h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-xl font-bold text-gray-800">Contact Messages</h2>
+          {(() => {
+            const unread = messages.filter((m) => !isRead(m._id)).length;
+            return unread > 0 ? (
+              <span className="bg-red-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                {unread} unread
+              </span>
+            ) : null;
+          })()}
+        </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-400">{messages.length} message(s)</span>
+          <span className="text-xs text-gray-400">{totalItems} total</span>
+          <button
+            onClick={() => markAllRead(messages.map((m) => m._id))}
+            disabled={messages.every((m) => isRead(m._id))}
+            className="bg-white border border-blue-300 text-blue-600 hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium px-3 py-2 rounded-lg text-xs cursor-pointer inline-flex items-center gap-1 transition-colors"
+            title="Mark all visible messages as read"
+          >
+            <FiCheckCircle size={13} /> Mark all read
+          </button>
           <button
             onClick={() => { setViewAll((v) => !v); setPage(1); }}
             className="bg-white border border-blue-300 text-blue-600 hover:bg-blue-50 font-medium px-3 py-2 rounded-lg text-xs cursor-pointer transition-colors"
@@ -94,43 +96,71 @@ function ManageMessages() {
             </tr>
           </thead>
           <tbody className="divide-y divide-blue-100/60">
-            {visible.map((msg) => (
-              <tr key={msg._id} className="hover:bg-blue-50/40 transition-colors">
-                <td className="px-3 py-2 font-medium text-gray-800 max-w-[160px] truncate">{msg.name}</td>
-                <td className="px-3 py-2 text-gray-500 max-w-[160px] truncate">
-                  <span className="inline-flex items-center gap-1">
-                    <FiMail size={11} /> {msg.email}
-                  </span>
-                </td>
-                <td className="px-3 py-2 text-blue-600 font-medium max-w-[160px] truncate">{msg.subject}</td>
-                <td className="px-3 py-2 text-gray-600 max-w-[240px] truncate">{msg.message}</td>
-                <td className="px-3 py-2 text-gray-400 whitespace-nowrap">
-                  {msg.createdAt ? (
+            {messages.map((msg) => {
+              const read = isRead(msg._id);
+              return (
+                <tr
+                  key={msg._id}
+                  className={`transition-colors ${read ? "hover:bg-blue-50/40" : "bg-blue-50/70 hover:bg-blue-100/60 font-semibold"}`}
+                >
+                  <td className="px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      {!read && <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" title="Unread" />}
+                      <span className={`${read ? "text-gray-800" : "text-gray-900 font-bold"} max-w-[140px] truncate`}>
+                        {msg.name}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-3 py-2 text-gray-500 max-w-[160px] truncate">
                     <span className="inline-flex items-center gap-1">
-                      <FiClock size={10} />
-                      {new Date(msg.createdAt).toLocaleString()}
+                      <FiMail size={11} /> {msg.email}
                     </span>
-                  ) : "-"}
-                </td>
-                <td className="px-3 py-2">
-                  <div className="flex items-center justify-end gap-1">
-                    <button onClick={() => setViewMsg(msg)} className="text-gray-500 hover:bg-gray-50 p-1.5 rounded-lg cursor-pointer" title="View">
-                      <FiEye size={14} />
-                    </button>
-                    <button onClick={() => openEdit(msg)} className="text-blue-600 hover:bg-blue-50 p-1.5 rounded-lg cursor-pointer" title="Edit">
-                      <FiEdit2 size={14} />
-                    </button>
-                    <button
-                      onClick={() => setDeleteId(msg._id)}
-                      className="text-red-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg cursor-pointer transition-colors"
-                      title="Delete"
-                    >
-                      <FiTrash2 size={14} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td className={`px-3 py-2 max-w-[160px] truncate ${read ? "text-blue-600 font-medium" : "text-blue-700 font-bold"}`}>
+                    {msg.subject || "-"}
+                  </td>
+                  <td className="px-3 py-2 text-gray-600 max-w-[240px] truncate">{msg.message}</td>
+                  <td className="px-3 py-2 text-gray-400 whitespace-nowrap">
+                    {msg.createdAt ? (
+                      <span className="inline-flex items-center gap-1">
+                        <FiClock size={10} />
+                        {new Date(msg.createdAt).toLocaleString()}
+                      </span>
+                    ) : "-"}
+                  </td>
+                  <td className="px-3 py-2">
+                    <div className="flex items-center justify-end gap-1">
+                      <button
+                        onClick={() => (read ? markUnread(msg._id) : markRead(msg._id))}
+                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold cursor-pointer transition-colors ${
+                          read
+                            ? "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                            : "bg-blue-600 text-white hover:bg-blue-700"
+                        }`}
+                        title={read ? "Mark as unread" : "Mark as read"}
+                      >
+                        <FiCheckCircle size={12} />
+                        {read ? "Mark as Unread" : "Mark as Read"}
+                      </button>
+                      <button
+                        onClick={() => { setViewMsg(msg); markRead(msg._id); }}
+                        className="text-gray-500 hover:bg-gray-50 p-1.5 rounded-lg cursor-pointer"
+                        title="View"
+                      >
+                        <FiEye size={14} />
+                      </button>
+                      <button
+                        onClick={() => setDeleteId(msg._id)}
+                        className="text-red-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg cursor-pointer transition-colors"
+                        title="Delete"
+                      >
+                        <FiTrash2 size={14} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
 
             {messages.length === 0 && (
               <tr>
@@ -205,7 +235,22 @@ function ManageMessages() {
                 </div>
               )}
             </div>
-            <div className="flex justify-end gap-2 p-5 pt-0">
+            <div className="flex flex-wrap justify-end gap-2 p-5 pt-0">
+              {isRead(viewMsg._id) ? (
+                <button
+                  onClick={() => markUnread(viewMsg._id)}
+                  className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium px-4 py-2 rounded-lg text-sm flex items-center gap-2 cursor-pointer transition-colors"
+                >
+                  <FiCheckCircle size={14} /> Mark as Unread
+                </button>
+              ) : (
+                <button
+                  onClick={() => markRead(viewMsg._id)}
+                  className="bg-white border border-blue-300 hover:bg-blue-50 text-blue-600 font-medium px-4 py-2 rounded-lg text-sm flex items-center gap-2 cursor-pointer transition-colors"
+                >
+                  <FiCheckCircle size={14} /> Mark as Read
+                </button>
+              )}
               <a
                 href={`mailto:${viewMsg.email}?subject=Re:%20${encodeURIComponent(viewMsg.subject || "")}`}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-sm flex items-center gap-2"
@@ -213,78 +258,6 @@ function ManageMessages() {
                 <FiMail size={14} /> Reply via Email
               </a>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* EDIT modal */}
-      {editMsg && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="relative bg-white/95 backdrop-blur-[2px] rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-[0_4px_30px_rgba(37,99,235,0.3)] border border-blue-300">
-            {saving && (
-              <div className="absolute inset-0 z-10 bg-white/80 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center gap-3">
-                <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-                <p className="text-sm font-medium text-gray-700">Saving changes...</p>
-              </div>
-            )}
-            <div className="flex items-center justify-between p-5 border-b border-gray-100">
-              <h3 className="text-lg font-semibold text-gray-800">Edit Message</h3>
-              <button onClick={() => setEditMsg(null)} className="text-gray-400 hover:text-gray-600 cursor-pointer"><FiX size={20} /></button>
-            </div>
-            <form onSubmit={handleSubmit} className="p-5 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                  <input
-                    type="text"
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    required
-                    className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <input
-                    type="email"
-                    value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    required
-                    className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-                <input
-                  type="text"
-                  value={form.subject}
-                  onChange={(e) => setForm({ ...form, subject: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
-                <textarea
-                  value={form.message}
-                  onChange={(e) => setForm({ ...form, message: e.target.value })}
-                  rows={5}
-                  required
-                  className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
-                />
-              </div>
-              {saveError && <p className="text-sm text-red-500 font-medium">{saveError}</p>}
-              <div className="flex justify-end gap-3 pt-2">
-                <button type="button" onClick={() => setEditMsg(null)} className="px-4 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-100 cursor-pointer">Cancel</button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium px-5 py-2.5 rounded-lg text-sm flex items-center gap-2 cursor-pointer"
-                >
-                  <FiSave size={14} /> {saving ? "Saving..." : "Save"}
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}

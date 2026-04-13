@@ -10,6 +10,10 @@ const team = new mongoose.Schema(
       type: String,
       required: true,
     },
+    country: {
+      type: String,
+      default: '',
+    },
     linkedinUrl: {
       type: String,
       default: null,

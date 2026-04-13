@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getAppById } from "../api";
 import { appsData } from "../data/placeholders";
-import { FiArrowLeft, FiExternalLink, FiSmartphone, FiStar, FiDownload } from "react-icons/fi";
+import { FiArrowLeft, FiExternalLink, FiSmartphone, FiStar, FiDownload, FiX, FiChevronLeft, FiChevronRight, FiImage } from "react-icons/fi";
 
 // single app detail page
 // shows app icon, screenshots, description, rating, downloads
@@ -10,6 +10,7 @@ function AppDetail() {
   const { id } = useParams();
   const [app, setApp] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [lightboxIndex, setLightboxIndex] = useState(null);
 
   useEffect(() => {
     // try backend first
@@ -47,13 +48,21 @@ function AppDetail() {
   }
 
   // use backend screenshots/rating if present, otherwise show dummy placeholders
-  const screenshots = app.screenshots && app.screenshots.length > 0
+  const screenshots = (app.screenshots && app.screenshots.length > 0
     ? app.screenshots
     : [
-        "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=600&q=80",
-        "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=600&q=80",
-      ];
+        "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=1200&q=80",
+        "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1200&q=80",
+      ]
+  ).map((s) => (typeof s === "string" ? s : s?.url)).filter(Boolean);
   const rating = app.rating || 4.5;
+
+  const openLightbox = (i) => setLightboxIndex(i);
+  const closeLightbox = () => setLightboxIndex(null);
+  const prevShot = () =>
+    setLightboxIndex((i) => (i - 1 + screenshots.length) % screenshots.length);
+  const nextShot = () =>
+    setLightboxIndex((i) => (i + 1) % screenshots.length);
 
   return (
     <div className="py-12">
@@ -106,15 +115,58 @@ function AppDetail() {
 
         {/* screenshots */}
         <div className="mb-10">
-          <h2 className="text-xl font-semibold text-blue-900 mb-4">Screenshots</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-blue-900 inline-flex items-center gap-2">
+              <FiImage className="text-blue-500" /> Screenshots
+            </h2>
+            <span className="text-xs text-gray-400">{screenshots.length} image{screenshots.length > 1 ? "s" : ""}</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {screenshots.map((src, i) => (
-              <div key={i} className="rounded-xl overflow-hidden shadow-md">
-                <img src={typeof src === "string" ? src : src.url} alt={`${app.appName || app.name} screenshot ${i + 1}`} className="w-full h-56 object-cover" />
-              </div>
+              <button
+                key={i}
+                onClick={() => openLightbox(i)}
+                className="group relative aspect-video rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-gray-100"
+              >
+                <img
+                  src={src}
+                  alt={`${app.appName || app.name} screenshot ${i + 1}`}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-blue-900/0 group-hover:bg-blue-900/30 transition-colors" />
+              </button>
             ))}
           </div>
         </div>
+
+        {/* lightbox — click a screenshot to zoom */}
+        {lightboxIndex !== null && (
+          <div className="fixed inset-0 bg-black/90 z-50 flex flex-col backdrop-blur-sm" onClick={closeLightbox}>
+            <div className="flex items-center justify-between p-4 text-white" onClick={(e) => e.stopPropagation()}>
+              <p className="text-sm text-white/80">{lightboxIndex + 1} / {screenshots.length}</p>
+              <button onClick={closeLightbox} className="text-white/80 hover:text-white hover:rotate-90 transition-transform p-2">
+                <FiX size={28} />
+              </button>
+            </div>
+            <div className="flex-1 relative flex items-center justify-center px-4 sm:px-12" onClick={(e) => e.stopPropagation()}>
+              <img
+                src={screenshots[lightboxIndex]}
+                alt={`Screenshot ${lightboxIndex + 1}`}
+                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              />
+              {screenshots.length > 1 && (
+                <>
+                  <button onClick={prevShot} className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/25 text-white rounded-full p-2.5 sm:p-4 backdrop-blur-md hover:scale-110 transition-all cursor-pointer">
+                    <FiChevronLeft size={26} />
+                  </button>
+                  <button onClick={nextShot} className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/25 text-white rounded-full p-2.5 sm:p-4 backdrop-blur-md hover:scale-110 transition-all cursor-pointer">
+                    <FiChevronRight size={26} />
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* info card */}
         <div className="bg-blue-50 rounded-xl p-6">

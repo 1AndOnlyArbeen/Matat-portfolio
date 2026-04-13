@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getProjectById } from "../api";
-import { FiArrowLeft, FiExternalLink, FiCalendar, FiUser } from "react-icons/fi";
+import { projectsData } from "../data/placeholders";
+import { FiArrowLeft, FiExternalLink, FiCalendar, FiUser, FiX, FiChevronLeft, FiChevronRight, FiImage } from "react-icons/fi";
 
 // single project detail page
 // tries to fetch from backend, falls back to placeholder data by matching id
@@ -9,12 +10,17 @@ function ProjectDetail() {
   const { id } = useParams();
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [lightboxIndex, setLightboxIndex] = useState(null); // null = closed, number = open at that index
 
   useEffect(() => {
     getProjectById(id).then((res) => {
       const list = res?.project || (Array.isArray(res) ? res : []);
       const found = list.find((p) => p._id === id);
-      setProject(found || null);
+      // fallback to placeholder data if backend returned nothing
+      setProject(found || projectsData.find((p) => p._id === id) || null);
+      setLoading(false);
+    }).catch(() => {
+      setProject(projectsData.find((p) => p._id === id) || null);
       setLoading(false);
     });
   }, [id]);
@@ -39,6 +45,18 @@ function ProjectDetail() {
       </div>
     );
   }
+
+  // normalize screenshot array — backend may return objects {url} or plain strings
+  const screenshots = (project.screenshots || [])
+    .map((s) => (typeof s === "string" ? s : s?.url))
+    .filter(Boolean);
+
+  const openLightbox = (i) => setLightboxIndex(i);
+  const closeLightbox = () => setLightboxIndex(null);
+  const prevShot = () =>
+    setLightboxIndex((i) => (i - 1 + screenshots.length) % screenshots.length);
+  const nextShot = () =>
+    setLightboxIndex((i) => (i + 1) % screenshots.length);
 
   return (
     <div className="py-12">
@@ -150,7 +168,75 @@ function ProjectDetail() {
             </div>
           </div>
         </div>
+
+        {/* work screenshots — full-width section below the main grid */}
+        {screenshots.length > 0 && (
+          <div className="mt-12">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-xl sm:text-2xl font-bold text-blue-900 inline-flex items-center gap-2">
+                <FiImage className="text-blue-500" /> Work Screenshots
+              </h2>
+              <span className="text-xs text-gray-400">{screenshots.length} image{screenshots.length > 1 ? "s" : ""}</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {screenshots.map((src, i) => (
+                <button
+                  key={i}
+                  onClick={() => openLightbox(i)}
+                  className="group relative aspect-video rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-gray-100"
+                >
+                  <img
+                    src={src}
+                    alt={`${project.title} screenshot ${i + 1}`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-blue-900/0 group-hover:bg-blue-900/30 transition-colors" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* lightbox */}
+      {lightboxIndex !== null && (
+        <div
+          className="fixed inset-0 bg-black/90 z-50 flex flex-col backdrop-blur-sm"
+          onClick={closeLightbox}
+        >
+          <div className="flex items-center justify-between p-4 text-white" onClick={(e) => e.stopPropagation()}>
+            <p className="text-sm text-white/80">
+              {lightboxIndex + 1} / {screenshots.length}
+            </p>
+            <button onClick={closeLightbox} className="text-white/80 hover:text-white hover:rotate-90 transition-transform p-2">
+              <FiX size={28} />
+            </button>
+          </div>
+          <div className="flex-1 relative flex items-center justify-center px-4 sm:px-12" onClick={(e) => e.stopPropagation()}>
+            <img
+              src={screenshots[lightboxIndex]}
+              alt={`Screenshot ${lightboxIndex + 1}`}
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+            />
+            {screenshots.length > 1 && (
+              <>
+                <button
+                  onClick={prevShot}
+                  className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/25 text-white rounded-full p-2.5 sm:p-4 backdrop-blur-md hover:scale-110 transition-all cursor-pointer"
+                >
+                  <FiChevronLeft size={26} />
+                </button>
+                <button
+                  onClick={nextShot}
+                  className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/25 text-white rounded-full p-2.5 sm:p-4 backdrop-blur-md hover:scale-110 transition-all cursor-pointer"
+                >
+                  <FiChevronRight size={26} />
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

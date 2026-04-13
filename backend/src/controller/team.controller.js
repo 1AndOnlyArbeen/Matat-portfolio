@@ -5,7 +5,7 @@ import { apiResponse } from '../utils/apiResponse.js';
 import { uploadOnCloudinary, deleteFromCloudinary } from '../utils/cloudinary.js';
 
 const createTeam = asyncHandler(async (req, res) => {
-    const { name, role, linkedinUrl, githubUrl, twitterUrl } = req.body;
+    const { name, role, country, linkedinUrl, githubUrl, twitterUrl } = req.body;
     if (!name || !role) {
         throw new apiError(400, ' All field are required !');
     }
@@ -25,6 +25,7 @@ const createTeam = asyncHandler(async (req, res) => {
         teamDetails = await Team.create({
             name,
             role,
+            country,
             linkedinUrl,
             githubUrl,
             twitterUrl,
@@ -75,13 +76,15 @@ const getAllteam = asyncHandler(async (req, res) => {
 //editing the team
 
 const editTeamDetails = asyncHandler(async (req, res) => {
-    const { name, role, linkedinUrl, githubUrl, twitterUrl } = req.body;
+    const { name, role, country, linkedinUrl, githubUrl, twitterUrl } = req.body;
     const team = await Team.findById(req.params.id);
     if (!team) {
         throw new apiError(404, ' Team details didint exits ');
     }
     team.name = name || team.name;
     team.role = role || team.role;
+    // allow clearing country (empty string) — don't fall back to old value
+    if (country !== undefined) team.country = country;
     team.linkedinUrl = linkedinUrl || team.linkedinUrl;
     team.githubUrl = githubUrl || team.githubUrl;
     team.twitterUrl = twitterUrl || team.twitterUrl;

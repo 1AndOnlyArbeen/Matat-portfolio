@@ -37,6 +37,18 @@ import {
     deleteTestiomonial,
 } from '../controller/testimonial.controller.js';
 
+import {
+    createAbout,
+    getAllAbout,
+    getAbout,
+    editAbout,
+    deleteAbout,
+} from '../controller/about.controller.js';
+
+import {
+  createMessageDetails,getMessageDetails,deleteMessageDetails
+} from '../controller/message.controller.js';
+
 const adminRouter = Router();
 
 // admion login routers
@@ -59,10 +71,22 @@ adminRouter.route('/deleteHero/:id').delete(verifyJwt, deleteHero);
 
 // router for the projectdetails upload
 
+const projectUpload = upload.fields([
+    { name: 'projectImage', maxCount: 1 },
+    { name: 'screenshot', maxCount: 10 }
+    
+])
+
 adminRouter.route('/createProject').post(upload.single('projectImage'), verifyJwt, createProject);
 adminRouter.route('/getAllProject').get(verifyJwt, getAllProject);
 adminRouter.route('/projectEdit/:id').patch(upload.single('projectImage'), verifyJwt, projectEdit);
 adminRouter.route('/deleteProject/:id').delete(verifyJwt, deleteProject);
+// project screenshot 
+adminRouter.route('/')
+
+
+
+
 
 // router for appDetails upload
 
@@ -91,9 +115,26 @@ adminRouter.route('/deleteTeamDetails/:id').delete(verifyJwt, deleteTeamDetails)
 
 // router for testiomonail
 
-adminRouter.route('/createTestimonial').post(upload.single('avatar'),verifyJwt,createTestimonial)
-adminRouter.route('/getAlltestiomonail').get(verifyJwt,getAlltestiomonail)
-adminRouter.route('/editTestiominial/:id').patch(upload.single('avatar'),verifyJwt,editTestiominial)
-adminRouter.route('/deleteTestiomonial/:id').delete(verifyJwt,deleteTestiomonial)
+adminRouter.route('/createTestimonial').post(upload.single('avatar'), verifyJwt, createTestimonial);
+adminRouter.route('/getAlltestiomonail').get(verifyJwt, getAlltestiomonail);
+adminRouter
+    .route('/editTestiominial/:id')
+    .patch(upload.single('avatar'), verifyJwt, editTestiominial);
+adminRouter.route('/deleteTestiomonail/:id').delete(verifyJwt, deleteTestiomonial);
+
+// router for about section
+// getAbout is public (no jwt) — used by the public site
+// the rest need admin auth
+adminRouter.route('/createAbout').post(verifyJwt, createAbout);
+adminRouter.route('/getAllAbout').get(verifyJwt, getAllAbout);
+adminRouter.route('/about').get(getAbout);
+adminRouter.route('/editAbout/:id').patch(verifyJwt, editAbout);
+adminRouter.route('/deleteAbout/:id').delete(verifyJwt, deleteAbout);
+
+// router for messsage
+
+adminRouter.route('/createMessageDetails').post(createMessageDetails);
+adminRouter.route('/getMessageDetails').get(verifyJwt, getMessageDetails);
+adminRouter.route('/deleteMessageDetails/:id').delete(verifyJwt, deleteMessageDetails);
 
 export { adminRouter };

@@ -97,16 +97,18 @@ const editTestiominial = asyncHandler(async (req, res) => {
 
         // after deleting now upload new one
         const cloudinaryResponse = await uploadOnCloudinary(req.file?.path);
-        console.log(cloudinaryResponse);
         if (!cloudinaryResponse) {
             throw new apiError(400, ' faile while uploading avatar');
         }
         // change the url of db
         testimonial.avatar = cloudinaryResponse.secure_url;
         testimonial.avatarId = cloudinaryResponse.public_id;
-        await testimonial.save();
-        console.log(testimonial);
     }
+
+    // always save — was previously only saved when avatar was changed,
+    // which meant rating/name/company/reviewText edits were silently dropped
+    await testimonial.save();
+
     return res
     .status(200)
     .json((new apiResponse(200, testimonial," Testiomonial details updated successfully !")))

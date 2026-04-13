@@ -143,6 +143,10 @@ const deleteProject = asyncHandler(async (req, res) => {
     const publicId = deletedProject.projectImage.split('/').pop().split('.')[0];
     await deleteFromCloudinary(publicId);
   }
+  // cleanup extra screenshots from cloudinary too
+  for (const s of deletedProject.screenshots || []) {
+    if (s.publicId) await deleteFromCloudinary(s.publicId);
+  }
   return res
     .status(200)
     .json(
@@ -153,4 +157,128 @@ const deleteProject = asyncHandler(async (req, res) => {
       ),
     );
 });
-export { createProject, getAllProject, projectEdit, deleteProject };
+
+{
+  /*
+    screenshot helpers — separate endpoints so the main create/edit flow stays clean
+
+    1. addProjectScreenshots     → append new screenshots to an existing project
+    2. replaceProjectScreenshots → wipe the old ones and upload fresh (used on edit)
+    3. removeProjectScreenshot   → delete one screenshot by its publicId
+    4. getProjectScreenshots     → return just the screenshots array (public read)
+
+    all of these use upload.array('screenshots', 8) on the route → req.files is an array
+  */
+}
+
+// append new screenshots to an existing project — keeps the old ones
+const addProjectScreenshots = asyncHandler(async (req, res) => {
+  const project = await Project.findById(req.params.id);
+  if (!project) {
+    throw new apiError(404, ' Project didint exits ');
+  }
+
+  const files = req.files || [];
+  if (files.length === 0) {
+    throw new apiError(400, ' No screenshot files uploaded ');
+  }
+
+  // upload each file to cloudinary in parallel
+  const uploaded = await Promise.all(
+    files.map((f) => uploadOnCloudinary(f.path)),
+  );
+  const newShots = uploaded
+    .filter(Boolean)
+    .map((r) => ({ url: r.secure_url, publicId: r.public_id }));
+
+  project.screenshots = [...(project.screenshots || []), ...newShots];
+  await project.save();
+
+  return res
+    .status(200)
+    .json(new apiResponse(200, project, ' Screenshots added successfully !'));
+});
+
+// replace the whole screenshots array — old ones get wiped from cloudinary
+const replaceProjectScreenshots = asyncHandler(async (req, res) => {
+  const project = await Project.findById(req.params.id);
+  if (!project) {
+    throw new apiError(404, ' Project didint exits ');
+  }
+
+  const files = req.files || [];
+  if (files.length === 0) {
+    throw new apiError(400, ' No screenshot files uploaded ');
+  }
+
+  // delete old screenshots from cloudinary
+  for (const s of project.screenshots || []) {
+    if (s.publicId) await deleteFromCloudinary(s.publicId);
+  }
+
+  // upload fresh ones
+  const uploaded = await Promise.all(
+    files.map((f) => uploadOnCloudinary(f.path)),
+  );
+  project.screenshots = uploaded
+    .filter(Boolean)
+    .map((r) => ({ url: r.secure_url, publicId: r.public_id }));
+
+  await project.save();
+
+  return res
+    .status(200)
+    .json(new apiResponse(200, project, ' Screenshots replaced successfully !'));
+});
+
+// delete one screenshot by its publicId
+const removeProjectScreenshot = asyncHandler(async (req, res) => {
+  const { id, publicId } = req.params;
+  const project = await Project.findById(id);
+  if (!project) {
+    throw new apiError(404, ' Project didint exits ');
+  }
+
+  const found = project.screenshots?.find((s) => s.publicId === publicId);
+  if (!found) {
+    throw new apiError(404, ' Screenshot not found in this project ');
+  }
+
+  await deleteFromCloudinary(publicId);
+  project.screenshots = project.screenshots.filter(
+    (s) => s.publicId !== publicId,
+  );
+  await project.save();
+
+  return res
+    .status(200)
+    .json(new apiResponse(200, project, ' Screenshot removed successfully !'));
+});
+
+// return just the screenshots for a project (used by public site)
+const getProjectScreenshots = asyncHandler(async (req, res) => {
+  const project = await Project.findById(req.params.id).select('screenshots');
+  if (!project) {
+    throw new apiError(404, ' Project didint exits ');
+  }
+  return res
+    .status(200)
+    .json(
+      new apiResponse(
+        200,
+        { screenshots: project.screenshots || [] },
+        ' Screenshots fetched successfully',
+      ),
+    );
+});
+
+export {
+  createProject,
+  getAllProject,
+  projectEdit,
+  deleteProject,
+  addProjectScreenshots,
+  replaceProjectScreenshots,
+  removeProjectScreenshot,
+  getProjectScreenshots,
+};

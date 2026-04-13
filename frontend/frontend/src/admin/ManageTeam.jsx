@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { getTeamMembers, createTeamMember, updateTeamMember, deleteTeamMember } from "../api/admin";
-import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiChevronLeft, FiChevronRight, FiGlobe } from "react-icons/fi";
 import ImageDropzone from "./ImageDropzone";
 import ConfirmModal from "./ConfirmModal";
 
@@ -8,7 +8,7 @@ function ManageTeam() {
   const [members, setMembers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: "", role: "", linkedin: "", github: "", twitter: "" });
+  const [form, setForm] = useState({ name: "", role: "", country: "", linkedin: "", github: "", twitter: "" });
   const [imageFile, setImageFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
@@ -32,7 +32,7 @@ function ManageTeam() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ name: "", role: "", linkedin: "", github: "", twitter: "" });
+    setForm({ name: "", role: "", country: "", linkedin: "", github: "", twitter: "" });
     setImageFile(null);
     setShowModal(true);
   };
@@ -42,6 +42,7 @@ function ManageTeam() {
     setForm({
       name: member.name,
       role: member.role,
+      country: member.country || "",
       linkedin: member.linkedinUrl || member.social?.linkedin || "",
       github: member.githubUrl || member.social?.github || "",
       twitter: member.twitterUrl || member.social?.twitter || "",
@@ -57,6 +58,7 @@ function ManageTeam() {
     const data = new FormData();
     data.append("name", form.name);
     data.append("role", form.role);
+    data.append("country", form.country);
     data.append("linkedinUrl", form.linkedin);
     data.append("githubUrl", form.github);
     data.append("twitterUrl", form.twitter);
@@ -114,6 +116,7 @@ function ManageTeam() {
               <th className="px-3 py-2 font-semibold">Photo</th>
               <th className="px-3 py-2 font-semibold">Name</th>
               <th className="px-3 py-2 font-semibold">Role</th>
+              <th className="px-3 py-2 font-semibold">Country</th>
               <th className="px-3 py-2 font-semibold">LinkedIn</th>
               <th className="px-3 py-2 font-semibold">GitHub</th>
               <th className="px-3 py-2 font-semibold">Twitter</th>
@@ -138,6 +141,11 @@ function ManageTeam() {
                   </td>
                   <td className="px-3 py-2 font-medium text-gray-800 max-w-[160px] truncate">{member.name}</td>
                   <td className="px-3 py-2 text-blue-500 max-w-[160px] truncate">{member.role}</td>
+                  <td className="px-3 py-2 text-gray-600 max-w-[140px] truncate">
+                    {member.country ? (
+                      <span className="inline-flex items-center gap-1"><FiGlobe size={11} /> {member.country}</span>
+                    ) : "-"}
+                  </td>
                   <td className="px-3 py-2 text-gray-500 max-w-[160px] truncate">
                     {linkedin ? <a href={linkedin} target="_blank" rel="noreferrer" className="hover:text-blue-600">{linkedin}</a> : "-"}
                   </td>
@@ -159,7 +167,7 @@ function ManageTeam() {
 
             {members.length === 0 && (
               <tr>
-                <td colSpan={7} className="text-center py-10 text-gray-400">No team members yet.</td>
+                <td colSpan={8} className="text-center py-10 text-gray-400">No team members yet.</td>
               </tr>
             )}
           </tbody>
@@ -208,6 +216,18 @@ function ManageTeam() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
                   <input type="text" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} required className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
                 </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                  <FiGlobe size={13} /> Country
+                </label>
+                <input
+                  type="text"
+                  value={form.country}
+                  onChange={(e) => setForm({ ...form, country: e.target.value })}
+                  placeholder="Nepal"
+                  className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn URL</label>

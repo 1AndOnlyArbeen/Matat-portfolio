@@ -1,16 +1,12 @@
 import { useState, useEffect } from "react";
-import { getAbout, updateAbout } from "../api/admin";
+import { getAllAbout, createAbout, editAbout, deleteAbout } from "../api/admin";
 import {
   FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiInfo,
   FiChevronLeft, FiChevronRight, FiEye,
 } from "react-icons/fi";
 import ConfirmModal from "./ConfirmModal";
 
-// the backend currently stores About as a singleton document (one per site).
-// the UI here renders it as a list (1 row) for visual consistency with the
-// other Manage screens; "Add" creates the first one if none exists, edit
-// updates it, delete clears it back to empty.
-const emptyForm = { title: "", description: "", mission: "", stats: [{ label: "", value: "" }] };
+const emptyForm = { title: "", description: "", mission: "", stats: [{ value: "", label: "" }] };
 
 function ManageAbout() {
   const [items, setItems] = useState([]);
@@ -23,20 +19,19 @@ function ManageAbout() {
   const [deleteId, setDeleteId] = useState(null);
 
   const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [viewAll, setViewAll] = useState(false);
-  const perPage = 14;
 
   useEffect(() => {
-    load();
-  }, []);
+    load(page);
+  }, [page, viewAll]);
 
-  const load = async () => {
-    const res = await getAbout();
-    if (res && (res.title || res._id)) {
-      setItems([{ _id: res._id || "about-1", ...res }]);
-    } else {
-      setItems([]);
-    }
+  const load = async (p = 1) => {
+    const res = await getAllAbout(viewAll ? 1 : p, viewAll ? 1000 : 14);
+    const data = res?.data;
+    const list = data?.abouts || (Array.isArray(data) ? data : []);
+    setItems(list);
+    if (data?.pagination) setTotalPages(data.pagination.totalPages || 1);
   };
 
   const openCreate = () => {
@@ -52,7 +47,7 @@ function ManageAbout() {
       title: item.title || "",
       description: item.description || "",
       mission: item.mission || "",
-      stats: item.stats?.length ? item.stats : [{ label: "", value: "" }],
+      stats: item.stats?.length ? item.stats.map((s) => ({ value: s.value || "", label: s.label || "" })) : [{ value: "", label: "" }],
     });
     setMessage("");
     setShowModal(true);
@@ -63,17 +58,27 @@ function ManageAbout() {
     updated[index] = { ...updated[index], [field]: value };
     setForm({ ...form, stats: updated });
   };
-  const addStat = () => setForm({ ...form, stats: [...form.stats, { label: "", value: "" }] });
-  const removeStat = (index) =>
-    setForm({ ...form, stats: form.stats.filter((_, i) => i !== index) });
+  const addStat = () => setForm({ ...form, stats: [...form.stats, { value: "", label: "" }] });
+  const removeStat = (index) => setForm({ ...form, stats: form.stats.filter((_, i) => i !== index) });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
     setMessage("");
-    const result = await updateAbout(form);
+
+    const payload = {
+      title: form.title,
+      description: form.description,
+      mission: form.mission,
+      stats: form.stats.filter((s) => s.value.trim() || s.label.trim()),
+    };
+
+    const result = editing
+      ? await editAbout(editing._id, payload)
+      : await createAbout(payload);
+
     if (result) {
-      await load();
+      await load(page);
       setShowModal(false);
     } else {
       setMessage("Failed to save. Try again.");
@@ -83,15 +88,13 @@ function ManageAbout() {
 
   const confirmDelete = async () => {
     if (!deleteId) return;
-    // backend has no deleteAbout — clear by saving empty values
-    await updateAbout({ title: "", description: "", mission: "", stats: [] });
+    const result = await deleteAbout(deleteId);
     setDeleteId(null);
-    await load();
+    if (result) {
+      if (items.length === 1 && page > 1) setPage(page - 1);
+      else await load(page);
+    }
   };
-
-  // pagination
-  const totalPages = viewAll ? 1 : Math.max(1, Math.ceil(items.length / perPage));
-  const visible = viewAll ? items : items.slice((page - 1) * perPage, page * perPage);
 
   return (
     <div>
@@ -107,9 +110,7 @@ function ManageAbout() {
           </button>
           <button
             onClick={openCreate}
-            disabled={items.length > 0}
-            title={items.length > 0 ? "Only one About entry is supported — edit it instead" : "Add the About section"}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed text-white font-medium px-4 py-2 rounded-lg text-sm flex items-center gap-2 cursor-pointer transition-colors"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-sm flex items-center gap-2 cursor-pointer transition-colors"
           >
             <FiPlus size={16} /> Add About
           </button>
@@ -129,7 +130,7 @@ function ManageAbout() {
             </tr>
           </thead>
           <tbody className="divide-y divide-blue-100/60">
-            {visible.map((item) => (
+            {items.map((item) => (
               <tr key={item._id} className="hover:bg-blue-50/40 transition-colors">
                 <td className="px-3 py-2 font-medium text-gray-800 max-w-[180px] truncate">{item.title || "-"}</td>
                 <td className="px-3 py-2 text-gray-500 max-w-[260px] truncate">{item.description || "-"}</td>
@@ -233,6 +234,7 @@ function ManageAbout() {
                   value={form.mission}
                   onChange={(e) => setForm({ ...form, mission: e.target.value })}
                   rows={3}
+                  required
                   className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
                 />
               </div>
@@ -334,7 +336,7 @@ function ManageAbout() {
       )}
 
       {deleteId && (
-        <ConfirmModal message="The About section will be cleared." onConfirm={confirmDelete} onCancel={() => setDeleteId(null)} />
+        <ConfirmModal message="This About entry will be permanently deleted." onConfirm={confirmDelete} onCancel={() => setDeleteId(null)} />
       )}
     </div>
   );

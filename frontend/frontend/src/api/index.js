@@ -75,10 +75,10 @@ export async function getAbout() {
 }
 
 // ---- contact form submission ----
-// sends form data as JSON via POST
+// sends form data as JSON via POST to the new /createMessageDetails endpoint
 export async function submitContact(formData) {
   try {
-    const res = await fetch(`${API_BASE}/contact`, {
+    const res = await fetch(`${API_BASE}/createMessageDetails`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),

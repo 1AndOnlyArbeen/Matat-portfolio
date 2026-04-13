@@ -263,22 +263,31 @@ export async function deleteGalleryImage(id) {
 export async function getAbout() {
   return await adminFetch("/about");
 }
-export async function updateAbout(data) {
-  return await adminFetch("/about", { method: "PUT", body: JSON.stringify(data) });
+export async function getAllAbout(page = 1, limit = 14) {
+  return await adminFetch(`/getAllAbout?page=${page}&limit=${limit}`);
 }
-
-// ---- Contact Messages (read only from admin) ----
-export async function getMessages() {
-  return await adminFetch("/messages");
+export async function createAbout(data) {
+  return await adminFetch("/createAbout", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 }
-export async function updateMessage(id, data) {
-  return await adminFetch(`/messages/${id}`, {
+export async function editAbout(id, data) {
+  return await adminFetch(`/editAbout/${id}`, {
     method: "PATCH",
     body: JSON.stringify(data),
   });
 }
+export async function deleteAbout(id) {
+  return await adminFetch(`/deleteAbout/${id}`, { method: "DELETE" });
+}
+
+// ---- Contact Messages (read only from admin) ----
+export async function getMessages(page = 1, limit = 14) {
+  return await adminFetch(`/getMessageDetails?page=${page}&limit=${limit}`);
+}
 export async function deleteMessage(id) {
-  return await adminFetch(`/messages/${id}`, { method: "DELETE" });
+  return await adminFetch(`/deleteMessageDetails/${id}`, { method: "DELETE" });
 }
 
 // ---- Dashboard stats ----

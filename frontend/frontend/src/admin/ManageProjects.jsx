@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { getProjects, createProject, updateProject, deleteProject } from "../api/admin";
-import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiEye, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiEye, FiUploadCloud, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import ImageDropzone from "./ImageDropzone";
 import ConfirmModal from "./ConfirmModal";
 
@@ -11,11 +11,14 @@ function ManageProjects() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ title: "", description: "", tags: "", link: "" });
   const [imageFile, setImageFile] = useState(null);
+  const [screenshotFiles, setScreenshotFiles] = useState([]);
+  const [screenshotPreviews, setScreenshotPreviews] = useState([]);
   const [saving, setSaving] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [deleteId, setDeleteId] = useState(null);
   const [viewAll, setViewAll] = useState(false);
+  const ssInputRef = useRef(null);
 
   useEffect(() => {
     loadProjects(page);
@@ -36,6 +39,8 @@ function ManageProjects() {
     setEditing(null);
     setForm({ title: "", description: "", tags: "", link: "" });
     setImageFile(null);
+    setScreenshotFiles([]);
+    setScreenshotPreviews([]);
     setShowModal(true);
   };
 
@@ -49,7 +54,22 @@ function ManageProjects() {
       link: project.projectLink || "",
     });
     setImageFile(null);
+    setScreenshotFiles([]);
+    setScreenshotPreviews([]);
     setShowModal(true);
+  };
+
+  // pick multiple screenshot files at once
+  const handleScreenshots = (e) => {
+    const files = Array.from(e.target.files).filter((f) => f.type.startsWith("image/"));
+    if (files.length === 0) return;
+    setScreenshotFiles(files);
+    setScreenshotPreviews(files.map((f) => URL.createObjectURL(f)));
+  };
+
+  const removeScreenshot = (index) => {
+    setScreenshotFiles((prev) => prev.filter((_, i) => i !== index));
+    setScreenshotPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   // handle form submission - create or update
@@ -64,6 +84,9 @@ function ManageProjects() {
     data.append("tags", form.tags);
     data.append("projectLink", form.link);
     if (imageFile) data.append("projectImage", imageFile);
+    for (const file of screenshotFiles) {
+      data.append("screenshots", file);
+    }
 
     let result;
     if (editing) {
@@ -293,10 +316,68 @@ function ManageProjects() {
                 />
               </div>
               <ImageDropzone
-                label="Image"
+                label="Cover Image"
                 onFileSelect={setImageFile}
                 currentImage={editing?.projectImage || editing?.image}
               />
+
+              {/* screenshots - multi-file picker (shown on ProjectDetail page) */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Screenshots (up to 8)</label>
+
+                {/* existing screenshots when editing */}
+                {editing && editing?.screenshots?.length > 0 && screenshotFiles.length === 0 && (
+                  <div className="grid grid-cols-3 gap-2 mb-2">
+                    {editing.screenshots.map((s, i) => (
+                      <img
+                        key={i}
+                        src={typeof s === "string" ? s : s.url}
+                        alt={`Screenshot ${i + 1}`}
+                        className="w-full h-20 object-cover rounded-lg border border-gray-200"
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* new screenshot previews */}
+                {screenshotPreviews.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2 mb-2">
+                    {screenshotPreviews.map((src, i) => (
+                      <div key={i} className="relative">
+                        <img src={src} alt={`New ${i + 1}`} className="w-full h-20 object-cover rounded-lg border border-blue-200" />
+                        <button
+                          type="button"
+                          onClick={() => removeScreenshot(i)}
+                          className="absolute -top-1.5 -right-1.5 bg-red-500 hover:bg-red-600 text-white p-0.5 rounded-full transition-colors"
+                        >
+                          <FiX size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <input
+                  ref={ssInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleScreenshots}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => ssInputRef.current?.click()}
+                  className="w-full rounded-lg cursor-pointer transition-all border-2 border-dashed border-blue-300 bg-white/20 hover:border-blue-400 flex flex-col items-center justify-center py-5 text-gray-400"
+                >
+                  <FiUploadCloud size={24} className="mb-1" />
+                  <p className="text-xs font-medium">
+                    {editing && editing?.screenshots?.length > 0
+                      ? "Upload new screenshots to replace"
+                      : "Click to upload screenshots"}
+                  </p>
+                </button>
+              </div>
 
               {/* submit */}
               <div className="flex justify-end gap-3 pt-2">

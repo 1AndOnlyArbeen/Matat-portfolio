@@ -1,12 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
-import { logoutAdmin } from "../api/admin";
+import { logoutAdmin, getMessages } from "../api/admin";
 import {
   FiHome, FiImage, FiGrid, FiSmartphone, FiUsers,
   FiStar, FiCamera, FiInfo, FiMail, FiLogOut, FiMenu,
   FiX, FiMonitor
 } from "react-icons/fi";
 import logo from "../assets/matat-logo-new1.svg";
+import { getReadIds, onReadChange } from "./messageReadStore";
 
 // sidebar nav items - each maps to an admin page
 const sidebarLinks = [
@@ -25,6 +26,8 @@ const sidebarLinks = [
 function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [allMessageIds, setAllMessageIds] = useState([]); // for unread count
+  const [, setReadTick] = useState(0);                    // forces re-render on read-state changes
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -38,6 +41,31 @@ function AdminLayout() {
 
     setLoading(false);
   }, [navigate]);
+
+  // fetch every message id once (for the unread count badge on the sidebar)
+  // refetches whenever the route changes so new messages picked up naturally
+  const fetchMessageIds = useCallback(async () => {
+    try {
+      const res = await getMessages(1, 1000);
+      const list = res?.data?.message || [];
+      if (Array.isArray(list)) {
+        setAllMessageIds(list.map((m) => m._id));
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (loading) return;
+    fetchMessageIds();
+  }, [loading, location.pathname, fetchMessageIds]);
+
+  // listen for read-state changes so the badge count updates immediately
+  useEffect(() => onReadChange(() => setReadTick((t) => t + 1)), []);
+
+  // how many messages are unread in the browser's localStorage
+  const unreadCount = allMessageIds.filter((id) => !getReadIds().includes(id)).length;
 
   // logout handler - call backend then redirect
   const handleLogout = async () => {
@@ -127,6 +155,7 @@ function AdminLayout() {
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             {sidebarLinks.map((link) => {
               const isActive = location.pathname === link.path;
+              const isMessages = link.name === "Messages";
               return (
                 <Link
                   key={link.name}
@@ -139,7 +168,12 @@ function AdminLayout() {
                   }`}
                 >
                   <link.icon size={18} />
-                  {link.name}
+                  <span className="flex-1">{link.name}</span>
+                  {isMessages && unreadCount > 0 && (
+                    <span className="bg-red-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-full min-w-[22px] text-center">
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  )}
                 </Link>
               );
             })}
