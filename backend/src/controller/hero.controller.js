@@ -27,16 +27,22 @@ const createHero = asyncHandler(async (req, res) => {
     throw new apiError(400, 'All fields are required');
   }
 
-  const backgroundImagePath = req.file?.path;
+  // pull each image file out of req.files (upload.fields returns an object keyed by field name)
+  const backgroundImagePath = req.files?.backgroundImage?.[0]?.path;
+  const badgeImage1Path = req.files?.badgeImage1?.[0]?.path;
+  const badgeImage2Path = req.files?.badgeImage2?.[0]?.path;
+
   if (!backgroundImagePath) {
     throw new apiError(400, 'Background image is required');
   }
   const backgroundImage = await uploadOnCloudinary(backgroundImagePath);
-  console.debug(backgroundImage);
-
   if (!backgroundImage) {
     throw new apiError(400, 'Background image upload failed');
   }
+
+  // optional badges
+  const badgeImage1 = badgeImage1Path ? await uploadOnCloudinary(badgeImage1Path) : null;
+  const badgeImage2 = badgeImage2Path ? await uploadOnCloudinary(badgeImage2Path) : null;
 
   let heroDetails;
   try {
@@ -46,11 +52,14 @@ const createHero = asyncHandler(async (req, res) => {
       buttonText,
       buttonLink,
       backgroundImage: backgroundImage.url,
+      badgeImage1: badgeImage1?.url || '',
+      badgeImage2: badgeImage2?.url || '',
     });
   } catch (err) {
-    // cleanup cloudinary image if db save fails
-    const publicId = backgroundImage.public_id;
-    if (publicId) await deleteFromCloudinary(publicId);
+    // cleanup cloudinary uploads if db save fails
+    if (backgroundImage.public_id) await deleteFromCloudinary(backgroundImage.public_id);
+    if (badgeImage1?.public_id) await deleteFromCloudinary(badgeImage1.public_id);
+    if (badgeImage2?.public_id) await deleteFromCloudinary(badgeImage2.public_id);
     throw new apiError(500, 'Failed to create heroDetails');
   }
 
@@ -153,21 +162,22 @@ const editHeroDetails = asyncHandler(async (req, res) => {
   hero.buttonText = buttonText || hero.buttonText;
   hero.buttonLink = buttonLink || hero.buttonLink;
 
-  // if a new image was uploaded, replace the old one on cloudinary
-  if (req.file) {
-    // delete old image from cloudinary
-    if (hero.backgroundImage) {
-      const publicId = hero.backgroundImage.split('/').pop().split('.')[0];
+  // helper: replace an image field if a new file was uploaded
+  const replaceImage = async (fileField, currentUrl) => {
+    const newFile = req.files?.[fileField]?.[0];
+    if (!newFile) return currentUrl;
+    if (currentUrl) {
+      const publicId = currentUrl.split('/').pop().split('.')[0];
       await deleteFromCloudinary(publicId);
     }
+    const uploaded = await uploadOnCloudinary(newFile.path);
+    if (!uploaded) throw new apiError(500, `${fileField} upload failed`);
+    return uploaded.secure_url || uploaded.url;
+  };
 
-    // upload the new image
-    const cloudinaryResponse = await uploadOnCloudinary(req.file.path);
-    if (!cloudinaryResponse) {
-      throw new apiError(500, 'Image upload failed');
-    }
-    hero.backgroundImage = cloudinaryResponse.secure_url;
-  }
+  hero.backgroundImage = await replaceImage('backgroundImage', hero.backgroundImage);
+  hero.badgeImage1 = await replaceImage('badgeImage1', hero.badgeImage1);
+  hero.badgeImage2 = await replaceImage('badgeImage2', hero.badgeImage2);
 
   await hero.save();
   return res

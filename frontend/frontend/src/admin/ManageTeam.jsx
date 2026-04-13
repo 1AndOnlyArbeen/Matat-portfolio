@@ -14,13 +14,14 @@ function ManageTeam() {
   const [deleteId, setDeleteId] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [viewAll, setViewAll] = useState(false);
 
   useEffect(() => {
     loadMembers(page);
-  }, [page]);
+  }, [page, viewAll]);
 
   const loadMembers = async (p = 1) => {
-    const res = await getTeamMembers(p, 6);
+    const res = await getTeamMembers(viewAll ? 1 : p, viewAll ? 1000 : 14);
     const data = res?.data;
     const list = data?.teams || (Array.isArray(data) ? data : []);
     setMembers(list);
@@ -90,38 +91,83 @@ function ManageTeam() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-4 bg-white border-b border-blue-100/60 flex items-center justify-between">
         <h2 className="text-xl font-bold text-gray-800">Manage Team</h2>
-        <button onClick={openCreate} className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-sm flex items-center gap-2 cursor-pointer transition-colors">
-          <FiPlus size={16} /> Add Member
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => { setViewAll((v) => !v); setPage(1); }}
+            className="bg-white border border-blue-300 text-blue-600 hover:bg-blue-50 font-medium px-3 py-2 rounded-lg text-xs cursor-pointer transition-colors"
+          >
+            {viewAll ? "Show Pages" : "View All"}
+          </button>
+          <button onClick={openCreate} className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-sm flex items-center gap-2 cursor-pointer transition-colors">
+            <FiPlus size={16} /> Add Member
+          </button>
+        </div>
       </div>
 
-      {/* team members grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {members.map((member) => (
-          <div key={member._id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            {(member.teamImage || member.image) && (
-              <img src={member.teamImage || member.image} alt={member.name} className="w-full h-40 object-cover" />
-            )}
-            <div className="p-4">
-              <h3 className="font-semibold text-gray-800">{member.name}</h3>
-              <p className="text-blue-500 text-sm mb-3">{member.role}</p>
-              <div className="flex gap-2">
-                <button onClick={() => openEdit(member)} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg cursor-pointer"><FiEdit2 size={16} /></button>
-                <button onClick={() => setDeleteId(member._id)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg cursor-pointer"><FiTrash2 size={16} /></button>
-              </div>
-            </div>
-          </div>
-        ))}
+      {/* team members table */}
+      <div className="overflow-x-clip rounded-xl border border-blue-300/40 bg-white/30 backdrop-blur-xl shadow-[0_4px_20px_rgba(30,64,175,0.15)]">
+        <table className="w-full text-xs text-left">
+          <thead className="sticky top-14 z-20 bg-blue-50 text-gray-700 text-[11px] uppercase tracking-wide shadow-[0_2px_6px_rgba(30,64,175,0.08)]">
+            <tr>
+              <th className="px-3 py-2 font-semibold">Photo</th>
+              <th className="px-3 py-2 font-semibold">Name</th>
+              <th className="px-3 py-2 font-semibold">Role</th>
+              <th className="px-3 py-2 font-semibold">LinkedIn</th>
+              <th className="px-3 py-2 font-semibold">GitHub</th>
+              <th className="px-3 py-2 font-semibold">Twitter</th>
+              <th className="px-3 py-2 font-semibold text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-blue-100/60">
+            {members.map((member) => {
+              const linkedin = member.linkedinUrl || member.social?.linkedin || "";
+              const github = member.githubUrl || member.social?.github || "";
+              const twitter = member.twitterUrl || member.social?.twitter || "";
+              return (
+                <tr key={member._id} className="hover:bg-blue-50/40 transition-colors">
+                  <td className="px-3 py-2">
+                    {(member.teamImage || member.image) && (
+                      <img
+                        src={member.teamImage || member.image}
+                        alt={member.name}
+                        className="w-9 h-9 rounded-full object-cover border border-gray-200"
+                      />
+                    )}
+                  </td>
+                  <td className="px-3 py-2 font-medium text-gray-800 max-w-[160px] truncate">{member.name}</td>
+                  <td className="px-3 py-2 text-blue-500 max-w-[160px] truncate">{member.role}</td>
+                  <td className="px-3 py-2 text-gray-500 max-w-[160px] truncate">
+                    {linkedin ? <a href={linkedin} target="_blank" rel="noreferrer" className="hover:text-blue-600">{linkedin}</a> : "-"}
+                  </td>
+                  <td className="px-3 py-2 text-gray-500 max-w-[160px] truncate">
+                    {github ? <a href={github} target="_blank" rel="noreferrer" className="hover:text-blue-600">{github}</a> : "-"}
+                  </td>
+                  <td className="px-3 py-2 text-gray-500 max-w-[160px] truncate">
+                    {twitter ? <a href={twitter} target="_blank" rel="noreferrer" className="hover:text-blue-600">{twitter}</a> : "-"}
+                  </td>
+                  <td className="px-3 py-2">
+                    <div className="flex items-center justify-end gap-1">
+                      <button onClick={() => openEdit(member)} className="text-blue-600 hover:bg-blue-50 p-1.5 rounded-lg cursor-pointer"><FiEdit2 size={14} /></button>
+                      <button onClick={() => setDeleteId(member._id)} className="text-red-500 hover:bg-red-50 p-1.5 rounded-lg cursor-pointer"><FiTrash2 size={14} /></button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
 
-        {members.length === 0 && (
-          <div className="col-span-full text-center py-12 text-gray-400">No team members yet.</div>
-        )}
+            {members.length === 0 && (
+              <tr>
+                <td colSpan={7} className="text-center py-10 text-gray-400">No team members yet.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* pagination */}
-      {totalPages > 1 && (
+      {!viewAll && totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 mt-6">
           <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors">
             <FiChevronLeft size={18} />

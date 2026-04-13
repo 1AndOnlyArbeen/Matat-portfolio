@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
 
 // public site components
 import Navbar from "./components/Navbar";
@@ -12,44 +11,17 @@ import ClientDetail from "./pages/ClientDetail";
 import NotFound from "./pages/NotFound";
 import AdminNotFound from "./admin/AdminNotFound";
 
-// maps section paths to their element IDs
-const sectionMap = {
-  "/projects": "projects",
-  "/apps": "apps",
-  "/clients": "clients",
-  "/about": "about",
-  "/team": "team",
-  "/testimonials": "testimonials",
-  "/gallery": "gallery",
-  "/contact": "contact",
-};
-
-// wrapper that scrolls to the correct section on mount
+// home wrapper — refresh always lands at the top of the page
+// (we no longer auto-scroll to a section based on the URL path; the user wants
+//  refresh to behave like "go to home")
 function HomeWithScroll() {
-  const location = useLocation();
-
   useEffect(() => {
-    const sectionId = sectionMap[location.pathname];
-    if (sectionId) {
-      // retry until the section element exists (async data may delay render)
-      let attempts = 0;
-      const tryScroll = () => {
-        const el = document.getElementById(sectionId);
-        if (el) {
-          const offset = 80;
-          const top = el.getBoundingClientRect().top + window.scrollY - offset;
-          window.scrollTo({ top, behavior: "smooth" });
-        } else if (attempts < 20) {
-          attempts++;
-          setTimeout(tryScroll, 200);
-        }
-      };
-      // wait for page to render first
-      setTimeout(tryScroll, 300);
-    } else {
-      window.scrollTo(0, 0);
+    // normalize URL back to "/" if user landed on /apps, /team, etc.
+    if (window.location.pathname !== "/") {
+      window.history.replaceState(null, "", "/");
     }
-  }, [location.pathname]);
+    window.scrollTo(0, 0);
+  }, []);
 
   return <Home />;
 }

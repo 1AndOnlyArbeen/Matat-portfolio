@@ -45,13 +45,16 @@ adminRouter.route('/refresh-token').post(refreshAccessToken);
 adminRouter.route('/logout/').post(verifyJwt, logoutAdmin);
 
 // hero banner routers
-adminRouter.route('/createHero').post(upload.single('backgroundImage'), verifyJwt, createHero);
+const heroUpload = upload.fields([
+    { name: 'backgroundImage', maxCount: 1 },
+    { name: 'badgeImage1', maxCount: 1 },
+    { name: 'badgeImage2', maxCount: 1 },
+]);
+adminRouter.route('/createHero').post(heroUpload, verifyJwt, createHero);
 adminRouter.route('/getAllHero').get(verifyJwt, getAllHero);
 adminRouter.route('/getActiveHero').get(getActiveHero);
 adminRouter.route('/toggleHeroDetail/:id').patch(verifyJwt, toggleHeroDetail);
-adminRouter
-    .route('/editHeroDetails/:id')
-    .patch(upload.single('backgroundImage'), verifyJwt, editHeroDetails);
+adminRouter.route('/editHeroDetails/:id').patch(heroUpload, verifyJwt, editHeroDetails);
 adminRouter.route('/deleteHero/:id').delete(verifyJwt, deleteHero);
 
 // router for the projectdetails upload

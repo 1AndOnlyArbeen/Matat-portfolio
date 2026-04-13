@@ -17,14 +17,15 @@ function ManageApps() {
   const [deleteId, setDeleteId] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [viewAll, setViewAll] = useState(false);
   const ssInputRef = useRef(null);
 
   useEffect(() => {
     loadApps(page);
-  }, [page]);
+  }, [page, viewAll]);
 
   const loadApps = async (p = 1) => {
-    const res = await getApps(p, 6);
+    const res = await getApps(viewAll ? 1 : p, viewAll ? 1000 : 14);
     const data = res?.data;
     const list = data?.apps || (Array.isArray(data) ? data : []);
     setApps(list);
@@ -115,56 +116,88 @@ function ManageApps() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-4 bg-white border-b border-blue-100/60 flex items-center justify-between">
         <h2 className="text-xl font-bold text-gray-800">Manage Apps</h2>
-        <button onClick={openCreate} className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-sm flex items-center gap-2 cursor-pointer transition-colors">
-          <FiPlus size={16} /> Add App
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => { setViewAll((v) => !v); setPage(1); }}
+            className="bg-white border border-blue-300 text-blue-600 hover:bg-blue-50 font-medium px-3 py-2 rounded-lg text-xs cursor-pointer transition-colors"
+          >
+            {viewAll ? "Show Pages" : "View All"}
+          </button>
+          <button onClick={openCreate} className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-sm flex items-center gap-2 cursor-pointer transition-colors">
+            <FiPlus size={16} /> Add App
+          </button>
+        </div>
       </div>
 
-      {/* apps grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {apps.map((app) => (
-          <div key={app._id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-            <div className="flex items-start gap-3">
-              {(app.appIcon || app.icon) && (
-                <img src={app.appIcon || app.icon} alt={app.appName || app.name} className="w-14 h-14 rounded-xl object-cover shrink-0" />
-              )}
-              <div className="min-w-0">
-                <h3 className="font-semibold text-gray-800">{app.appName || app.name}</h3>
-                <p className="text-blue-500 text-xs mb-1">{app.platform}</p>
-                <p className="text-gray-500 text-sm line-clamp-2">{app.description}</p>
-                {app.rating > 0 && (
-                  <div className="flex items-center gap-1 mt-1">
-                    <FiStar size={12} className="text-yellow-400 fill-yellow-400" />
-                    <span className="text-xs text-gray-500">{app.rating}</span>
+      {/* apps table */}
+      <div className="overflow-x-clip rounded-xl border border-blue-300/40 bg-white/30 backdrop-blur-xl shadow-[0_4px_20px_rgba(30,64,175,0.15)]">
+        <table className="w-full text-xs text-left">
+          <thead className="sticky top-14 z-20 bg-blue-50 text-gray-700 text-[11px] uppercase tracking-wide shadow-[0_2px_6px_rgba(30,64,175,0.08)]">
+            <tr>
+              <th className="px-3 py-2 font-semibold">Icon</th>
+              <th className="px-3 py-2 font-semibold">Name</th>
+              <th className="px-3 py-2 font-semibold">Platform</th>
+              <th className="px-3 py-2 font-semibold">Description</th>
+              <th className="px-3 py-2 font-semibold">Rating</th>
+              <th className="px-3 py-2 font-semibold text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-blue-100/60">
+            {apps.map((app) => (
+              <tr key={app._id} className="hover:bg-blue-50/40 transition-colors">
+                <td className="px-3 py-2">
+                  {(app.appIcon || app.icon) && (
+                    <img
+                      src={app.appIcon || app.icon}
+                      alt={app.appName || app.name}
+                      className="w-9 h-9 rounded-lg object-cover border border-gray-200"
+                    />
+                  )}
+                </td>
+                <td className="px-3 py-2 font-medium text-gray-800 max-w-[160px] truncate">{app.appName || app.name}</td>
+                <td className="px-3 py-2 text-blue-500 max-w-[160px] truncate">{app.platform || "-"}</td>
+                <td className="px-3 py-2 text-gray-500 max-w-[240px] truncate">{app.description}</td>
+                <td className="px-3 py-2">
+                  {app.rating > 0 ? (
+                    <div className="flex items-center gap-1">
+                      <FiStar size={12} className="text-yellow-400 fill-yellow-400" />
+                      <span className="text-gray-500">{app.rating}</span>
+                    </div>
+                  ) : (
+                    <span className="text-gray-400">-</span>
+                  )}
+                </td>
+                <td className="px-3 py-2">
+                  <div className="flex items-center justify-end gap-1">
+                    <Link to={`/matat-admin/apps/${app._id}`} className="text-gray-500 hover:bg-gray-50 p-1.5 rounded-lg transition-colors">
+                      <FiEye size={14} />
+                    </Link>
+                    <button onClick={() => openEdit(app)} className="text-blue-600 hover:bg-blue-50 p-1.5 rounded-lg transition-colors cursor-pointer">
+                      <FiEdit2 size={14} />
+                    </button>
+                    <button onClick={() => setDeleteId(app._id)} className="text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-colors cursor-pointer">
+                      <FiTrash2 size={14} />
+                    </button>
                   </div>
-                )}
-              </div>
-            </div>
-            <div className="flex gap-2 mt-3">
-              <Link to={`/matat-admin/apps/${app._id}`} className="text-gray-500 hover:bg-gray-50 p-2 rounded-lg transition-colors">
-                <FiEye size={16} />
-              </Link>
-              <button onClick={() => openEdit(app)} className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors cursor-pointer">
-                <FiEdit2 size={16} />
-              </button>
-              <button onClick={() => setDeleteId(app._id)} className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors cursor-pointer">
-                <FiTrash2 size={16} />
-              </button>
-            </div>
-          </div>
-        ))}
+                </td>
+              </tr>
+            ))}
 
-        {apps.length === 0 && (
-          <div className="col-span-full text-center py-12 text-gray-400">
-            No apps yet. Click "Add App" to create one.
-          </div>
-        )}
+            {apps.length === 0 && (
+              <tr>
+                <td colSpan={6} className="text-center py-10 text-gray-400">
+                  No apps yet. Click "Add App" to create one.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* pagination */}
-      {totalPages > 1 && (
+      {!viewAll && totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 mt-6">
           <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors">
             <FiChevronLeft size={18} />

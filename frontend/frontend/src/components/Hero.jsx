@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import { getHero } from "../api";
-import shopifyBadge from "../assets/shopify-partners.png";
-import wooBadge from "../assets/woocommerce.png";
 
 function Hero() {
   const [data, setData] = useState(null);
@@ -16,42 +14,55 @@ function Hero() {
 
   return (
     <section id="hero" className="bg-white">
-      <div className="flex flex-col md:flex-row h-[88vh]">
+      <div className="max-w-7xl mx-auto px-5 sm:px-10 lg:px-12 pt-24 sm:pt-28 md:pt-28 pb-8 sm:pb-12 md:pb-16">
+        <div className="flex flex-col md:flex-row items-center gap-6 md:gap-12">
 
-        {/* left side — image (60%) */}
-        <div className="w-full md:w-[60%] relative overflow-hidden">
-          <img
-            src={data.backgroundImage}
-            alt={data.title}
-            className="w-full h-full object-contain"
-          />
-        </div>
-
-        {/* right side — text + button (40%) */}
-        <div className="w-full md:w-[40%] flex items-center px-6 sm:px-10 lg:px-12 py-8 md:py-0">
-          <div>
-            <h1 className="hero-title text-3xl sm:text-4xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-1 leading-snug">
+          {/* LEFT — text + button (TOP on mobile, LEFT on desktop) */}
+          <div className="w-full md:flex-1 order-1 md:order-1">
+            <h1 className="hero-title text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 mb-4 sm:mb-5 leading-tight">
               {data.title}
             </h1>
-            <p className="hero-subtitle text-base sm:text-lg text-gray-700 mb-3">
+            <p className="hero-subtitle text-sm sm:text-base md:text-lg text-gray-700 mb-8 sm:mb-10">
               {data.subtitle}
             </p>
 
-            {/* partner badges */}
-            <div className="flex items-center gap-4 mb-4">
-              <img src={data.badgeImage1 || shopifyBadge} alt="Shopify Partners" className="h-12 object-contain" />
-              <img src={data.badgeImage2 || wooBadge} alt="WooCommerce" className="h-12 object-contain" />
-            </div>
+            {/* partner badges — placed above the button */}
+            {(data.badgeImage1 || data.badgeImage2) && (
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-10 sm:mb-12">
+                {data.badgeImage1 && (
+                  <img src={data.badgeImage1} alt="Badge 1" className="h-9 sm:h-11 object-contain" />
+                )}
+                {data.badgeImage2 && (
+                  <img src={data.badgeImage2} alt="Badge 2" className="h-9 sm:h-11 object-contain" />
+                )}
+              </div>
+            )}
 
             <a
               href={data.buttonLink}
-              className="hero-button inline-block bg-blue-600 hover:bg-blue-500 text-white font-semibold px-7 py-2.5 rounded-lg transition-all text-base shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+              className="hero-button inline-block bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-lg transition-all text-sm sm:text-lg shadow-lg hover:shadow-xl hover:-translate-y-0.5"
             >
               {data.buttonText}
             </a>
           </div>
-        </div>
 
+          {/* RIGHT — banner image (BOTTOM on mobile, RIGHT on desktop) */}
+          <div className="w-3/4 sm:w-2/3 md:w-[34rem] lg:w-[38rem] shrink-0 order-2 md:order-2 mx-auto md:mx-0">
+            <img
+              src={data.backgroundImage}
+              alt={data.title}
+              draggable="false"
+              className="block w-full h-auto object-cover select-none"
+              style={{
+                WebkitMaskImage:
+                  "radial-gradient(ellipse at center, black 55%, transparent 95%)",
+                maskImage:
+                  "radial-gradient(ellipse at center, black 55%, transparent 95%)",
+              }}
+            />
+          </div>
+
+        </div>
       </div>
     </section>
   );

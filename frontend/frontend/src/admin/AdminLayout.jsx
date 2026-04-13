@@ -54,14 +54,48 @@ function AdminLayout() {
     );
   }
 
+  const current = sidebarLinks.find((l) => l.path === location.pathname);
+  const CurrentIcon = current?.icon;
+
   return (
-    <div className="min-h-screen bg-gray-50 flex relative">
+    <div className="h-screen overflow-hidden bg-gray-50 flex flex-col relative">
       {/* transparent watermark logo in background - hidden on dashboard */}
       {location.pathname !== "/matat-admin" && (
         <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0">
           <img src={logo} alt="" className="w-96 h-96 object-contain opacity-[0.08]" />
         </div>
       )}
+
+      {/* full-width top header with logo merged in */}
+      <header className="h-24 bg-white/60 backdrop-blur-xl shadow-[0_6px_24px_rgba(37,99,235,0.15)] border-b border-blue-100/50 flex items-center px-6 sm:px-8 gap-4 shrink-0 z-40">
+        <button
+          className="lg:hidden text-blue-600 cursor-pointer"
+          onClick={() => setSidebarOpen(true)}
+        >
+          <FiMenu size={28} />
+        </button>
+
+        {/* logo on left */}
+        <Link to="/matat-admin" className="flex items-center shrink-0">
+          <img src={logo} alt="Matat" className="h-14 w-auto" />
+        </Link>
+
+        {/* current page title centered */}
+        <h1 className="flex-1 flex items-center justify-center gap-3 text-2xl sm:text-3xl font-bold text-blue-700">
+          {CurrentIcon && <CurrentIcon size={28} className="text-blue-500" />}
+          {current?.name || "Admin"}
+        </h1>
+
+        {/* link to view live site */}
+        <a
+          href="/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-base font-medium text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition-all shrink-0"
+        >
+          View Site
+        </a>
+      </header>
 
       {/* mobile overlay when sidebar is open */}
       {sidebarOpen && (
@@ -71,95 +105,60 @@ function AdminLayout() {
         />
       )}
 
-      {/* sidebar */}
-      <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform lg:transform-none ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }`}
-      >
-        {/* sidebar header */}
-        <div className="h-20 flex items-center justify-between px-4 border-b border-gray-100">
-          <Link to="/matat-admin" className="flex items-center">
-            <img src={logo} alt="Matat" className="h-12 w-auto" />
-          </Link>
-          <button
-            className="lg:hidden text-gray-500 cursor-pointer"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <FiX size={20} />
-          </button>
-        </div>
+      {/* sidebar + main content row */}
+      <div className="flex-1 flex min-h-0 p-3 sm:p-4 gap-3 sm:gap-4">
+        {/* sidebar (separate rounded bar starting below header) */}
+        <aside
+          className={`fixed lg:static top-28 bottom-4 lg:bottom-auto lg:top-auto left-3 sm:left-4 lg:left-0 z-50 w-64 bg-white rounded-2xl border border-gray-200 shadow-[0_8px_30px_rgba(37,99,235,0.12)] transform transition-transform lg:transform-none overflow-hidden flex flex-col shrink-0 ${
+            sidebarOpen ? "translate-x-0" : "-translate-x-[110%] lg:translate-x-0"
+          }`}
+        >
+          {/* close button on mobile */}
+          <div className="lg:hidden flex justify-end p-3">
+            <button
+              className="text-gray-500 cursor-pointer"
+              onClick={() => setSidebarOpen(false)}
+            >
+              <FiX size={20} />
+            </button>
+          </div>
 
-        {/* sidebar nav links */}
-        <nav className="p-4 space-y-1 overflow-y-auto h-[calc(100vh-8rem)]">
-          {sidebarLinks.map((link) => {
-            const isActive = location.pathname === link.path;
-            return (
-              <Link
-                key={link.name}
-                to={link.path}
-                onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  isActive
-                    ? "bg-blue-50 text-blue-600"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                }`}
-              >
-                <link.icon size={18} />
-                {link.name}
-              </Link>
-            );
-          })}
-        </nav>
+          {/* sidebar nav links */}
+          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+            {sidebarLinks.map((link) => {
+              const isActive = location.pathname === link.path;
+              return (
+                <Link
+                  key={link.name}
+                  to={link.path}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-blue-50 text-blue-600"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  }`}
+                >
+                  <link.icon size={18} />
+                  {link.name}
+                </Link>
+              );
+            })}
+          </nav>
 
-        {/* logout button at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100">
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 w-full transition-colors cursor-pointer"
-          >
-            <FiLogOut size={18} />
-            Logout
-          </button>
-        </div>
-      </aside>
+          {/* logout button at bottom */}
+          <div className="p-4 border-t border-gray-100">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 w-full transition-colors cursor-pointer"
+            >
+              <FiLogOut size={18} />
+              Logout
+            </button>
+          </div>
+        </aside>
 
-      {/* main content area */}
-      <div className="flex-1 flex flex-col min-w-0">
-
-        {/* top bar with hamburger for mobile */}
-        <header className="h-16 bg-white/40 backdrop-blur-xl shadow-[0_6px_24px_rgba(37,99,235,0.15)] border-b border-blue-100/50 flex items-center px-6 gap-4 shrink-0 sticky top-0 z-30">
-          <button
-            className="lg:hidden text-blue-600 cursor-pointer"
-            onClick={() => setSidebarOpen(true)}
-          >
-            <FiMenu size={22} />
-          </button>
-
-          {(() => {
-            const current = sidebarLinks.find((l) => l.path === location.pathname);
-            const Icon = current?.icon;
-            return (
-              <h1 className="flex-1 flex items-center justify-center gap-2 text-xl font-bold text-blue-700">
-                {Icon && <Icon size={22} className="text-blue-500" />}
-                {current?.name || "Admin"}
-              </h1>
-            );
-          })()}
-
-          {/* link to view live site */}
-          <a
-            href="/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm font-medium text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-all"
-          >
-            View Site
-          </a>
-        </header>
-
-        {/* page content - each admin page renders here */}
-        <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
+        {/* page content - each admin page renders here (only this scrolls) */}
+        <main className="flex-1 bg-white rounded-2xl border border-gray-200 shadow-[0_8px_30px_rgba(37,99,235,0.08)] px-4 sm:px-6 pb-4 sm:pb-6 min-w-0 overflow-y-auto overflow-x-hidden">
           <Outlet />
         </main>
       </div>

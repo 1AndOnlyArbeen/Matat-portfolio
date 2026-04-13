@@ -271,6 +271,12 @@ export async function updateAbout(data) {
 export async function getMessages() {
   return await adminFetch("/messages");
 }
+export async function updateMessage(id, data) {
+  return await adminFetch(`/messages/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
 export async function deleteMessage(id) {
   return await adminFetch(`/messages/${id}`, { method: "DELETE" });
 }

@@ -32,9 +32,13 @@ function Navbar() {
     return null;
   }, [location.pathname]);
 
-  // track scroll for shadow effect
+  // track scroll for shadow effect + reset active to "hero" near top of page
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 100);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 100);
+      // if user scrolls back near the top, force "hero" as active
+      if (window.scrollY < 200) setActiveSection("hero");
+    };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -56,13 +60,11 @@ function Navbar() {
 
       const observer = new IntersectionObserver(
         ([entry]) => {
-          // when section enters viewport, mark it as active and update URL
+          // when section enters viewport, mark it as active (highlight nav link)
+          // do NOT rewrite the URL — that would make refresh land on the section
+          // instead of home
           if (entry.isIntersecting) {
             setActiveSection(id);
-            const link = navLinks.find((l) => l.section === id);
-            if (link) {
-              window.history.replaceState(null, "", link.path);
-            }
           }
         },
         { rootMargin: "-30% 0px -50% 0px" } // trigger when section enters upper portion of screen
@@ -88,7 +90,10 @@ function Navbar() {
       return;
     }
 
-    // on homepage, just scroll to the section and update URL
+    // on homepage, just scroll to the section — keep URL at "/" so refresh
+    // always lands on home. Force the active section immediately so the
+    // highlight doesn't lag behind the smooth scroll.
+    setActiveSection(link.section);
     if (link.section === "hero") {
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
@@ -99,7 +104,6 @@ function Navbar() {
         window.scrollTo({ top, behavior: "smooth" });
       }
     }
-    window.history.replaceState(null, "", link.path);
   };
 
   // figure out if a nav link is the "active" one
@@ -115,7 +119,7 @@ function Navbar() {
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled ? "bg-white/90 backdrop-blur-sm shadow-[0_6px_30px_rgba(37,99,235,0.35)]" : "bg-transparent"
+        scrolled ? "bg-white/95 backdrop-blur-sm shadow-[0_6px_30px_rgba(37,99,235,0.35)]" : "bg-white/80 backdrop-blur-sm"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -144,7 +148,7 @@ function Navbar() {
                 className={`px-3 py-2 text-base font-semibold transition-colors ${
                   isActive(link)
                     ? "text-blue-600"
-                    : scrolled ? "text-gray-700 hover:text-blue-600" : "text-white hover:text-blue-300"
+                    : "text-gray-700 hover:text-blue-600"
                 }`}
               >
                 {link.name}
@@ -154,7 +158,7 @@ function Navbar() {
 
           {/* mobile hamburger toggle */}
           <button
-            className={`md:hidden focus:outline-none cursor-pointer transition-colors ${scrolled ? "text-gray-700" : "text-white"}`}
+            className="md:hidden focus:outline-none cursor-pointer transition-colors text-gray-700"
             onClick={() => setMobileOpen(!mobileOpen)}
           >
             {mobileOpen ? <FiX size={24} /> : <FiMenu size={24} />}

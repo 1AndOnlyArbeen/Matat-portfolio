@@ -22,6 +22,14 @@ const hero = new mongoose.Schema(
       type: String,
       required: true,
     },
+    badgeImage1: {
+      type: String,
+      default: '',
+    },
+    badgeImage2: {
+      type: String,
+      default: '',
+    },
     isActive: {
       type: Boolean,
       required: true,

@@ -15,13 +15,14 @@ function ManageProjects() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [deleteId, setDeleteId] = useState(null);
+  const [viewAll, setViewAll] = useState(false);
 
   useEffect(() => {
     loadProjects(page);
-  }, [page]);
+  }, [page, viewAll]);
 
   const loadProjects = async (p = 1) => {
-    const res = await getProjects(p, 6);
+    const res = await getProjects(viewAll ? 1 : p, viewAll ? 1000 : 14);
     const data = res?.data;
     const list = data?.project || [];
     if (Array.isArray(list)) setProjects(list);
@@ -96,70 +97,106 @@ function ManageProjects() {
   return (
     <div>
       {/* header with add button */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-4 bg-white border-b border-blue-100/60 flex items-center justify-between">
         <h2 className="text-xl font-bold text-gray-800">Manage Projects</h2>
-        <button
-          onClick={openCreate}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-sm flex items-center gap-2 cursor-pointer transition-colors"
-        >
-          <FiPlus size={16} /> Add Project
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => { setViewAll((v) => !v); setPage(1); }}
+            className="bg-white border border-blue-300 text-blue-600 hover:bg-blue-50 font-medium px-3 py-2 rounded-lg text-xs cursor-pointer transition-colors"
+          >
+            {viewAll ? "Show Pages" : "View All"}
+          </button>
+          <button
+            onClick={openCreate}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-sm flex items-center gap-2 cursor-pointer transition-colors"
+          >
+            <FiPlus size={16} /> Add Project
+          </button>
+        </div>
       </div>
 
-      {/* projects list */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {projects.map((project) => (
-          <div key={project._id} className="bg-white/30 backdrop-blur-xl rounded-xl border border-blue-300/40 shadow-[0_4px_20px_rgba(30,64,175,0.2)] overflow-hidden">
-            {/* project image */}
-            {(project.projectImage || project.image) && (
-              <img src={project.projectImage || project.image} alt={project.title} className="w-full h-36 object-cover" />
-            )}
-            <div className="p-4">
-              <h3 className="font-semibold text-gray-800 mb-1">{project.title}</h3>
-              <p className="text-gray-500 text-sm line-clamp-2 mb-3">{project.description}</p>
-              {/* tags */}
-              <div className="flex flex-wrap gap-1 mb-3">
-                {(Array.isArray(project.tags) ? project.tags : project.tags?.split(",").map(t => t.trim()))?.map((tag) => (
-                  <span key={tag} className="bg-blue-50 text-blue-600 text-xs px-2 py-0.5 rounded-full">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-              {/* action buttons */}
-              <div className="flex gap-2">
-                <Link
-                  to={`/matat-admin/projects/${project._id}`}
-                  className="text-gray-500 hover:bg-gray-50 p-2 rounded-lg transition-colors"
-                >
-                  <FiEye size={16} />
-                </Link>
-                <button
-                  onClick={() => openEdit(project)}
-                  className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors cursor-pointer"
-                >
-                  <FiEdit2 size={16} />
-                </button>
-                <button
-                  onClick={() => setDeleteId(project._id)}
-                  className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors cursor-pointer"
-                >
-                  <FiTrash2 size={16} />
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
+      {/* projects table */}
+      <div className="overflow-x-clip rounded-xl border border-blue-300/40 bg-white/30 backdrop-blur-xl shadow-[0_4px_20px_rgba(30,64,175,0.15)]">
+        <table className="w-full text-xs text-left">
+          <thead className="sticky top-14 z-20 bg-blue-50 text-gray-700 text-[11px] uppercase tracking-wide shadow-[0_2px_6px_rgba(30,64,175,0.08)]">
+            <tr>
+              <th className="px-3 py-2 font-semibold">Image</th>
+              <th className="px-3 py-2 font-semibold">Title</th>
+              <th className="px-3 py-2 font-semibold">Description</th>
+              <th className="px-3 py-2 font-semibold">Tags</th>
+              <th className="px-3 py-2 font-semibold">Link</th>
+              <th className="px-3 py-2 font-semibold text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-blue-100/60">
+            {projects.map((project) => {
+              const tags = Array.isArray(project.tags)
+                ? project.tags
+                : project.tags?.split(",").map((t) => t.trim()).filter(Boolean) || [];
+              return (
+                <tr key={project._id} className="hover:bg-blue-50/40 transition-colors">
+                  <td className="px-3 py-2">
+                    {(project.projectImage || project.image) && (
+                      <img
+                        src={project.projectImage || project.image}
+                        alt={project.title}
+                        className="w-9 h-9 object-cover rounded-lg border border-gray-200"
+                      />
+                    )}
+                  </td>
+                  <td className="px-3 py-2 font-medium text-gray-800 max-w-[160px] truncate">{project.title}</td>
+                  <td className="px-3 py-2 text-gray-500 max-w-[240px] truncate">{project.description}</td>
+                  <td className="px-3 py-2 max-w-[160px]">
+                    <div className="flex flex-wrap gap-1">
+                      {tags.map((tag) => (
+                        <span key={tag} className="bg-blue-50 text-blue-600 text-[11px] px-1.5 py-0.5 rounded-full">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </td>
+                  <td className="px-3 py-2 text-blue-500 max-w-[160px] truncate">
+                    {project.projectLink || "-"}
+                  </td>
+                  <td className="px-3 py-2">
+                    <div className="flex items-center justify-end gap-1">
+                      <Link
+                        to={`/matat-admin/projects/${project._id}`}
+                        className="text-gray-500 hover:bg-gray-50 p-1.5 rounded-lg transition-colors"
+                      >
+                        <FiEye size={14} />
+                      </Link>
+                      <button
+                        onClick={() => openEdit(project)}
+                        className="text-blue-600 hover:bg-blue-50 p-1.5 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <FiEdit2 size={14} />
+                      </button>
+                      <button
+                        onClick={() => setDeleteId(project._id)}
+                        className="text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-colors cursor-pointer"
+                      >
+                        <FiTrash2 size={14} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
 
-        {/* empty state */}
-        {projects.length === 0 && (
-          <div className="col-span-full text-center py-12 text-gray-400">
-            No projects yet. Click "Add Project" to get started.
-          </div>
-        )}
+            {projects.length === 0 && (
+              <tr>
+                <td colSpan={6} className="text-center py-10 text-gray-400">
+                  No projects yet. Click "Add Project" to get started.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* pagination */}
-      {totalPages > 1 && (
+      {!viewAll && totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 mt-6">
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
