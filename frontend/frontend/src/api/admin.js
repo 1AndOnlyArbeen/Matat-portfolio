@@ -188,6 +188,21 @@ export async function updateProject(id, data) {
 export async function deleteProject(id) {
   return await adminFetch(`/deleteProject/${id}`, { method: "DELETE" });
 }
+// ---- Project Screenshots (separate endpoints) ----
+export async function addProjectScreenshots(id, formData) {
+  return await adminUpload(`/addProjectScreenshots/${id}`, formData, "PATCH");
+}
+export async function replaceProjectScreenshots(id, formData) {
+  return await adminUpload(`/replaceProjectScreenshots/${id}`, formData, "PATCH");
+}
+export async function removeProjectScreenshot(id, publicId) {
+  return await adminFetch(`/removeProjectScreenshot/${id}/${encodeURIComponent(publicId)}`, {
+    method: "DELETE",
+  });
+}
+export async function getProjectScreenshots(id) {
+  return await adminFetch(`/getProjectScreenshots/${id}`);
+}
 
 // ---- Apps ----
 export async function getApps(page = 1, limit = 7) {

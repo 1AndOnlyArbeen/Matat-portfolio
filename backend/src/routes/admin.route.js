@@ -15,6 +15,10 @@ import {
     getAllProject,
     projectEdit,
     deleteProject,
+    addProjectScreenshots,
+    replaceProjectScreenshots,
+    removeProjectScreenshot,
+    getProjectScreenshots,
 } from '../controller/project.controller.js';
 import { createApp, getAllApp, editApp, deleteApp } from '../controller/app.controller.js';
 import {
@@ -70,22 +74,23 @@ adminRouter.route('/editHeroDetails/:id').patch(heroUpload, verifyJwt, editHeroD
 adminRouter.route('/deleteHero/:id').delete(verifyJwt, deleteHero);
 
 // router for the projectdetails upload
-
-const projectUpload = upload.fields([
-    { name: 'projectImage', maxCount: 1 },
-    { name: 'screenshot', maxCount: 10 }
-    
-])
-
 adminRouter.route('/createProject').post(upload.single('projectImage'), verifyJwt, createProject);
 adminRouter.route('/getAllProject').get(verifyJwt, getAllProject);
 adminRouter.route('/projectEdit/:id').patch(upload.single('projectImage'), verifyJwt, projectEdit);
 adminRouter.route('/deleteProject/:id').delete(verifyJwt, deleteProject);
-// project screenshot 
-adminRouter.route('/')
 
-
-
+// project screenshot endpoints — handled by separate functions in the same controller
+// upload.array('screenshots', 8) → req.files is a plain array (one field, many files)
+adminRouter
+    .route('/addProjectScreenshots/:id')
+    .patch(upload.array('screenshots', 8), verifyJwt, addProjectScreenshots);
+adminRouter
+    .route('/replaceProjectScreenshots/:id')
+    .patch(upload.array('screenshots', 8), verifyJwt, replaceProjectScreenshots);
+adminRouter
+    .route('/removeProjectScreenshot/:id/:publicId')
+    .delete(verifyJwt, removeProjectScreenshot);
+adminRouter.route('/getProjectScreenshots/:id').get(getProjectScreenshots);
 
 
 // router for appDetails upload

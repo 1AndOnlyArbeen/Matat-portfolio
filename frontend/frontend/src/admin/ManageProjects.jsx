@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { getProjects, createProject, updateProject, deleteProject } from "../api/admin";
+import { getProjects, createProject, updateProject, deleteProject, replaceProjectScreenshots } from "../api/admin";
 import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiEye, FiUploadCloud, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import ImageDropzone from "./ImageDropzone";
 import ConfirmModal from "./ConfirmModal";
@@ -72,21 +72,19 @@ function ManageProjects() {
     setScreenshotPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // handle form submission - create or update
+  // handle form submission — two sequential calls so screenshots live on
+  // their own dedicated endpoint (separate from the main project fields)
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
 
-    // build form data for file upload support
+    // step 1 — create/update the main project (no screenshots in this payload)
     const data = new FormData();
     data.append("title", form.title);
     data.append("description", form.description);
     data.append("tags", form.tags);
     data.append("projectLink", form.link);
     if (imageFile) data.append("projectImage", imageFile);
-    for (const file of screenshotFiles) {
-      data.append("screenshots", file);
-    }
 
     let result;
     if (editing) {
@@ -95,11 +93,26 @@ function ManageProjects() {
       result = await createProject(data);
     }
 
-    if (result) {
-      await loadProjects(page);
-      setShowModal(false);
+    if (!result) {
+      setSaving(false);
+      return;
     }
 
+    // step 2 — if admin picked screenshots, push them to the dedicated endpoint
+    if (screenshotFiles.length > 0) {
+      // backend wraps the doc in apiResponse → look for _id on the created/updated doc
+      const projectId = result?.data?._id || editing?._id;
+      if (projectId) {
+        const ssData = new FormData();
+        for (const f of screenshotFiles) {
+          ssData.append("screenshots", f);
+        }
+        await replaceProjectScreenshots(projectId, ssData);
+      }
+    }
+
+    await loadProjects(page);
+    setShowModal(false);
     setSaving(false);
   };
 
