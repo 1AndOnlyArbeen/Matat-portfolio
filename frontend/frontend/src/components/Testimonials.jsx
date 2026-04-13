@@ -65,11 +65,6 @@ function Testimonials() {
               return (
                 <SwiperSlide key={item._id}>
                   <div className="bg-blue-50 rounded-xl p-6 relative hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-72 flex flex-col overflow-hidden">
-                    {/* decorative quote mark */}
-                    <div className="text-blue-200 text-6xl font-serif absolute top-4 right-6 leading-none pointer-events-none">
-                      &ldquo;
-                    </div>
-
                     {/* client avatar + info */}
                     <div className="flex items-center gap-3 mb-4 shrink-0">
                       <img src={item.avatar} alt={item.name} className="w-12 h-12 rounded-full object-cover border-2 border-blue-200 shrink-0" />
@@ -95,7 +90,7 @@ function Testimonials() {
                     )}
 
                     {/* star rating — always at the bottom */}
-                    <div className="flex gap-1 shrink-0">
+                    <div className="flex items-center gap-1 shrink-0">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <FiStar
                           key={i}
@@ -103,6 +98,9 @@ function Testimonials() {
                           className={i < item.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}
                         />
                       ))}
+                      {item.rating > 0 && (
+                        <span className="ml-1.5 text-xs font-semibold text-gray-600">{item.rating}/5</span>
+                      )}
                     </div>
                   </div>
                 </SwiperSlide>
@@ -152,7 +150,7 @@ function Testimonials() {
                 <div className="min-w-0">
                   <p className="text-blue-900 font-bold text-lg truncate">{openItem.name}</p>
                   <p className="text-gray-500 text-sm truncate">{openItem.company}</p>
-                  <div className="flex gap-1 mt-1">
+                  <div className="flex items-center gap-1 mt-1">
                     {Array.from({ length: 5 }).map((_, i) => (
                       <FiStar
                         key={i}
@@ -160,6 +158,9 @@ function Testimonials() {
                         className={i < openItem.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}
                       />
                     ))}
+                    {openItem.rating > 0 && (
+                      <span className="ml-1.5 text-xs font-semibold text-gray-500">{openItem.rating}/5</span>
+                    )}
                   </div>
                 </div>
               </div>

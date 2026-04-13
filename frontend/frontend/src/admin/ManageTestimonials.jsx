@@ -9,6 +9,7 @@ function ManageTestimonials() {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ name: "", company: "", text: "", rating: 5 });
+  const [hoverRating, setHoverRating] = useState(0); // for star preview on hover
   const [avatarFile, setAvatarFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
@@ -255,13 +256,34 @@ function ManageTestimonials() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
-                <div className="flex gap-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button key={star} type="button" onClick={() => setForm({ ...form, rating: star })} className="cursor-pointer">
-                      <FiStar size={24} className={star <= form.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"} />
-                    </button>
-                  ))}
+                <div
+                  className="flex items-center gap-1"
+                  onMouseLeave={() => setHoverRating(0)}
+                >
+                  {[1, 2, 3, 4, 5].map((star) => {
+                    // hover state takes precedence; click toggles off if same star clicked twice
+                    const filled = (hoverRating || form.rating) >= star;
+                    return (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setForm({ ...form, rating: form.rating === star ? 0 : star })}
+                        onMouseEnter={() => setHoverRating(star)}
+                        className="cursor-pointer transition-transform hover:scale-110"
+                        title={`${star} star${star > 1 ? "s" : ""}`}
+                      >
+                        <FiStar
+                          size={28}
+                          className={`transition-colors ${filled ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
+                        />
+                      </button>
+                    );
+                  })}
+                  <span className="ml-3 text-sm font-semibold text-gray-600 select-none">
+                    {form.rating > 0 ? `${form.rating} / 5` : "No rating"}
+                  </span>
                 </div>
+                <p className="text-xs text-gray-400 mt-1">Click again on the same star to clear.</p>
               </div>
               <ImageDropzone label="Avatar" onFileSelect={setAvatarFile} currentImage={editing?.avatar} />
               <div className="flex justify-end gap-3 pt-2">

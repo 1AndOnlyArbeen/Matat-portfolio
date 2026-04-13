@@ -1,7 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getGallery } from "../api";
 import { FiX, FiChevronLeft, FiChevronRight, FiMapPin, FiCalendar, FiImage, FiArrowUpRight, FiTag } from "react-icons/fi";
 import useScrollAnimation from "../hooks/useScrollAnimation";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Keyboard, EffectFade } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/effect-fade";
 
 // modern gallery — masonry-ish grid of album cards with stacked photo previews
 function Gallery() {
@@ -10,6 +15,7 @@ function Gallery() {
   const [photoIndex, setPhotoIndex] = useState(0);
   const [headingRef, headingVisible] = useScrollAnimation();
   const [gridRef, gridVisible] = useScrollAnimation(0.05);
+  const swiperRef = useRef(null);
 
   useEffect(() => {
     getGallery().then((res) => {
@@ -24,8 +30,18 @@ function Gallery() {
 
   const close = () => setOpenAlbum(null);
 
-  // images may come as [{url, publicId}] objects (new backend) OR plain string URLs
-  // (legacy/dummy data). Normalize to a flat array of strings either way.
+  // Escape key closes the lightbox
+  useEffect(() => {
+    if (!openAlbum) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") close();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [openAlbum]);
+
+  // images may come as [{url, publicId}] objects from the backend OR as plain
+  // string URLs in older docs. Normalize to a flat array of strings either way.
   const toUrl = (i) => (typeof i === "string" ? i : i?.url);
   const photos = openAlbum?.images?.length
     ? openAlbum.images.map(toUrl).filter(Boolean)
@@ -34,9 +50,6 @@ function Gallery() {
     : openAlbum?.image
     ? [openAlbum.image]
     : [];
-
-  const prev = () => setPhotoIndex((i) => (i - 1 + photos.length) % photos.length);
-  const next = () => setPhotoIndex((i) => (i + 1) % photos.length);
 
   // hide the section entirely if no albums returned from backend
   if (albums.length === 0) return null;
@@ -252,28 +265,52 @@ function Gallery() {
             </button>
           </div>
 
-          {/* big photo */}
+          {/* big photo — Swiper slider with smooth fade transitions */}
           <div
-            className="flex-1 relative flex items-center justify-center px-4 sm:px-12"
+            className="flex-1 relative flex items-center justify-center min-h-0"
             onClick={(e) => e.stopPropagation()}
           >
-            <img
-              src={photos[photoIndex]}
-              alt={`${openAlbum.place} photo ${photoIndex + 1}`}
-              className="max-w-full max-h-full object-contain rounded-xl shadow-[0_20px_80px_rgba(0,0,0,0.5)]"
-            />
+            <Swiper
+              modules={[Navigation, Keyboard, EffectFade]}
+              effect="fade"
+              fadeEffect={{ crossFade: true }}
+              speed={500}
+              keyboard={{ enabled: true }}
+              navigation={{
+                prevEl: ".gallery-lightbox-prev",
+                nextEl: ".gallery-lightbox-next",
+              }}
+              loop={photos.length > 1}
+              onSwiper={(s) => (swiperRef.current = s)}
+              onSlideChange={(s) => setPhotoIndex(s.realIndex)}
+              className="w-full h-full"
+            >
+              {photos.map((src, i) => (
+                <SwiperSlide key={i} className="!flex items-center justify-center px-4 sm:px-16">
+                  {/* fixed-aspect frame so every photo (portrait/landscape/square) lays out the same */}
+                  <div className="w-full h-full max-h-[75vh] flex items-center justify-center">
+                    <img
+                      src={src}
+                      alt={`${openAlbum.place || openAlbum.caption} photo ${i + 1}`}
+                      className="max-w-full max-h-full w-auto h-auto object-contain rounded-xl shadow-[0_20px_80px_rgba(0,0,0,0.6)]"
+                      draggable="false"
+                    />
+                  </div>
+                </SwiperSlide>
+              ))}
+            </Swiper>
 
             {photos.length > 1 && (
               <>
                 <button
-                  onClick={prev}
-                  className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/25 text-white rounded-full p-2.5 sm:p-4 backdrop-blur-md transition-all cursor-pointer hover:scale-110"
+                  className="gallery-lightbox-prev absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/25 text-white rounded-full p-2.5 sm:p-4 backdrop-blur-md transition-all cursor-pointer hover:scale-110"
+                  aria-label="Previous photo"
                 >
                   <FiChevronLeft size={26} />
                 </button>
                 <button
-                  onClick={next}
-                  className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/25 text-white rounded-full p-2.5 sm:p-4 backdrop-blur-md transition-all cursor-pointer hover:scale-110"
+                  className="gallery-lightbox-next absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/25 text-white rounded-full p-2.5 sm:p-4 backdrop-blur-md transition-all cursor-pointer hover:scale-110"
+                  aria-label="Next photo"
                 >
                   <FiChevronRight size={26} />
                 </button>
@@ -281,7 +318,7 @@ function Gallery() {
             )}
           </div>
 
-          {/* thumbnail strip */}
+          {/* thumbnail strip — clicking any thumb syncs with the swiper */}
           {photos.length > 1 && (
             <div
               className="p-3 sm:p-5 overflow-x-auto"
@@ -291,7 +328,7 @@ function Gallery() {
                 {photos.map((src, i) => (
                   <button
                     key={i}
-                    onClick={() => setPhotoIndex(i)}
+                    onClick={() => swiperRef.current?.slideToLoop(i)}
                     className={`shrink-0 rounded-lg overflow-hidden transition-all duration-300 ${
                       i === photoIndex
                         ? "ring-2 ring-blue-400 ring-offset-2 ring-offset-black scale-105"

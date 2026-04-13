@@ -7,11 +7,13 @@ import { Testimonial } from '../models/testimonial.model.js';
 
 const createTestimonial = asyncHandler(async (req, res) => {
     const { name, company, reviewText, rating } = req.body;
-    if (!name || !company || !reviewText || !rating) {
-        throw new apiError(400, ' All field are required !');
+    if (!name || !company || !reviewText) {
+        throw new apiError(400, ' Name, company and review are required !');
     }
-    if (rating < 1 || rating > 5) {
-        throw new apiError(400, ' Rating must me between 1 and 5 ');
+    // rating is optional; only validate range when one is provided
+    const ratingNum = rating !== undefined && rating !== "" ? Number(rating) : 0;
+    if (ratingNum && (ratingNum < 1 || ratingNum > 5)) {
+        throw new apiError(400, ' Rating must be between 1 and 5 ');
     }
     const avatarImagePath = req.file?.path;
     if (!avatarImagePath) {
@@ -28,7 +30,7 @@ const createTestimonial = asyncHandler(async (req, res) => {
             name,
             company,
             reviewText,
-            rating,
+            rating: ratingNum,
             avatar: avatar.secure_url,
             avatarId: avatar.public_id,
         });
@@ -86,7 +88,10 @@ const editTestiominial = asyncHandler(async (req, res) => {
     testimonial.name = name || testimonial.name;
     testimonial.company = company || testimonial.company;
     testimonial.reviewText = reviewText || testimonial.reviewText;
-    testimonial.rating = rating || testimonial.rating;
+    // rating: allow explicit 0 to clear; only fall back if not sent at all
+    if (rating !== undefined && rating !== "") {
+        testimonial.rating = Number(rating);
+    }
 
     // if the avatar is changed then delete the avatar from the lcoudianry
 
