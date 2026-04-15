@@ -14,10 +14,16 @@ const about = new mongoose.Schema(
       type: String,
       required: true,
     },
+    // Hebrew translations
+    titleHe:       { type: String, default: '' },
+    descriptionHe: { type: String, default: '' },
+    missionHe:     { type: String, default: '' },
     stats: [
       {
         value: String,
         label: String,
+        valueHe: { type: String, default: '' },
+        labelHe: { type: String, default: '' },
         order: Number,
       },
     ],

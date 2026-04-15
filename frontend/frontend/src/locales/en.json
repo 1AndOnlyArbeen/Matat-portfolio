@@ -1,0 +1,181 @@
+{
+  "nav": {
+    "home": "Home",
+    "projects": "Projects",
+    "apps": "Apps",
+    "clients": "Clients",
+    "about": "About",
+    "team": "Team",
+    "testimonials": "Testimonials",
+    "gallery": "Gallery",
+    "contact": "Contact"
+  },
+  "hero": {
+    "badge1": "Badge 1",
+    "badge2": "Badge 2"
+  },
+  "projects": {
+    "title": "Our Projects",
+    "subtitle": "Take a look at some of the projects we have delivered for our clients.",
+    "viewProject": "View Project"
+  },
+  "apps": {
+    "title": "Our Apps",
+    "subtitle": "Mobile and web applications we have built and launched.",
+    "learnMore": "Learn More"
+  },
+  "clients": {
+    "title": "Our Clients",
+    "subtitle": "Trusted by businesses and startups around the world.",
+    "projectsTogether": "Projects Together",
+    "visitWebsite": "Visit Website"
+  },
+  "about": {
+    "title": "About Us",
+    "getInTouch": "Get In Touch"
+  },
+  "team": {
+    "title": "Meet Our Team",
+    "subtitle": "The talented people behind our success."
+  },
+  "testimonials": {
+    "title": "What Our Clients Say",
+    "subtitle": "Hear from the people who have worked with us.",
+    "seeMore": "See more →"
+  },
+  "gallery": {
+    "label": "✦ Our Story In Photos",
+    "title": "Memories from",
+    "titleHighlight": "the road",
+    "subtitle": "Glimpses of moments — events, trips, milestones — across the places we've been.",
+    "prevPhoto": "Previous photo",
+    "nextPhoto": "Next photo",
+    "of": "of"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "Have a project in mind? Let's talk about it.",
+    "getInTouch": "Get in Touch",
+    "address": "Address",
+    "addressValue": "Kathmandu, Nepal",
+    "email": "Email",
+    "emailValue": "hello@portfolio.com",
+    "phone": "Phone",
+    "phoneValue": "+977 9800000000",
+    "yourName": "Your Name",
+    "yourEmail": "Your Email",
+    "subject": "Subject",
+    "yourMessage": "Your Message",
+    "sending": "Sending your message...",
+    "sendingNote": "This may take a few seconds",
+    "sendingBtn": "Sending...",
+    "sendMessage": "Send Message",
+    "success": "Message sent successfully!",
+    "error": "Failed to send. Please try again later."
+  },
+  "footer": {
+    "developed": "Developed by Matat Technologies LTD",
+    "location": "Kathmandu, Nepal",
+    "email": "hello@portfolio.com",
+    "rights": "Matat. All rights reserved."
+  },
+  "notFound": {
+    "title": "404",
+    "heading": "Oops! Page Not Found",
+    "message": "The page you're looking for doesn't exist or has been moved.",
+    "backHome": "Back to Home"
+  },
+  "projectDetail": {
+    "backToProjects": "Back to Projects",
+    "notFound": "Project not found",
+    "backHome": "Back to Home",
+    "keyFeatures": "Key Features",
+    "visitProject": "Visit Project",
+    "projectDetails": "Project Details",
+    "client": "Client",
+    "date": "Date",
+    "techStack": "Tech Stack",
+    "snapshots": "Snapshots",
+    "image": "image",
+    "images": "images"
+  },
+  "appDetail": {
+    "backToApps": "Back to Apps",
+    "notFound": "App not found",
+    "backHome": "Back to Home",
+    "downloads": "Downloads",
+    "aboutApp": "About this App",
+    "snapshots": "Snapshots",
+    "image": "image",
+    "images": "images",
+    "appInfo": "App Information",
+    "platform": "Platform",
+    "rating": "Rating",
+    "link": "Link",
+    "visit": "Visit"
+  },
+  "clientDetail": {
+    "backToClients": "Back to Clients",
+    "notFound": "Client not found",
+    "backHome": "Back to Home",
+    "about": "About",
+    "projectsTogether": "Projects Together",
+    "visitWebsite": "Visit Website"
+  },
+  "admin": {
+    "sidebar": {
+      "dashboard": "Dashboard",
+      "heroBanner": "Hero Banner",
+      "projects": "Projects",
+      "apps": "Apps",
+      "clients": "Clients",
+      "team": "Team",
+      "testimonials": "Testimonials",
+      "gallery": "Gallery",
+      "about": "About",
+      "messages": "Messages",
+      "footer": "Footer"
+    },
+    "viewSite": "View Site",
+    "logout": "Logout",
+    "admin": "Admin",
+    "login": {
+      "title": "Admin Panel",
+      "subtitle": "Sign in to manage your portfolio",
+      "email": "Email",
+      "emailPlaceholder": "admin@matat.com",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "error": "Invalid email or password",
+      "signingIn": "Signing in...",
+      "signIn": "Sign In",
+      "backToSite": "Back to site"
+    },
+    "dashboard": {
+      "welcome": "Welcome back!",
+      "overview": "Here's an overview of your portfolio content.",
+      "loadingCounts": "Loading counts...",
+      "heroBanners": "Hero Banners",
+      "projects": "Projects",
+      "apps": "Apps",
+      "clients": "Clients",
+      "teamMembers": "Team Members",
+      "testimonials": "Testimonials",
+      "galleryAlbums": "Gallery Albums",
+      "aboutEntries": "About Entries",
+      "messages": "Messages",
+      "quickTip": "Quick Tip",
+      "quickTipText": "Use the sidebar to manage each section of your portfolio. All changes will reflect on the live site once saved."
+    },
+    "notFound": {
+      "title": "404",
+      "heading": "Oops! Page Not Found",
+      "message": "The page you're looking for doesn't exist or has been moved.",
+      "backToDashboard": "Back to Dashboard"
+    }
+  },
+  "langSwitch": {
+    "en": "EN",
+    "he": "עב"
+  }
+}

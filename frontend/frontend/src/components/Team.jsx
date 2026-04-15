@@ -1,9 +1,13 @@
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { getTeamMembers } from "../api";
 import { FiLinkedin, FiGithub, FiTwitter, FiChevronLeft, FiChevronRight, FiGlobe } from "react-icons/fi";
 import useScrollAnimation from "../hooks/useScrollAnimation";
+import useLang from "../hooks/useLang";
 
 function Team() {
+  const { t } = useTranslation();
+  const l = useLang();
   const [members, setMembers] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [headingRef, headingVisible] = useScrollAnimation();
@@ -32,39 +36,30 @@ function Team() {
 
   if (total === 0) return null;
 
-  const angleStep = 360 / total;
-
   return (
-    <section id="team" className="py-20 bg-blue-50 overflow-x-clip">
+    <section id="team" className="py-24 sm:py-28 bg-[#f0f4f8] overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <div ref={headingRef} className={`text-center mb-14 animate-fade-up ${headingVisible ? "visible" : ""}`}>
-          <h2 className="text-3xl sm:text-4xl font-bold text-blue-900 mb-3">Meet Our Team</h2>
-          <p className="text-gray-500 max-w-xl mx-auto">
-            The talented people behind our success.
+          <h2 className="section-title">{t("team.title")}</h2>
+          <p className="text-[#7e8590] max-w-xl mx-auto text-base">
+            {t("team.subtitle")}
           </p>
         </div>
 
         <div ref={sliderRef} className={`relative animate-fade-up ${sliderVisible ? "visible" : ""}`}>
           <div className="relative mx-auto" style={{ height: "420px" }}>
             {members.map((member, i) => {
-              // signed distance from the front card (negative = left, positive = right)
-              // wraps around so the carousel loops smoothly
               const halfTotal = total / 2;
               const rawDiff = ((i - currentIndex) % total + total) % total;
               const signedDist = rawDiff > halfTotal ? rawDiff - total : rawDiff;
               const absDist = Math.abs(signedDist);
 
-              // show only 4 on each side + 1 in the middle (max 9 cards visible)
               if (absDist > 4) return null;
 
-              // linear horizontal positioning: each step is 120px apart
               const x = signedDist * 120;
-              // shrink as cards move away from center: 1.0 at front → 0.6 at the edges
               const scale = 1 - absDist * 0.1;
-              // fade as cards move away: 1.0 at front → 0.45 at the edges
               const opacity = 1 - absDist * 0.13;
-              // front card sits highest, layers cascade behind it
               const zIndex = 100 - absDist * 10;
               const isFront = absDist === 0;
 
@@ -85,33 +80,33 @@ function Team() {
                     <div className="relative h-72 overflow-hidden">
                       <img
                         src={member.teamImage || member.image}
-                        alt={member.name}
+                        alt={l(member, "name")}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"></div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
                       <div className="absolute bottom-0 left-0 right-0 p-5 text-left">
-                        <h3 className="text-lg font-bold text-white">{member.name}</h3>
-                        <p className="text-blue-300 text-sm">{member.role}</p>
-                        {member.country && (
+                        <h3 className="text-lg font-bold text-white">{l(member, "name")}</h3>
+                        <p className="text-[#0075ff] text-sm font-semibold">{l(member, "role")}</p>
+                        {l(member, "country") && (
                           <p className="text-white/80 text-xs mt-1 inline-flex items-center gap-1">
-                            <FiGlobe size={11} /> {member.country}
+                            <FiGlobe size={11} /> {l(member, "country")}
                           </p>
                         )}
                       </div>
                     </div>
-                    <div className="flex justify-center gap-4 py-4 bg-white">
+                    <div className="flex justify-center gap-3 py-4 bg-white">
                       {(member.linkedinUrl || member.social?.linkedin) && (
-                        <a href={member.linkedinUrl || member.social.linkedin} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center text-gray-400 hover:bg-blue-600 hover:text-white transition-all duration-300">
+                        <a href={member.linkedinUrl || member.social.linkedin} target="_blank" rel="noopener noreferrer" className="social-icon !bg-[#e1e8f0] !text-[#364052] hover:!bg-[#0075ff] hover:!text-white">
                           <FiLinkedin size={16} />
                         </a>
                       )}
                       {(member.githubUrl || member.social?.github) && (
-                        <a href={member.githubUrl || member.social.github} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center text-gray-400 hover:bg-gray-800 hover:text-white transition-all duration-300">
+                        <a href={member.githubUrl || member.social.github} target="_blank" rel="noopener noreferrer" className="social-icon !bg-[#e1e8f0] !text-[#364052] hover:!bg-gray-800 hover:!text-white">
                           <FiGithub size={16} />
                         </a>
                       )}
                       {(member.twitterUrl || member.social?.twitter) && (
-                        <a href={member.twitterUrl || member.social.twitter} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center text-gray-400 hover:bg-sky-500 hover:text-white transition-all duration-300">
+                        <a href={member.twitterUrl || member.social.twitter} target="_blank" rel="noopener noreferrer" className="social-icon !bg-[#e1e8f0] !text-[#364052] hover:!bg-[#0075ff] hover:!text-white">
                           <FiTwitter size={16} />
                         </a>
                       )}
@@ -122,10 +117,10 @@ function Team() {
             })}
           </div>
 
-          <button onClick={goPrev} className="absolute left-2 top-1/2 -translate-y-1/2 z-[110] bg-white shadow-lg rounded-full p-2.5 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors cursor-pointer">
+          <button onClick={goPrev} className="absolute left-2 top-1/2 -translate-y-1/2 z-[110] bg-white shadow-lg rounded-full p-2.5 text-[#364052] hover:bg-[#0075ff] hover:text-white transition-all cursor-pointer hover:scale-110">
             <FiChevronLeft size={22} />
           </button>
-          <button onClick={goNext} className="absolute right-2 top-1/2 -translate-y-1/2 z-[110] bg-white shadow-lg rounded-full p-2.5 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors cursor-pointer">
+          <button onClick={goNext} className="absolute right-2 top-1/2 -translate-y-1/2 z-[110] bg-white shadow-lg rounded-full p-2.5 text-[#364052] hover:bg-[#0075ff] hover:text-white transition-all cursor-pointer hover:scale-110">
             <FiChevronRight size={22} />
           </button>
         </div>

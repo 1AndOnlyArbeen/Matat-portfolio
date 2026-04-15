@@ -71,8 +71,16 @@ export async function getGallery() {
   return await fetchData("/gallery");
 }
 
+export async function getGalleryHeading() {
+  return await fetchData("/galleryHeading");
+}
+
 export async function getAbout() {
   return await fetchData("/about");
+}
+
+export async function getFooterSettings() {
+  return await fetchData("/footer-settings");
 }
 
 // ---- contact form submission ----

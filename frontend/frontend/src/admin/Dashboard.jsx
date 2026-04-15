@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   getAllHeroes,
   getProjects,
@@ -18,18 +19,19 @@ import {
 // each card maps to a list endpoint; we read pagination.totalItems from the
 // response (or fall back to the array length if no pagination block was sent)
 const statCards = [
-  { key: "hero",         label: "Hero Banners", icon: FiMonitor,    color: "bg-cyan-500",   fetch: () => getAllHeroes(1, 1),     listKey: "heroes" },
-  { key: "projects",     label: "Projects",     icon: FiGrid,       color: "bg-blue-500",   fetch: () => getProjects(1, 1),      listKey: "project" },
-  { key: "apps",         label: "Apps",         icon: FiSmartphone, color: "bg-indigo-500", fetch: () => getApps(1, 1),          listKey: "apps" },
-  { key: "clients",      label: "Clients",      icon: FiImage,      color: "bg-green-500",  fetch: () => getClients(1, 1),       listKey: "clients" },
-  { key: "team",         label: "Team Members", icon: FiUsers,      color: "bg-purple-500", fetch: () => getTeamMembers(1, 1),   listKey: "teams" },
-  { key: "testimonials", label: "Testimonials", icon: FiStar,       color: "bg-yellow-500", fetch: () => getTestimonials(1, 1),  listKey: "testimonial" },
-  { key: "gallery",      label: "Gallery Albums", icon: FiCamera,   color: "bg-pink-500",   fetch: () => getGalleryImages(1, 1), listKey: "albums" },
-  { key: "about",        label: "About Entries", icon: FiInfo,      color: "bg-orange-500", fetch: () => getAllAbout(1, 1),      listKey: "abouts" },
-  { key: "messages",     label: "Messages",     icon: FiMail,       color: "bg-red-500",    fetch: () => getMessages(1, 1),      listKey: "message" },
+  { key: "hero",         labelKey: "admin.dashboard.heroBanners",   icon: FiMonitor,    color: "bg-cyan-500",   fetch: () => getAllHeroes(1, 1),     listKey: "heroes" },
+  { key: "projects",     labelKey: "admin.dashboard.projects",      icon: FiGrid,       color: "bg-blue-500",   fetch: () => getProjects(1, 1),      listKey: "project" },
+  { key: "apps",         labelKey: "admin.dashboard.apps",          icon: FiSmartphone, color: "bg-indigo-500", fetch: () => getApps(1, 1),          listKey: "apps" },
+  { key: "clients",      labelKey: "admin.dashboard.clients",       icon: FiImage,      color: "bg-green-500",  fetch: () => getClients(1, 1),       listKey: "clients" },
+  { key: "team",         labelKey: "admin.dashboard.teamMembers",   icon: FiUsers,      color: "bg-purple-500", fetch: () => getTeamMembers(1, 1),   listKey: "teams" },
+  { key: "testimonials", labelKey: "admin.dashboard.testimonials",  icon: FiStar,       color: "bg-yellow-500", fetch: () => getTestimonials(1, 1),  listKey: "testimonial" },
+  { key: "gallery",      labelKey: "admin.dashboard.galleryAlbums", icon: FiCamera,     color: "bg-pink-500",   fetch: () => getGalleryImages(1, 1), listKey: "albums" },
+  { key: "about",        labelKey: "admin.dashboard.aboutEntries",  icon: FiInfo,       color: "bg-orange-500", fetch: () => getAllAbout(1, 1),      listKey: "abouts" },
+  { key: "messages",     labelKey: "admin.dashboard.messages",      icon: FiMail,       color: "bg-red-500",    fetch: () => getMessages(1, 1),      listKey: "message" },
 ];
 
 function Dashboard() {
+  const { t } = useTranslation();
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(true);
 
@@ -67,13 +69,13 @@ function Dashboard() {
       {/* welcome header */}
       <div className="mb-8 flex items-end justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-1">Welcome back!</h2>
-          <p className="text-gray-500 text-sm">Here's an overview of your portfolio content.</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-1">{t("admin.dashboard.welcome")}</h2>
+          <p className="text-gray-500 text-sm">{t("admin.dashboard.overview")}</p>
         </div>
         {loading && (
           <span className="text-xs text-gray-400 inline-flex items-center gap-2">
             <span className="w-3 h-3 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
-            Loading counts...
+            {t("admin.dashboard.loadingCounts")}
           </span>
         )}
       </div>
@@ -97,16 +99,16 @@ function Dashboard() {
                 stats[card.key] ?? 0
               )}
             </p>
-            <p className="text-gray-500 text-sm">{card.label}</p>
+            <p className="text-gray-500 text-sm">{t(card.labelKey)}</p>
           </div>
         ))}
       </div>
 
       {/* quick tip */}
       <div className="mt-8 bg-blue-50 border border-blue-100 rounded-xl p-5">
-        <h3 className="text-blue-900 font-semibold mb-1">Quick Tip</h3>
+        <h3 className="text-blue-900 font-semibold mb-1">{t("admin.dashboard.quickTip")}</h3>
         <p className="text-blue-700 text-sm">
-          Use the sidebar to manage each section of your portfolio. All changes will reflect on the live site once saved.
+          {t("admin.dashboard.quickTipText")}
         </p>
       </div>
     </div>

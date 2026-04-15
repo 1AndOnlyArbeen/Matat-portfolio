@@ -9,7 +9,7 @@ function ManageApps() {
   const [apps, setApps] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: "", description: "", platform: "", link: "", rating: 0 });
+  const [form, setForm] = useState({ name: "", description: "", platform: "", link: "", rating: 0, appNameHe: "", descriptionHe: "", platformHe: "" });
   const [iconFile, setIconFile] = useState(null);
   const [screenshotFiles, setScreenshotFiles] = useState([]);
   const [screenshotPreviews, setScreenshotPreviews] = useState([]);
@@ -63,7 +63,7 @@ function ManageApps() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ name: "", description: "", platform: "", link: "", rating: 0 });
+    setForm({ name: "", description: "", platform: "", link: "", rating: 0, appNameHe: "", descriptionHe: "", platformHe: "" });
     setIconFile(null);
     setScreenshotFiles([]);
     setScreenshotPreviews([]);
@@ -78,6 +78,9 @@ function ManageApps() {
       platform: app.platform || "",
       link: app.link || "",
       rating: app.rating || 0,
+      appNameHe: app.appNameHe || "",
+      descriptionHe: app.descriptionHe || "",
+      platformHe: app.platformHe || "",
     });
     setIconFile(null);
     setScreenshotFiles([]);
@@ -116,6 +119,9 @@ function ManageApps() {
     data.append("platform", form.platform);
     data.append("link", form.link);
     data.append("rating", form.rating);
+    data.append("appNameHe", form.appNameHe);
+    data.append("descriptionHe", form.descriptionHe);
+    data.append("platformHe", form.platformHe);
     if (iconFile) data.append("appIcon", iconFile);
 
     let result;
@@ -300,22 +306,34 @@ function ManageApps() {
             </div>
             <form onSubmit={handleSubmit} className="p-5 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">App Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">App Name (EN)</label>
                 <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label className="block text-xs text-gray-400 mb-1">App Name (HE)</label>
+                <input type="text" dir="rtl" value={form.appNameHe} onChange={(e) => setForm({ ...form, appNameHe: e.target.value })} placeholder="שם האפליקציה בעברית..." className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description (EN)</label>
                 <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} required className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none" />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Description (HE)</label>
+                <textarea dir="rtl" value={form.descriptionHe} onChange={(e) => setForm({ ...form, descriptionHe: e.target.value })} rows={3} placeholder="תיאור בעברית..." className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Platform</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Platform (EN)</label>
                   <input type="text" value={form.platform} onChange={(e) => setForm({ ...form, platform: e.target.value })} placeholder="iOS & Android" className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Link</label>
                   <input type="text" value={form.link} onChange={(e) => setForm({ ...form, link: e.target.value })} className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
                 </div>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Platform (HE)</label>
+                <input type="text" dir="rtl" value={form.platformHe} onChange={(e) => setForm({ ...form, platformHe: e.target.value })} placeholder="פלטפורמה בעברית..." className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
               </div>
 
               {/* rating */}

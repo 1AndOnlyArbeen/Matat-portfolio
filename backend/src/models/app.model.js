@@ -26,6 +26,10 @@ const app = new mongoose.Schema(
       type: String,
       default: '',
     },
+    // Hebrew translations
+    appNameHe:     { type: String, default: '' },
+    descriptionHe: { type: String, default: '' },
+    platformHe:    { type: String, default: '' },
     rating: {
       type: Number,
       min: 0,

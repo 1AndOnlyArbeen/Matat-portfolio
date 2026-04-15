@@ -1,4 +1,4 @@
-import { Gallery } from '../models/gallery.model.js';
+import { Gallery, GalleryHeading } from '../models/gallery.model.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { apiError } from '../utils/apiError.js';
 import { apiResponse } from '../utils/apiResponse.js';
@@ -29,7 +29,7 @@ import { uploadOnCloudinary, deleteFromCloudinary } from '../utils/cloudinary.js
 
 // create a new gallery album — thumbnail is the cover, images are the inside photos
 const createGallery = asyncHandler(async (req, res) => {
-  const { caption, place, date } = req.body;
+  const { caption, place, date, captionHe, placeHe } = req.body;
 
   if (!caption) {
     throw new apiError(400, ' Caption is required ');
@@ -66,6 +66,8 @@ const createGallery = asyncHandler(async (req, res) => {
     albumDetails = await Gallery.create({
       caption,
       place,
+      captionHe,
+      placeHe,
       date: date || undefined,
       thumbnail: finalThumbnail.url,
       thumbnailId: finalThumbnail.publicId,
@@ -124,7 +126,7 @@ const getGallery = asyncHandler(async (req, res) => {
 
 // edit a gallery album — text fields + optionally swap the thumbnail
 const editGallery = asyncHandler(async (req, res) => {
-  const { caption, place, date } = req.body;
+  const { caption, place, date, captionHe, placeHe } = req.body;
 
   const album = await Gallery.findById(req.params.id);
   if (!album) throw new apiError(404, ' Gallery album didint exits ');
@@ -132,6 +134,8 @@ const editGallery = asyncHandler(async (req, res) => {
   if (caption !== undefined) album.caption = caption;
   if (place !== undefined) album.place = place;
   if (date !== undefined) album.date = date || undefined;
+  if (captionHe !== undefined) album.captionHe = captionHe;
+  if (placeHe !== undefined) album.placeHe = placeHe;
 
   // if a new thumbnail was uploaded, replace the old one in cloudinary
   if (req.file) {
@@ -252,6 +256,47 @@ const getGalleryImagesById = asyncHandler(async (req, res) => {
     );
 });
 
+// ----- gallery heading (section text above the album grid) -----
+
+// public — return the heading (auto-create with defaults if none exists)
+const getGalleryHeading = asyncHandler(async (_req, res) => {
+  let heading = await GalleryHeading.findOne();
+  if (!heading) heading = await GalleryHeading.create({});
+  return res
+    .status(200)
+    .json(new apiResponse(200, heading, 'Gallery heading fetched'));
+});
+
+// admin — upsert heading fields (each field is { en, he })
+const updateGalleryHeading = asyncHandler(async (req, res) => {
+  const { label, title, titleHighlight, subtitle } = req.body;
+  let heading = await GalleryHeading.findOne();
+  if (!heading) {
+    heading = await GalleryHeading.create({ label, title, titleHighlight, subtitle });
+  } else {
+    // merge each bilingual field — only overwrite the keys that were sent
+    const merge = (field, value) => {
+      if (!value) return;
+      if (typeof value === 'object') {
+        if (value.en !== undefined) field.en = value.en;
+        if (value.he !== undefined) field.he = value.he;
+      }
+    };
+    merge(heading.label, label);
+    merge(heading.title, title);
+    merge(heading.titleHighlight, titleHighlight);
+    merge(heading.subtitle, subtitle);
+    heading.markModified('label');
+    heading.markModified('title');
+    heading.markModified('titleHighlight');
+    heading.markModified('subtitle');
+    await heading.save();
+  }
+  return res
+    .status(200)
+    .json(new apiResponse(200, heading, 'Gallery heading updated'));
+});
+
 export {
   createGallery,
   getAllGallery,
@@ -262,4 +307,6 @@ export {
   replaceGalleryImages,
   removeGalleryImage,
   getGalleryImagesById,
+  getGalleryHeading,
+  updateGalleryHeading,
 };

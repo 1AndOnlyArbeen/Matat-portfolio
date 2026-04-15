@@ -73,7 +73,10 @@ import {
     replaceGalleryImages,
     removeGalleryImage,
     getGalleryImagesById,
+    getGalleryHeading,
+    updateGalleryHeading,
 } from '../controller/gallery.controller.js';
+import { getFooter, updateFooter } from '../controller/footer.controller.js';
 
 const adminRouter = Router();
 
@@ -204,5 +207,13 @@ adminRouter
     .route('/removeGalleryImage/:id/:publicId')
     .delete(verifyJwt, removeGalleryImage);
 adminRouter.route('/getGalleryImagesById/:id').get(getGalleryImagesById);
+
+// gallery heading (section text above the album grid)
+adminRouter.route('/galleryHeading').get(getGalleryHeading);
+adminRouter.route('/updateGalleryHeading').patch(verifyJwt, updateGalleryHeading);
+
+// footer
+adminRouter.route('/footer-settings').get(getFooter);
+adminRouter.route('/updateFooter').patch(verifyJwt, updateFooter);
 
 export { adminRouter };

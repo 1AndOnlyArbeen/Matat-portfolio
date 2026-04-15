@@ -8,7 +8,7 @@ import {
 } from '../utils/cloudinary.js';
 
 const createClient = asyncHandler(async (req, res) => {
-  const { clientName,heading,subtitle} = req.body;
+  const { clientName,heading,subtitle, clientNameHe, headingHe, subtitleHe} = req.body;
   if (!clientName || !heading || !subtitle) {
     throw new apiError(400, 'all field are required ');
   }
@@ -26,6 +26,9 @@ const createClient = asyncHandler(async (req, res) => {
       clientName,
       heading,
       subtitle,
+      clientNameHe,
+      headingHe,
+      subtitleHe,
       logo: logo.secure_url,
       logoId: logo.public_id,
     });
@@ -81,7 +84,7 @@ const getAllClient = asyncHandler(async (req, res) => {
 //editing the client details
 
 const editClientDetails = asyncHandler(async (req, res) => {
-  const { clientName,heading,subtitle } = req.body;
+  const { clientName,heading,subtitle, clientNameHe, headingHe, subtitleHe } = req.body;
   const client = await Client.findById(req.params.id);
   if (!client) {
     throw new apiError(404, ' Client didnt exits in db');
@@ -89,6 +92,9 @@ const editClientDetails = asyncHandler(async (req, res) => {
   client.clientName = clientName || client.clientName;
   client.heading = heading || client.heading;
   client.subtitle = subtitle || client.subtitle;
+  if (clientNameHe !== undefined) client.clientNameHe = clientNameHe;
+  if (headingHe !== undefined) client.headingHe = headingHe;
+  if (subtitleHe !== undefined) client.subtitleHe = subtitleHe;
 
   // if the new imag is being uplaod e dthen replace it and delete the old one
 

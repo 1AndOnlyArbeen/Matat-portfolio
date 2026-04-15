@@ -28,7 +28,7 @@ const cleanStats = (stats) => {
 
 // create the about and save in the db
 const createAbout = asyncHandler(async (req, res) => {
-  const { title, description, mission, stats } = req.body;
+  const { title, description, mission, stats, titleHe, descriptionHe, missionHe } = req.body;
 
   if (!title || !description || !mission) {
     throw new apiError(400, 'All fields are required');
@@ -42,6 +42,9 @@ const createAbout = asyncHandler(async (req, res) => {
       title,
       description,
       mission,
+      titleHe,
+      descriptionHe,
+      missionHe,
       stats: cleanedStats,
     });
   } catch (err) {
@@ -123,7 +126,7 @@ const toggleAbout = asyncHandler(async (req, res) => {
 
 // editing the about details after the save
 const editAbout = asyncHandler(async (req, res) => {
-  const { title, description, mission, stats } = req.body;
+  const { title, description, mission, stats, titleHe, descriptionHe, missionHe } = req.body;
 
   const about = await About.findById(req.params.id);
   if (!about) {
@@ -133,6 +136,9 @@ const editAbout = asyncHandler(async (req, res) => {
   about.title = title || about.title;
   about.description = description || about.description;
   about.mission = mission || about.mission;
+  if (titleHe !== undefined) about.titleHe = titleHe;
+  if (descriptionHe !== undefined) about.descriptionHe = descriptionHe;
+  if (missionHe !== undefined) about.missionHe = missionHe;
 
   // stats is a full replace — if admin sent stats, replace the array;
   // if stats is undefined (not sent), keep what was there

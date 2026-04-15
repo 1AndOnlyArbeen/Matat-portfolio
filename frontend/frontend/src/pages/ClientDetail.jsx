@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import useLang from "../hooks/useLang";
 import { getClientById } from "../api";
-import { FiArrowLeft, FiExternalLink, FiBriefcase, FiGrid } from "react-icons/fi";
+import { FiArrowLeft, FiExternalLink, FiBriefcase, FiGrid, FiArrowRight } from "react-icons/fi";
 
-// single client detail page — fully dynamic from backend
 function ClientDetail() {
+  const { t } = useTranslation();
+  const l = useLang();
   const { id } = useParams();
   const [client, setClient] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -19,74 +22,66 @@ function ClientDetail() {
     });
   }, [id]);
 
-  // loading
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-3 border-[#0075ff]/20 border-t-[#0075ff] rounded-full animate-spin" />
       </div>
     );
   }
 
-  // not found
   if (!client) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center text-gray-500">
-        <p className="text-lg mb-4">Client not found</p>
-        <Link to="/" className="text-blue-600 hover:text-blue-800 flex items-center gap-2">
-          <FiArrowLeft size={16} /> Back to Home
+      <div className="min-h-[60vh] flex flex-col items-center justify-center text-[#7e8590]">
+        <p className="text-lg mb-4">{t("clientDetail.notFound")}</p>
+        <Link to="/" className="text-[#0075ff] hover:text-[#051229] flex items-center gap-2 font-bold">
+          <FiArrowLeft size={16} /> {t("clientDetail.backHome")}
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="py-12">
+    <div className="py-16 bg-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* back button */}
         <Link
           to="/#clients"
-          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-8 text-sm font-medium transition-colors"
+          className="inline-flex items-center gap-2 text-[#0075ff] hover:text-[#051229] mb-8 text-sm font-bold transition-colors link-underline"
         >
-          <FiArrowLeft size={16} /> Back to Clients
+          <FiArrowLeft size={16} /> {t("clientDetail.backToClients")}
         </Link>
 
-        {/* client card */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-[0_20px_60px_rgba(5,18,41,0.12)] border border-gray-100 overflow-hidden">
 
-          {/* header with logo */}
-          <div className="bg-blue-50 p-8 sm:p-12 flex flex-col items-center text-center">
+          <div className="bg-[#f0f4f8] p-8 sm:p-12 flex flex-col items-center text-center">
             {client.logo && (
-              <img src={client.logo} alt={client.clientName || client.name} className="h-16 sm:h-20 object-contain mb-4" />
+              <img src={client.logo} alt={l(client, "clientName") || client.name} className="h-16 sm:h-20 object-contain mb-4" />
             )}
-            <h1 className="text-3xl sm:text-4xl font-bold text-blue-900 mb-2">{client.clientName || client.name}</h1>
+            <h1 className="text-3xl sm:text-4xl font-black text-[#051229] mb-2">{l(client, "clientName") || client.name}</h1>
             {client.industry && (
-              <span className="inline-flex items-center gap-1 bg-blue-100 text-blue-700 text-sm px-3 py-1 rounded-full font-medium">
+              <span className="inline-flex items-center gap-1 bg-[#0075ff]/10 text-[#0075ff] text-sm px-4 py-1.5 rounded-full font-bold">
                 <FiBriefcase size={12} /> {client.industry}
               </span>
             )}
           </div>
 
-          {/* content */}
           <div className="p-6 sm:p-8">
-            {/* description */}
             {client.description && (
               <div className="mb-6">
-                <h2 className="text-lg font-semibold text-blue-900 mb-2">About</h2>
-                <p className="text-gray-600 leading-relaxed">{client.description}</p>
+                <h2 className="text-lg font-bold text-[#051229] mb-2">{t("clientDetail.about")}</h2>
+                <p className="text-[#364052] leading-relaxed">{client.description}</p>
               </div>
             )}
 
-            {/* projects we did for them */}
             {client.projects && client.projects.length > 0 && (
               <div className="mb-6">
-                <h2 className="text-lg font-semibold text-blue-900 mb-3 flex items-center gap-2">
-                  <FiGrid size={16} /> Projects Together
+                <h2 className="text-lg font-bold text-[#051229] mb-3 flex items-center gap-2">
+                  <FiGrid size={16} className="text-[#0075ff]" /> {t("clientDetail.projectsTogether")}
                 </h2>
                 <div className="flex flex-wrap gap-2">
                   {client.projects.map((project, i) => (
-                    <span key={i} className="bg-gray-50 text-gray-700 text-sm px-4 py-2 rounded-lg border border-gray-200 font-medium">
+                    <span key={i} className="bg-[#e1e8f0] text-[#364052] text-sm px-4 py-2 rounded-lg font-bold">
                       {project}
                     </span>
                   ))}
@@ -94,15 +89,15 @@ function ClientDetail() {
               </div>
             )}
 
-            {/* website link */}
             {client.website && client.website !== "#" && (
               <a
                 href={client.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition-colors"
+                className="btn-solvior inline-flex"
               >
-                Visit Website <FiExternalLink size={16} />
+                <span className="btn-icon"><FiExternalLink size={18} /></span>
+                <span className="btn-text">{t("clientDetail.visitWebsite")}</span>
               </a>
             )}
           </div>

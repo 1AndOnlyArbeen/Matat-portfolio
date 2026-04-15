@@ -10,7 +10,7 @@ import {
 // making the app
 
 const createApp = asyncHandler(async (req, res) => {
-  const { appName, description, platform, link, rating } = req.body;
+  const { appName, description, platform, link, rating, appNameHe, descriptionHe, platformHe } = req.body;
 
   if (!appName || !description || !platform || !link) {
     throw new apiError(400, ' All field are required !');
@@ -35,6 +35,9 @@ const createApp = asyncHandler(async (req, res) => {
       description,
       platform,
       link,
+      appNameHe,
+      descriptionHe,
+      platformHe,
       rating: rating ? Number(rating) : 0,
       appIcon: appIcon.secure_url,
       appIconId: appIcon.public_id,
@@ -90,7 +93,7 @@ const getAllApp = asyncHandler(async (req, res) => {
 //   edit the apps details
 
 const editApp = asyncHandler(async (req, res) => {
-  const { appName, description, platform, link, rating } = req.body;
+  const { appName, description, platform, link, rating, appNameHe, descriptionHe, platformHe } = req.body;
   const apps = await App.findById(req.params.id);
   if (!apps) {
     throw new apiError(404, ' AppsDetails didint exits into db');
@@ -100,6 +103,9 @@ const editApp = asyncHandler(async (req, res) => {
   apps.platform = platform || apps.platform;
   apps.link = link || apps.link;
   if (rating !== undefined) apps.rating = Number(rating);
+  if (appNameHe !== undefined) apps.appNameHe = appNameHe;
+  if (descriptionHe !== undefined) apps.descriptionHe = descriptionHe;
+  if (platformHe !== undefined) apps.platformHe = platformHe;
 
   // if the new image is uplodaed then replace with old one first delete the old one
   // if the new one exits when the user hit another file or image then find the public id from the db and delet from the cloudinary using publicID:

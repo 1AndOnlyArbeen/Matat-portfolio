@@ -6,7 +6,7 @@ import {
 } from "react-icons/fi";
 import ConfirmModal from "./ConfirmModal";
 
-const emptyForm = { title: "", description: "", mission: "", stats: [{ value: "", label: "" }] };
+const emptyForm = { title: "", titleHe: "", description: "", descriptionHe: "", mission: "", missionHe: "", stats: [{ value: "", label: "", valueHe: "", labelHe: "" }] };
 
 function ManageAbout() {
   const [items, setItems] = useState([]);
@@ -72,9 +72,12 @@ function ManageAbout() {
     setEditing(item);
     setForm({
       title: item.title || "",
+      titleHe: item.titleHe || "",
       description: item.description || "",
+      descriptionHe: item.descriptionHe || "",
       mission: item.mission || "",
-      stats: item.stats?.length ? item.stats.map((s) => ({ value: s.value || "", label: s.label || "" })) : [{ value: "", label: "" }],
+      missionHe: item.missionHe || "",
+      stats: item.stats?.length ? item.stats.map((s) => ({ value: s.value || "", label: s.label || "", valueHe: s.valueHe || "", labelHe: s.labelHe || "" })) : [{ value: "", label: "", valueHe: "", labelHe: "" }],
     });
     setMessage("");
     setShowModal(true);
@@ -85,7 +88,7 @@ function ManageAbout() {
     updated[index] = { ...updated[index], [field]: value };
     setForm({ ...form, stats: updated });
   };
-  const addStat = () => setForm({ ...form, stats: [...form.stats, { value: "", label: "" }] });
+  const addStat = () => setForm({ ...form, stats: [...form.stats, { value: "", label: "", valueHe: "", labelHe: "" }] });
   const removeStat = (index) => setForm({ ...form, stats: form.stats.filter((_, i) => i !== index) });
 
   const handleSubmit = async (e) => {
@@ -95,9 +98,12 @@ function ManageAbout() {
 
     const payload = {
       title: form.title,
+      titleHe: form.titleHe,
       description: form.description,
+      descriptionHe: form.descriptionHe,
       mission: form.mission,
-      stats: form.stats.filter((s) => s.value.trim() || s.label.trim()),
+      missionHe: form.missionHe,
+      stats: form.stats.filter((s) => s.value.trim() || s.label.trim()).map((s) => ({ value: s.value, label: s.label, valueHe: s.valueHe, labelHe: s.labelHe })),
     };
 
     const result = editing
@@ -299,6 +305,15 @@ function ManageAbout() {
                 <p className="text-xs text-gray-400 mt-1">
                   Shown as the big headline on the public About section. The "About" section label itself is already fixed.
                 </p>
+                <label className="block text-xs text-gray-400 mb-1 mt-2">Hebrew (HE)</label>
+                <input
+                  type="text"
+                  dir="rtl"
+                  value={form.titleHe}
+                  onChange={(e) => setForm({ ...form, titleHe: e.target.value })}
+                  placeholder="כותרת בעברית"
+                  className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                />
               </div>
 
               <div>
@@ -310,6 +325,14 @@ function ManageAbout() {
                   required
                   className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
                 />
+                <label className="block text-xs text-gray-400 mb-1 mt-2">Hebrew (HE)</label>
+                <textarea
+                  dir="rtl"
+                  value={form.descriptionHe}
+                  onChange={(e) => setForm({ ...form, descriptionHe: e.target.value })}
+                  rows={4}
+                  className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
+                />
               </div>
 
               <div>
@@ -319,6 +342,14 @@ function ManageAbout() {
                   onChange={(e) => setForm({ ...form, mission: e.target.value })}
                   rows={3}
                   required
+                  className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
+                />
+                <label className="block text-xs text-gray-400 mb-1 mt-2">Hebrew (HE)</label>
+                <textarea
+                  dir="rtl"
+                  value={form.missionHe}
+                  onChange={(e) => setForm({ ...form, missionHe: e.target.value })}
+                  rows={3}
                   className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
                 />
               </div>
@@ -333,28 +364,49 @@ function ManageAbout() {
                 </div>
                 <div className="space-y-2">
                   {form.stats?.map((stat, index) => (
-                    <div key={index} className="flex gap-2 items-center">
-                      <input
-                        type="text"
-                        value={stat.value}
-                        onChange={(e) => updateStat(index, "value", e.target.value)}
-                        placeholder="150+"
-                        className="w-24 px-3 py-2 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                      />
-                      <input
-                        type="text"
-                        value={stat.label}
-                        onChange={(e) => updateStat(index, "label", e.target.value)}
-                        placeholder="Projects Completed"
-                        className="flex-1 px-3 py-2 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeStat(index)}
-                        className="text-red-400 hover:text-red-600 p-1 cursor-pointer"
-                      >
-                        <FiTrash2 size={16} />
-                      </button>
+                    <div key={index} className="space-y-1.5">
+                      <div className="flex gap-2 items-center">
+                        <input
+                          type="text"
+                          value={stat.value}
+                          onChange={(e) => updateStat(index, "value", e.target.value)}
+                          placeholder="150+"
+                          className="w-24 px-3 py-2 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        />
+                        <input
+                          type="text"
+                          value={stat.label}
+                          onChange={(e) => updateStat(index, "label", e.target.value)}
+                          placeholder="Projects Completed"
+                          className="flex-1 px-3 py-2 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeStat(index)}
+                          className="text-red-400 hover:text-red-600 p-1 cursor-pointer"
+                        >
+                          <FiTrash2 size={16} />
+                        </button>
+                      </div>
+                      <label className="block text-xs text-gray-400 mb-1">Hebrew (HE)</label>
+                      <div className="flex gap-2 items-center">
+                        <input
+                          type="text"
+                          dir="rtl"
+                          value={stat.valueHe}
+                          onChange={(e) => updateStat(index, "valueHe", e.target.value)}
+                          placeholder="150+"
+                          className="w-24 px-3 py-2 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        />
+                        <input
+                          type="text"
+                          dir="rtl"
+                          value={stat.labelHe}
+                          onChange={(e) => updateStat(index, "labelHe", e.target.value)}
+                          placeholder="פרויקטים שהושלמו"
+                          className="flex-1 px-3 py-2 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>

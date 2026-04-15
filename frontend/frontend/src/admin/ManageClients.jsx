@@ -9,7 +9,7 @@ function ManageClients() {
   const [clients, setClients] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: "", heading: "", subtitle: "" });
+  const [form, setForm] = useState({ name: "", heading: "", subtitle: "", clientNameHe: "", headingHe: "", subtitleHe: "" });
   const [logoFile, setLogoFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
@@ -60,7 +60,7 @@ function ManageClients() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ name: "", heading: "", subtitle: "" });
+    setForm({ name: "", heading: "", subtitle: "", clientNameHe: "", headingHe: "", subtitleHe: "" });
     setLogoFile(null);
     setShowModal(true);
   };
@@ -71,6 +71,9 @@ function ManageClients() {
       name: client.clientName || client.name,
       heading: client.heading || "",
       subtitle: client.subtitle || "",
+      clientNameHe: client.clientNameHe || "",
+      headingHe: client.headingHe || "",
+      subtitleHe: client.subtitleHe || "",
     });
     setLogoFile(null);
     setShowModal(true);
@@ -84,6 +87,9 @@ function ManageClients() {
     data.append("clientName", form.name);
     data.append("heading", form.heading);
     data.append("subtitle", form.subtitle);
+    data.append("clientNameHe", form.clientNameHe);
+    data.append("headingHe", form.headingHe);
+    data.append("subtitleHe", form.subtitleHe);
     if (logoFile) data.append("logo", logoFile);
 
     let result;
@@ -214,7 +220,7 @@ function ManageClients() {
       {/* modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="relative bg-white/95 backdrop-blur-[2px] rounded-xl w-full max-w-md shadow-[0_4px_30px_rgba(37,99,235,0.3)] border border-blue-300">
+          <div className="relative bg-white/95 backdrop-blur-[2px] rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-[0_4px_30px_rgba(37,99,235,0.3)] border border-blue-300">
             {saving && (
               <div className="absolute inset-0 z-10 bg-white/80 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center gap-3">
                 <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
@@ -228,16 +234,28 @@ function ManageClients() {
             </div>
             <form onSubmit={handleSubmit} className="p-5 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Client Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Client Name (EN)</label>
                 <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Heading</label>
+                <label className="block text-xs text-gray-400 mb-1">Client Name (HE)</label>
+                <input type="text" dir="rtl" value={form.clientNameHe} onChange={(e) => setForm({ ...form, clientNameHe: e.target.value })} placeholder="שם הלקוח בעברית..." className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Heading (EN)</label>
                 <input type="text" value={form.heading} onChange={(e) => setForm({ ...form, heading: e.target.value })} placeholder="e.g. Leading Tech Company" className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Subtitle</label>
+                <label className="block text-xs text-gray-400 mb-1">Heading (HE)</label>
+                <input type="text" dir="rtl" value={form.headingHe} onChange={(e) => setForm({ ...form, headingHe: e.target.value })} placeholder="כותרת בעברית..." className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Subtitle (EN)</label>
                 <input type="text" value={form.subtitle} onChange={(e) => setForm({ ...form, subtitle: e.target.value })} placeholder="e.g. Transforming digital experiences since 2020" className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Subtitle (HE)</label>
+                <input type="text" dir="rtl" value={form.subtitleHe} onChange={(e) => setForm({ ...form, subtitleHe: e.target.value })} placeholder="כתובית בעברית..." className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
               </div>
               <ImageDropzone label="Logo" onFileSelect={setLogoFile} currentImage={editing?.logo} />
               <div className="flex justify-end gap-3 pt-2">

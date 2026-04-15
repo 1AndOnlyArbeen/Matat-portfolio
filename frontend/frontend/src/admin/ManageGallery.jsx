@@ -5,8 +5,10 @@ import {
   updateGalleryImage,
   deleteGalleryImage,
   replaceGalleryImagesById,
+  getGalleryHeadingAdmin,
+  updateGalleryHeading,
 } from "../api/admin";
-import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiUploadCloud, FiMapPin, FiCalendar, FiImage, FiTag, FiEye } from "react-icons/fi";
+import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiUploadCloud, FiMapPin, FiCalendar, FiImage, FiTag, FiEye, FiCheck } from "react-icons/fi";
 import ImageDropzone from "./ImageDropzone";
 import ConfirmModal from "./ConfirmModal";
 
@@ -14,7 +16,7 @@ function ManageGallery() {
   const [images, setImages] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ caption: "", place: "", date: "" });
+  const [form, setForm] = useState({ caption: "", captionHe: "", place: "", placeHe: "", date: "" });
   const [thumbnailFile, setThumbnailFile] = useState(null);   // single thumbnail (cover)
   const [multiFiles, setMultiFiles] = useState([]);           // album photos
   const [previews, setPreviews] = useState([]);               // object URLs for previews
@@ -30,9 +32,39 @@ function ManageGallery() {
   // view modal
   const [viewItem, setViewItem] = useState(null);
 
+  // gallery section heading — each field is { en, he }
+  const emptyBi = { en: "", he: "" };
+  const [heading, setHeading] = useState({
+    label: { ...emptyBi }, title: { ...emptyBi }, titleHighlight: { ...emptyBi }, subtitle: { ...emptyBi },
+  });
+  const [headingSaving, setHeadingSaving] = useState(false);
+  const [headingSaved, setHeadingSaved] = useState(false);
+
   useEffect(() => {
     loadImages();
+    loadHeading();
   }, []);
+
+  const loadHeading = async () => {
+    const res = await getGalleryHeadingAdmin();
+    const d = res?.data;
+    if (d) {
+      const bi = (v) => (typeof v === "object" && v ? { en: v.en || "", he: v.he || "" } : { en: v || "", he: "" });
+      setHeading({ label: bi(d.label), title: bi(d.title), titleHighlight: bi(d.titleHighlight), subtitle: bi(d.subtitle) });
+    }
+  };
+
+  // helper to update one lang of one field
+  const setH = (field, lang, value) =>
+    setHeading((prev) => ({ ...prev, [field]: { ...prev[field], [lang]: value } }));
+
+  const saveHeading = async () => {
+    setHeadingSaving(true);
+    await updateGalleryHeading(heading);
+    setHeadingSaving(false);
+    setHeadingSaved(true);
+    setTimeout(() => setHeadingSaved(false), 2000);
+  };
 
   const toggleSelect = (id) =>
     setSelectedIds((prev) => {
@@ -65,7 +97,7 @@ function ManageGallery() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ caption: "", place: "", date: "" });
+    setForm({ caption: "", captionHe: "", place: "", placeHe: "", date: "" });
     setThumbnailFile(null);
     setMultiFiles([]);
     setPreviews([]);
@@ -76,7 +108,9 @@ function ManageGallery() {
     setEditing(img);
     setForm({
       caption: img.caption || "",
+      captionHe: img.captionHe || "",
       place: img.place || "",
+      placeHe: img.placeHe || "",
       date: img.date ? new Date(img.date).toISOString().slice(0, 10) : "",
     });
     setThumbnailFile(null);
@@ -113,7 +147,9 @@ function ManageGallery() {
       // edit mode — only main fields + optional thumbnail swap (no album images here)
       const data = new FormData();
       data.append("caption", form.caption);
+      data.append("captionHe", form.captionHe);
       data.append("place", form.place);
+      data.append("placeHe", form.placeHe);
       data.append("date", form.date);
       if (thumbnailFile) data.append("thumbnail", thumbnailFile);
 
@@ -140,7 +176,9 @@ function ManageGallery() {
     }
     const data = new FormData();
     data.append("caption", form.caption);
+    data.append("captionHe", form.captionHe);
     data.append("place", form.place);
+    data.append("placeHe", form.placeHe);
     data.append("date", form.date);
     if (thumbnailFile) data.append("thumbnail", thumbnailFile);
     for (const file of multiFiles) data.append("images", file);
@@ -185,6 +223,83 @@ function ManageGallery() {
             <FiPlus size={16} /> Add Album
           </button>
         </div>
+      </div>
+
+      {/* section heading editor — EN + HE for each field */}
+      <div className="mb-5 rounded-xl border border-blue-200/60 bg-blue-50/40 p-4 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-blue-900">Section Heading (shown on the public gallery page)</h3>
+          <button
+            onClick={saveHeading}
+            disabled={headingSaving}
+            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-medium px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 cursor-pointer transition-colors"
+          >
+            {headingSaved ? <><FiCheck size={12} /> Saved</> : headingSaving ? "Saving..." : <><FiSave size={12} /> Save Heading</>}
+          </button>
+        </div>
+
+        {/* Label */}
+        <div>
+          <label className="block text-xs font-medium text-gray-600 mb-1">Label (small text above title)</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="relative">
+              <span className="absolute top-2.5 left-3 text-[10px] font-bold text-gray-400">EN</span>
+              <input type="text" value={heading.label.en} onChange={(e) => setH("label", "en", e.target.value)} placeholder="✦ Our Story In Photos" className="w-full pl-10 pr-3 py-2 rounded-lg border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+            </div>
+            <div className="relative">
+              <span className="absolute top-2.5 left-3 text-[10px] font-bold text-gray-400">HE</span>
+              <input type="text" dir="rtl" value={heading.label.he} onChange={(e) => setH("label", "he", e.target.value)} placeholder="✦ הסיפור שלנו בתמונות" className="w-full pl-10 pr-3 py-2 rounded-lg border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+            </div>
+          </div>
+        </div>
+
+        {/* Title + Title Highlight */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Title (main heading)</label>
+            <div className="space-y-1.5">
+              <div className="relative">
+                <span className="absolute top-2.5 left-3 text-[10px] font-bold text-gray-400">EN</span>
+                <input type="text" value={heading.title.en} onChange={(e) => setH("title", "en", e.target.value)} placeholder="Memories from" className="w-full pl-10 pr-3 py-2 rounded-lg border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+              </div>
+              <div className="relative">
+                <span className="absolute top-2.5 left-3 text-[10px] font-bold text-gray-400">HE</span>
+                <input type="text" dir="rtl" value={heading.title.he} onChange={(e) => setH("title", "he", e.target.value)} placeholder="זיכרונות מ" className="w-full pl-10 pr-3 py-2 rounded-lg border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+              </div>
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Title Highlight (colored part)</label>
+            <div className="space-y-1.5">
+              <div className="relative">
+                <span className="absolute top-2.5 left-3 text-[10px] font-bold text-gray-400">EN</span>
+                <input type="text" value={heading.titleHighlight.en} onChange={(e) => setH("titleHighlight", "en", e.target.value)} placeholder="the road" className="w-full pl-10 pr-3 py-2 rounded-lg border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+              </div>
+              <div className="relative">
+                <span className="absolute top-2.5 left-3 text-[10px] font-bold text-gray-400">HE</span>
+                <input type="text" dir="rtl" value={heading.titleHighlight.he} onChange={(e) => setH("titleHighlight", "he", e.target.value)} placeholder="הדרך" className="w-full pl-10 pr-3 py-2 rounded-lg border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Subtitle */}
+        <div>
+          <label className="block text-xs font-medium text-gray-600 mb-1">Subtitle (description below title)</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="relative">
+              <span className="absolute top-2.5 left-3 text-[10px] font-bold text-gray-400">EN</span>
+              <input type="text" value={heading.subtitle.en} onChange={(e) => setH("subtitle", "en", e.target.value)} placeholder="Glimpses of moments..." className="w-full pl-10 pr-3 py-2 rounded-lg border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+            </div>
+            <div className="relative">
+              <span className="absolute top-2.5 left-3 text-[10px] font-bold text-gray-400">HE</span>
+              <input type="text" dir="rtl" value={heading.subtitle.he} onChange={(e) => setH("subtitle", "he", e.target.value)} placeholder="הצצות לרגעים..." className="w-full pl-10 pr-3 py-2 rounded-lg border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+            </div>
+          </div>
+        </div>
+
+        <p className="text-[11px] text-gray-400">EN Preview: <span className="text-blue-600 font-semibold">{heading.label.en}</span> → <span className="font-bold text-blue-950">{heading.title.en} <span className="text-blue-600">{heading.titleHighlight.en}</span></span> → <span className="text-gray-500">{heading.subtitle.en}</span></p>
+        <p className="text-[11px] text-gray-400" dir="rtl">HE Preview: <span className="text-blue-600 font-semibold">{heading.label.he}</span> → <span className="font-bold text-blue-950">{heading.title.he} <span className="text-blue-600">{heading.titleHighlight.he}</span></span> → <span className="text-gray-500">{heading.subtitle.he}</span></p>
       </div>
 
       {/* gallery table */}
@@ -291,6 +406,15 @@ function ManageGallery() {
                   className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 />
                 <p className="text-xs text-gray-400 mt-1">Shown as a small label under the place name on the gallery card.</p>
+                <label className="block text-xs text-gray-400 mb-1 mt-2">Hebrew (HE)</label>
+                <input
+                  type="text"
+                  dir="rtl"
+                  value={form.captionHe}
+                  onChange={(e) => setForm({ ...form, captionHe: e.target.value })}
+                  placeholder="תג אירוע בעברית"
+                  className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -301,6 +425,14 @@ function ManageGallery() {
                     value={form.place}
                     onChange={(e) => setForm({ ...form, place: e.target.value })}
                     placeholder="Pokhara, Nepal"
+                    className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  />
+                  <label className="block text-xs text-gray-400 mb-1 mt-2">Hebrew (HE)</label>
+                  <input
+                    type="text"
+                    dir="rtl"
+                    value={form.placeHe}
+                    onChange={(e) => setForm({ ...form, placeHe: e.target.value })}
                     className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   />
                 </div>

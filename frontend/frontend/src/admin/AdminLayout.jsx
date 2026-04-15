@@ -1,29 +1,34 @@
 import { useState, useEffect, useCallback } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { logoutAdmin, getMessages } from "../api/admin";
 import {
   FiHome, FiImage, FiGrid, FiSmartphone, FiUsers,
   FiStar, FiCamera, FiInfo, FiMail, FiLogOut, FiMenu,
-  FiX, FiMonitor
+  FiX, FiMonitor, FiLayout
 } from "react-icons/fi";
 import logo from "../assets/matat-logo-new1.svg";
+import LanguageToggle from "../components/LanguageToggle";
 import { getReadIds, onReadChange } from "./messageReadStore";
 
 // sidebar nav items - each maps to an admin page
+// nameKey is a translation key under "admin.sidebar.*"
 const sidebarLinks = [
-  { name: "Dashboard", path: "/matat-admin", icon: FiHome },
-  { name: "Hero Banner", path: "/matat-admin/hero", icon: FiMonitor },
-  { name: "Projects", path: "/matat-admin/projects", icon: FiGrid },
-  { name: "Apps", path: "/matat-admin/apps", icon: FiSmartphone },
-  { name: "Clients", path: "/matat-admin/clients", icon: FiImage },
-  { name: "Team", path: "/matat-admin/team", icon: FiUsers },
-  { name: "Testimonials", path: "/matat-admin/testimonials", icon: FiStar },
-  { name: "Gallery", path: "/matat-admin/gallery", icon: FiCamera },
-  { name: "About", path: "/matat-admin/about", icon: FiInfo },
-  { name: "Messages", path: "/matat-admin/messages", icon: FiMail },
+  { nameKey: "admin.sidebar.dashboard", path: "/matat-admin", icon: FiHome },
+  { nameKey: "admin.sidebar.heroBanner", path: "/matat-admin/hero", icon: FiMonitor },
+  { nameKey: "admin.sidebar.projects", path: "/matat-admin/projects", icon: FiGrid },
+  { nameKey: "admin.sidebar.apps", path: "/matat-admin/apps", icon: FiSmartphone },
+  { nameKey: "admin.sidebar.clients", path: "/matat-admin/clients", icon: FiImage },
+  { nameKey: "admin.sidebar.team", path: "/matat-admin/team", icon: FiUsers },
+  { nameKey: "admin.sidebar.testimonials", path: "/matat-admin/testimonials", icon: FiStar },
+  { nameKey: "admin.sidebar.gallery", path: "/matat-admin/gallery", icon: FiCamera },
+  { nameKey: "admin.sidebar.about", path: "/matat-admin/about", icon: FiInfo },
+  { nameKey: "admin.sidebar.messages", path: "/matat-admin/messages", icon: FiMail },
+  { nameKey: "admin.sidebar.footer", path: "/matat-admin/footer", icon: FiLayout },
 ];
 
 function AdminLayout() {
+  const { t } = useTranslation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [allMessageIds, setAllMessageIds] = useState([]); // for unread count
@@ -111,17 +116,18 @@ function AdminLayout() {
         {/* current page title centered */}
         <h1 className="flex-1 flex items-center justify-center gap-3 text-2xl sm:text-3xl font-bold text-blue-700">
           {CurrentIcon && <CurrentIcon size={28} className="text-blue-500" />}
-          {current?.name || "Admin"}
+          {current ? t(current.nameKey) : t("admin.admin")}
         </h1>
 
         {/* link to view live site */}
+        <LanguageToggle />
         <a
           href="/"
           target="_blank"
           rel="noopener noreferrer"
           className="text-base font-medium text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition-all shrink-0"
         >
-          View Site
+          {t("admin.viewSite")}
         </a>
       </header>
 
@@ -155,10 +161,10 @@ function AdminLayout() {
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             {sidebarLinks.map((link) => {
               const isActive = location.pathname === link.path;
-              const isMessages = link.name === "Messages";
+              const isMessages = link.nameKey === "admin.sidebar.messages";
               return (
                 <Link
-                  key={link.name}
+                  key={link.nameKey}
                   to={link.path}
                   onClick={() => setSidebarOpen(false)}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
@@ -168,7 +174,7 @@ function AdminLayout() {
                   }`}
                 >
                   <link.icon size={18} />
-                  <span className="flex-1">{link.name}</span>
+                  <span className="flex-1">{t(link.nameKey)}</span>
                   {isMessages && unreadCount > 0 && (
                     <span className="bg-red-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-full min-w-[22px] text-center">
                       {unreadCount > 99 ? "99+" : unreadCount}
@@ -186,7 +192,7 @@ function AdminLayout() {
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 w-full transition-colors cursor-pointer"
             >
               <FiLogOut size={18} />
-              Logout
+              {t("admin.logout")}
             </button>
           </div>
         </aside>

@@ -308,6 +308,30 @@ export async function getGalleryImagesByAlbumId(id) {
   return await adminFetch(`/getGalleryImagesById/${id}`);
 }
 
+// ---- Gallery Heading (section text) ----
+export async function getGalleryHeadingAdmin() {
+  return await adminFetch("/galleryHeading");
+}
+export async function updateGalleryHeading(data) {
+  return await adminFetch("/updateGalleryHeading", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+}
+
+// ---- Footer Settings ----
+export async function getFooterAdmin() {
+  return await adminFetch("/footer-settings");
+}
+export async function updateFooterAdmin(data) {
+  return await adminFetch("/updateFooter", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+}
+
 // ---- About ----
 export async function getAbout() {
   return await adminFetch("/about");

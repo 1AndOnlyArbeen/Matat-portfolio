@@ -1,0 +1,181 @@
+{
+  "nav": {
+    "home": "בית",
+    "projects": "פרויקטים",
+    "apps": "אפליקציות",
+    "clients": "לקוחות",
+    "about": "אודות",
+    "team": "צוות",
+    "testimonials": "המלצות",
+    "gallery": "גלריה",
+    "contact": "צור קשר"
+  },
+  "hero": {
+    "badge1": "תג 1",
+    "badge2": "תג 2"
+  },
+  "projects": {
+    "title": "הפרויקטים שלנו",
+    "subtitle": "הצצה לכמה מהפרויקטים שסיפקנו ללקוחותינו.",
+    "viewProject": "צפה בפרויקט"
+  },
+  "apps": {
+    "title": "האפליקציות שלנו",
+    "subtitle": "אפליקציות מובייל ווב שפיתחנו והשקנו.",
+    "learnMore": "למד עוד"
+  },
+  "clients": {
+    "title": "הלקוחות שלנו",
+    "subtitle": "נבחרנו על ידי עסקים וסטארטאפים מרחבי העולם.",
+    "projectsTogether": "פרויקטים משותפים",
+    "visitWebsite": "בקר באתר"
+  },
+  "about": {
+    "title": "אודותינו",
+    "getInTouch": "צור קשר"
+  },
+  "team": {
+    "title": "הכירו את הצוות שלנו",
+    "subtitle": "האנשים המוכשרים מאחורי ההצלחה שלנו."
+  },
+  "testimonials": {
+    "title": "מה הלקוחות שלנו אומרים",
+    "subtitle": "שמעו מאנשים שעבדו איתנו.",
+    "seeMore": "ראה עוד ←"
+  },
+  "gallery": {
+    "label": "✦ הסיפור שלנו בתמונות",
+    "title": "זיכרונות מ",
+    "titleHighlight": "הדרך",
+    "subtitle": "הצצות לרגעים — אירועים, טיולים, אבני דרך — במקומות שבהם היינו.",
+    "prevPhoto": "תמונה קודמת",
+    "nextPhoto": "תמונה הבאה",
+    "of": "מתוך"
+  },
+  "contact": {
+    "title": "צור קשר",
+    "subtitle": "יש לך פרויקט בראש? בוא נדבר על זה.",
+    "getInTouch": "יצירת קשר",
+    "address": "כתובת",
+    "addressValue": "קטמנדו, נפאל",
+    "email": "דוא\"ל",
+    "emailValue": "hello@portfolio.com",
+    "phone": "טלפון",
+    "phoneValue": "+977 9800000000",
+    "yourName": "השם שלך",
+    "yourEmail": "הדוא\"ל שלך",
+    "subject": "נושא",
+    "yourMessage": "ההודעה שלך",
+    "sending": "שולח את ההודעה שלך...",
+    "sendingNote": "זה עשוי לקחת כמה שניות",
+    "sendingBtn": "שולח...",
+    "sendMessage": "שלח הודעה",
+    "success": "ההודעה נשלחה בהצלחה!",
+    "error": "השליחה נכשלה. נסה שוב מאוחר יותר."
+  },
+  "footer": {
+    "developed": "פותח על ידי Matat Technologies LTD",
+    "location": "קטמנדו, נפאל",
+    "email": "hello@portfolio.com",
+    "rights": "Matat. כל הזכויות שמורות."
+  },
+  "notFound": {
+    "title": "404",
+    "heading": "אופס! הדף לא נמצא",
+    "message": "הדף שאתה מחפש לא קיים או שהוא הועבר.",
+    "backHome": "חזרה לדף הבית"
+  },
+  "projectDetail": {
+    "backToProjects": "חזרה לפרויקטים",
+    "notFound": "הפרויקט לא נמצא",
+    "backHome": "חזרה לדף הבית",
+    "keyFeatures": "תכונות עיקריות",
+    "visitProject": "בקר בפרויקט",
+    "projectDetails": "פרטי הפרויקט",
+    "client": "לקוח",
+    "date": "תאריך",
+    "techStack": "טכנולוגיות",
+    "snapshots": "צילומי מסך",
+    "image": "תמונה",
+    "images": "תמונות"
+  },
+  "appDetail": {
+    "backToApps": "חזרה לאפליקציות",
+    "notFound": "האפליקציה לא נמצאה",
+    "backHome": "חזרה לדף הבית",
+    "downloads": "הורדות",
+    "aboutApp": "אודות האפליקציה",
+    "snapshots": "צילומי מסך",
+    "image": "תמונה",
+    "images": "תמונות",
+    "appInfo": "מידע על האפליקציה",
+    "platform": "פלטפורמה",
+    "rating": "דירוג",
+    "link": "קישור",
+    "visit": "בקר"
+  },
+  "clientDetail": {
+    "backToClients": "חזרה ללקוחות",
+    "notFound": "הלקוח לא נמצא",
+    "backHome": "חזרה לדף הבית",
+    "about": "אודות",
+    "projectsTogether": "פרויקטים משותפים",
+    "visitWebsite": "בקר באתר"
+  },
+  "admin": {
+    "sidebar": {
+      "dashboard": "לוח בקרה",
+      "heroBanner": "באנר ראשי",
+      "projects": "פרויקטים",
+      "apps": "אפליקציות",
+      "clients": "לקוחות",
+      "team": "צוות",
+      "testimonials": "המלצות",
+      "gallery": "גלריה",
+      "about": "אודות",
+      "messages": "הודעות",
+      "footer": "פוטר"
+    },
+    "viewSite": "צפה באתר",
+    "logout": "התנתק",
+    "admin": "ניהול",
+    "login": {
+      "title": "פאנל ניהול",
+      "subtitle": "התחבר כדי לנהל את התיק שלך",
+      "email": "דוא\"ל",
+      "emailPlaceholder": "admin@matat.com",
+      "password": "סיסמה",
+      "passwordPlaceholder": "הזן את הסיסמה שלך",
+      "error": "דוא\"ל או סיסמה לא תקינים",
+      "signingIn": "מתחבר...",
+      "signIn": "התחבר",
+      "backToSite": "חזרה לאתר"
+    },
+    "dashboard": {
+      "welcome": "!ברוך הבא",
+      "overview": "הנה סקירה של תוכן התיק שלך.",
+      "loadingCounts": "טוען נתונים...",
+      "heroBanners": "באנרים ראשיים",
+      "projects": "פרויקטים",
+      "apps": "אפליקציות",
+      "clients": "לקוחות",
+      "teamMembers": "חברי צוות",
+      "testimonials": "המלצות",
+      "galleryAlbums": "אלבומי גלריה",
+      "aboutEntries": "רשומות אודות",
+      "messages": "הודעות",
+      "quickTip": "טיפ מהיר",
+      "quickTipText": "השתמש בסרגל הצד כדי לנהל כל חלק בתיק שלך. כל השינויים ישתקפו באתר החי לאחר השמירה."
+    },
+    "notFound": {
+      "title": "404",
+      "heading": "אופס! הדף לא נמצא",
+      "message": "הדף שאתה מחפש לא קיים או שהוא הועבר.",
+      "backToDashboard": "חזרה ללוח הבקרה"
+    }
+  },
+  "langSwitch": {
+    "en": "EN",
+    "he": "עב"
+  }
+}

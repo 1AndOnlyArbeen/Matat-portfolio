@@ -7,9 +7,15 @@
     <title>Portfolio | Creative Digital Agency</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&family=Libre+Franklin:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   </head>
   <body>
+    <!-- Preloader — auto-hides after 3s as fallback -->
+    <div id="preloader" style="position:fixed;inset:0;z-index:100000;background:#051229;display:flex;align-items:center;justify-content:center;transition:opacity 0.5s ease">
+      <div style="width:80px;height:80px;border:3px solid transparent;border-top-color:#0075ff;border-radius:50%;animation:spin 1.2s linear infinite"></div>
+      <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+    </div>
+    <script>setTimeout(function(){var p=document.getElementById('preloader');if(p){p.style.opacity='0';setTimeout(function(){p.style.display='none'},500)}},3000)</script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

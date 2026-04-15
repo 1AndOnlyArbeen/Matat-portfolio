@@ -8,10 +8,12 @@ const gallery = new mongoose.Schema(
       type: String,
       required: true,
     },
+    captionHe: { type: String, default: '' },
     place: {
       type: String,
       default: '',
     },
+    placeHe: { type: String, default: '' },
     date: {
       type: Date,
     },
@@ -36,4 +38,27 @@ const gallery = new mongoose.Schema(
 );
 
 const Gallery = mongoose.model('Gallery', gallery);
-export { Gallery };
+
+// reusable sub-schema for bilingual text (en + he)
+const bilingualText = (enDefault = '', heDefault = '') => ({
+  en: { type: String, default: enDefault },
+  he: { type: String, default: heDefault },
+});
+
+// single document that stores the gallery section heading text
+const galleryHeadingSchema = new mongoose.Schema(
+  {
+    label: bilingualText('✦ Our Story In Photos', '✦ הסיפור שלנו בתמונות'),
+    title: bilingualText('Memories from', 'זיכרונות מ'),
+    titleHighlight: bilingualText('the road', 'הדרך'),
+    subtitle: bilingualText(
+      "Glimpses of moments — events, trips, milestones — across the places we've been.",
+      'הצצות לרגעים — אירועים, טיולים, אבני דרך — במקומות שבהם היינו.',
+    ),
+  },
+  { timestamps: true },
+);
+
+const GalleryHeading = mongoose.model('GalleryHeading', galleryHeadingSchema);
+
+export { Gallery, GalleryHeading };

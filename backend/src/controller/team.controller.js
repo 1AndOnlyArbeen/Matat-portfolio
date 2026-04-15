@@ -5,7 +5,7 @@ import { apiResponse } from '../utils/apiResponse.js';
 import { uploadOnCloudinary, deleteFromCloudinary } from '../utils/cloudinary.js';
 
 const createTeam = asyncHandler(async (req, res) => {
-    const { name, role, country, linkedinUrl, githubUrl, twitterUrl } = req.body;
+    const { name, role, country, linkedinUrl, githubUrl, twitterUrl, nameHe, roleHe, countryHe } = req.body;
     if (!name || !role) {
         throw new apiError(400, ' All field are required !');
     }
@@ -26,6 +26,9 @@ const createTeam = asyncHandler(async (req, res) => {
             name,
             role,
             country,
+            nameHe,
+            roleHe,
+            countryHe,
             linkedinUrl,
             githubUrl,
             twitterUrl,
@@ -76,7 +79,7 @@ const getAllteam = asyncHandler(async (req, res) => {
 //editing the team
 
 const editTeamDetails = asyncHandler(async (req, res) => {
-    const { name, role, country, linkedinUrl, githubUrl, twitterUrl } = req.body;
+    const { name, role, country, linkedinUrl, githubUrl, twitterUrl, nameHe, roleHe, countryHe } = req.body;
     const team = await Team.findById(req.params.id);
     if (!team) {
         throw new apiError(404, ' Team details didint exits ');
@@ -88,6 +91,9 @@ const editTeamDetails = asyncHandler(async (req, res) => {
     team.linkedinUrl = linkedinUrl || team.linkedinUrl;
     team.githubUrl = githubUrl || team.githubUrl;
     team.twitterUrl = twitterUrl || team.twitterUrl;
+    if (nameHe !== undefined) team.nameHe = nameHe;
+    if (roleHe !== undefined) team.roleHe = roleHe;
+    if (countryHe !== undefined) team.countryHe = countryHe;
 
     // if the new image is uploaded then
     if (req.file) {
@@ -114,7 +120,7 @@ const deleteTeamDetails = asyncHandler(async (req, res) => {
     const team = await Team.findByIdAndDelete(req.params.id);
 
     if (!team) {
-        throw new apiError(404, 'team details not found ');
+        throw new apiError(404, 'Team details not found ');
     }
     if (team.teamImageId) {
         await deleteFromCloudinary(team.teamImageId);

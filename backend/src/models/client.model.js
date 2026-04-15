@@ -17,7 +17,11 @@ const client = new mongoose.Schema(
     subtitle:{
       type:String,
       required:true
-    }
+    },
+    // Hebrew translations
+    clientNameHe: { type: String, default: '' },
+    headingHe:    { type: String, default: '' },
+    subtitleHe:   { type: String, default: '' },
   },
   { timestamps: true },
 );

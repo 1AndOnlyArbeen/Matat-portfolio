@@ -21,7 +21,7 @@ import {
 
 // create the hero and save in the db
 const createHero = asyncHandler(async (req, res) => {
-  const { title, subtitle, buttonText, buttonLink } = req.body;
+  const { title, subtitle, buttonText, buttonLink, titleHe, subtitleHe, buttonTextHe } = req.body;
 
   if (!title || !subtitle || !buttonText || !buttonLink) {
     throw new apiError(400, 'All fields are required');
@@ -51,6 +51,9 @@ const createHero = asyncHandler(async (req, res) => {
       subtitle,
       buttonText,
       buttonLink,
+      titleHe,
+      subtitleHe,
+      buttonTextHe,
       backgroundImage: backgroundImage.url,
       badgeImage1: badgeImage1?.url || '',
       badgeImage2: badgeImage2?.url || '',
@@ -150,7 +153,7 @@ const toggleHeroDetail = asyncHandler(async (req, res) => {
 //editing th hero banner and details after the upload:
 
 const editHeroDetails = asyncHandler(async (req, res) => {
-  const { title, subtitle, buttonText, buttonLink } = req.body;
+  const { title, subtitle, buttonText, buttonLink, titleHe, subtitleHe, buttonTextHe } = req.body;
 
   const hero = await Hero.findById(req.params.id);
 
@@ -161,6 +164,9 @@ const editHeroDetails = asyncHandler(async (req, res) => {
   hero.subtitle = subtitle || hero.subtitle;
   hero.buttonText = buttonText || hero.buttonText;
   hero.buttonLink = buttonLink || hero.buttonLink;
+  if (titleHe !== undefined) hero.titleHe = titleHe;
+  if (subtitleHe !== undefined) hero.subtitleHe = subtitleHe;
+  if (buttonTextHe !== undefined) hero.buttonTextHe = buttonTextHe;
 
   // helper: replace an image field if a new file was uploaded
   const replaceImage = async (fileField, currentUrl) => {

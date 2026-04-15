@@ -18,6 +18,10 @@ const hero = new mongoose.Schema(
       type: String,
       required: true,
     },
+    // Hebrew translations
+    titleHe:      { type: String, default: '' },
+    subtitleHe:   { type: String, default: '' },
+    buttonTextHe: { type: String, default: '' },
     backgroundImage: {
       type: String,
       required: true,

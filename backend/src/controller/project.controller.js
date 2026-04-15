@@ -22,7 +22,7 @@ delete it
 //getting the form and saving into the db
 
 const createProject = asyncHandler(async (req, res) => {
-  const { title, description, tags, projectLink } = req.body;
+  const { title, description, tags, projectLink, titleHe, descriptionHe, tagsHe } = req.body;
 
   if (!title || !description || !tags || !projectLink) {
     throw new apiError(400, 'All fields are required !');
@@ -43,6 +43,9 @@ const createProject = asyncHandler(async (req, res) => {
       description,
       tags,
       projectLink,
+      titleHe,
+      descriptionHe,
+      tagsHe,
       projectImage: projectImage.secure_url,
     });
   } catch (error) {
@@ -97,7 +100,7 @@ const getAllProject = asyncHandler(async (req, res) => {
 // edit the file if admin edit it
 
 const projectEdit = asyncHandler(async (req, res) => {
-  const { title, description, tags, projectLink } = req.body;
+  const { title, description, tags, projectLink, titleHe, descriptionHe, tagsHe } = req.body;
 
   const project = await Project.findById(req.params.id);
   if (!project) {
@@ -107,6 +110,9 @@ const projectEdit = asyncHandler(async (req, res) => {
   project.description = description || project.description;
   project.tags = tags || project.tags;
   project.projectLink = projectLink || project.projectLink;
+  if (titleHe !== undefined) project.titleHe = titleHe;
+  if (descriptionHe !== undefined) project.descriptionHe = descriptionHe;
+  if (tagsHe !== undefined) project.tagsHe = tagsHe;
 
   // if the new image is uploaded then replac the old one
   if (req.file) {

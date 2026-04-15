@@ -22,6 +22,10 @@ const project = new mongoose.Schema(
       type: String,
       required: true,
     },
+    // Hebrew translations
+    titleHe:       { type: String, default: '' },
+    descriptionHe: { type: String, default: '' },
+    tagsHe:        { type: String, default: '' },
     // extra screenshots — managed by the screenshot helpers in project.controller.js
     // each entry stores the cloudinary url + publicId so we can delete from cloud later
     screenshots: [

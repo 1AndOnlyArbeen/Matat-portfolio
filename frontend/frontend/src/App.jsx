@@ -4,6 +4,8 @@ import { useEffect } from "react";
 // public site components
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import CustomCursor from "./components/CustomCursor";
+import Preloader from "./components/Preloader";
 import Home from "./pages/Home";
 import ProjectDetail from "./pages/ProjectDetail";
 import AppDetail from "./pages/AppDetail";
@@ -67,16 +69,36 @@ import ManageTestimonials from "./admin/ManageTestimonials";
 import ManageGallery from "./admin/ManageGallery";
 import ManageAbout from "./admin/ManageAbout";
 import ManageMessages from "./admin/ManageMessages";
+import ManageFooter from "./admin/ManageFooter";
 import AdminProjectDetail from "./admin/ProjectDetail";
 import AdminAppDetail from "./admin/AppDetail";
 import AdminClientDetail from "./admin/ClientDetail";
 
+// On hard refresh / first load, redirect any public route back to "/"
+// so the user always lands on the home page. Admin routes are excluded.
+function RedirectHomeOnLoad() {
+  const location = useLocation();
+
+  useEffect(() => {
+    // skip admin routes
+    if (location.pathname.startsWith("/matat-admin")) return;
+    // if not already on "/", replace the URL to home
+    if (location.pathname !== "/") {
+      window.history.replaceState(null, "", "/");
+      window.scrollTo(0, 0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // empty deps — runs only once on mount (i.e. hard refresh)
+
+  return null;
+}
+
 // shared layout for all public pages - navbar on top, footer at bottom
 function PublicLayout({ children }) {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col overflow-x-hidden">
       <Navbar />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 overflow-x-hidden">{children}</main>
       <Footer />
     </div>
   );
@@ -85,6 +107,9 @@ function PublicLayout({ children }) {
 function App() {
   return (
     <BrowserRouter>
+      <RedirectHomeOnLoad />
+      <Preloader />
+      <CustomCursor />
       <Routes>
 
         {/* ===== PUBLIC SITE ROUTES ===== */}
@@ -125,6 +150,7 @@ function App() {
           <Route path="gallery" element={<ManageGallery />} />
           <Route path="about" element={<ManageAbout />} />
           <Route path="messages" element={<ManageMessages />} />
+          <Route path="footer" element={<ManageFooter />} />
           <Route path="*" element={<AdminNotFound />} />
         </Route>
 

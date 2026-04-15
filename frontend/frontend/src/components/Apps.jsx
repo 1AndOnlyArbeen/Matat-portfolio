@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { getApps } from "../api";
 import { FiSmartphone, FiArrowRight } from "react-icons/fi";
 import useScrollAnimation from "../hooks/useScrollAnimation";
+import useLang from "../hooks/useLang";
 
-// displays mobile/web apps — marquee when 4+, centered grid when fewer
 function Apps() {
+  const { t } = useTranslation();
+  const l = useLang();
   const [apps, setApps] = useState([]);
   const [headingRef, headingVisible] = useScrollAnimation();
   const [sliderRef, sliderVisible] = useScrollAnimation(0.1);
@@ -20,47 +23,44 @@ function Apps() {
   if (apps.length === 0) return null;
 
   const appCard = (app) => (
-    <div className="w-64 shrink-0 bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300 text-center group hover:-translate-y-1">
+    <div className="w-64 shrink-0 bg-white rounded-2xl p-6 shadow-[0_10px_40px_rgba(0,0,0,0.08)] text-center group card-hover border border-gray-100/60">
       {/* app icon */}
-      <div className="w-20 h-20 mx-auto mb-4 rounded-2xl overflow-hidden shadow-sm group-hover:shadow-md transition-shadow">
-        <img src={app.appIcon || app.icon} alt={app.appName || app.name} className="w-full h-full object-cover" />
+      <div className="w-20 h-20 mx-auto mb-4 rounded-2xl overflow-hidden shadow-sm group-hover:shadow-lg transition-shadow hover-shine">
+        <img src={app.appIcon || app.icon} alt={l(app, "appName") || app.name} className="w-full h-full object-cover" />
       </div>
 
-      <h3 className="text-lg font-semibold text-blue-900 mb-1">{app.appName || app.name}</h3>
+      <h3 className="text-lg font-bold text-[#051229] mb-1">{l(app, "appName") || app.name}</h3>
 
-      {/* platform badge */}
-      <div className="flex items-center justify-center gap-1 text-blue-500 text-xs mb-3">
+      <div className="flex items-center justify-center gap-1 text-[#0075ff] text-xs mb-3 font-semibold">
         <FiSmartphone size={12} />
-        <span>{app.platform}</span>
+        <span>{l(app, "platform")}</span>
       </div>
 
-      <p className="text-gray-500 text-sm mb-4 line-clamp-3">{app.description}</p>
+      <p className="text-[#7e8590] text-sm mb-4 line-clamp-3">{l(app, "description")}</p>
 
-      {/* link to detail page */}
       <Link
         to={`/apps/${app._id}`}
-        className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors group/link"
+        className="inline-flex items-center gap-1 text-[#0075ff] hover:text-[#051229] text-sm font-bold transition-colors group/link link-underline"
       >
-        Learn More <FiArrowRight size={14} className="group-hover/link:translate-x-1 transition-transform" />
+        {t("apps.learnMore")} <FiArrowRight size={14} className="group-hover/link:translate-x-1 transition-transform" />
       </Link>
     </div>
   );
 
   return (
-    <section id="apps" className="py-20 bg-blue-50/60 backdrop-blur-md">
+    <section id="apps" className="py-24 sm:py-28 bg-[#e1e8f0]/40 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* section heading */}
-        <div ref={headingRef} className={`text-center mb-12 animate-fade-up ${headingVisible ? "visible" : ""}`}>
-          <h2 className="text-3xl sm:text-4xl font-bold text-blue-900 mb-3">Our Apps</h2>
-          <p className="text-gray-500 max-w-xl mx-auto">
-            Mobile and web applications we have built and launched.
+        <div ref={headingRef} className={`text-center mb-14 animate-fade-up ${headingVisible ? "visible" : ""}`}>
+          <span className="section-label">{t("apps.title")}</span>
+          <h2 className="section-title">{t("apps.title")}</h2>
+          <p className="text-[#7e8590] max-w-xl mx-auto text-base">
+            {t("apps.subtitle")}
           </p>
         </div>
 
         <div ref={sliderRef} className={`animate-fade-up ${sliderVisible ? "visible" : ""}`}>
           {apps.length >= 4 ? (
-            /* continuous marquee — duplicates list for seamless loop */
             <div className="overflow-hidden">
               <div className="flex gap-5 animate-marquee-apps hover:[animation-play-state:paused]">
                 {apps.map((app) => (
@@ -72,7 +72,6 @@ function Apps() {
               </div>
             </div>
           ) : (
-            /* fewer than 4 — just show centered, no duplication */
             <div className="flex flex-wrap justify-center gap-5">
               {apps.map((app) => (
                 <div key={app._id}>{appCard(app)}</div>

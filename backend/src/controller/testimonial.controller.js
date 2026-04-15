@@ -6,7 +6,7 @@ import { uploadOnCloudinary, deleteFromCloudinary } from '../utils/cloudinary.js
 import { Testimonial } from '../models/testimonial.model.js';
 
 const createTestimonial = asyncHandler(async (req, res) => {
-    const { name, company, reviewText, rating } = req.body;
+    const { name, company, reviewText, rating, nameHe, companyHe, reviewTextHe } = req.body;
     if (!name || !company || !reviewText) {
         throw new apiError(400, ' Name, company and review are required !');
     }
@@ -30,6 +30,9 @@ const createTestimonial = asyncHandler(async (req, res) => {
             name,
             company,
             reviewText,
+            nameHe,
+            companyHe,
+            reviewTextHe,
             rating: ratingNum,
             avatar: avatar.secure_url,
             avatarId: avatar.public_id,
@@ -80,7 +83,7 @@ const getAlltestiomonail = asyncHandler(async (req, res) => {
 // edit the testimonial
 
 const editTestiominial = asyncHandler(async (req, res) => {
-    const { name, company, reviewText, rating } = req.body;
+    const { name, company, reviewText, rating, nameHe, companyHe, reviewTextHe } = req.body;
     const testimonial = await Testimonial.findById(req.params.id);
     if (!testimonial) {
         throw new apiError(400, ' Testimonial didint exits ');
@@ -88,6 +91,9 @@ const editTestiominial = asyncHandler(async (req, res) => {
     testimonial.name = name || testimonial.name;
     testimonial.company = company || testimonial.company;
     testimonial.reviewText = reviewText || testimonial.reviewText;
+    if (nameHe !== undefined) testimonial.nameHe = nameHe;
+    if (companyHe !== undefined) testimonial.companyHe = companyHe;
+    if (reviewTextHe !== undefined) testimonial.reviewTextHe = reviewTextHe;
     // rating: allow explicit 0 to clear; only fall back if not sent at all
     if (rating !== undefined && rating !== "") {
         testimonial.rating = Number(rating);

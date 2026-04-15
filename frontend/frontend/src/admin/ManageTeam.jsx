@@ -8,7 +8,7 @@ function ManageTeam() {
   const [members, setMembers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: "", role: "", country: "", linkedin: "", github: "", twitter: "" });
+  const [form, setForm] = useState({ name: "", nameHe: "", role: "", roleHe: "", country: "", countryHe: "", linkedin: "", github: "", twitter: "" });
   const [imageFile, setImageFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
@@ -62,7 +62,7 @@ function ManageTeam() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ name: "", role: "", country: "", linkedin: "", github: "", twitter: "" });
+    setForm({ name: "", nameHe: "", role: "", roleHe: "", country: "", countryHe: "", linkedin: "", github: "", twitter: "" });
     setImageFile(null);
     setShowModal(true);
   };
@@ -71,8 +71,11 @@ function ManageTeam() {
     setEditing(member);
     setForm({
       name: member.name,
+      nameHe: member.nameHe || "",
       role: member.role,
+      roleHe: member.roleHe || "",
       country: member.country || "",
+      countryHe: member.countryHe || "",
       linkedin: member.linkedinUrl || member.social?.linkedin || "",
       github: member.githubUrl || member.social?.github || "",
       twitter: member.twitterUrl || member.social?.twitter || "",
@@ -87,8 +90,11 @@ function ManageTeam() {
 
     const data = new FormData();
     data.append("name", form.name);
+    data.append("nameHe", form.nameHe);
     data.append("role", form.role);
+    data.append("roleHe", form.roleHe);
     data.append("country", form.country);
+    data.append("countryHe", form.countryHe);
     data.append("linkedinUrl", form.linkedin);
     data.append("githubUrl", form.github);
     data.append("twitterUrl", form.twitter);
@@ -264,10 +270,14 @@ function ManageTeam() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                   <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+                  <label className="block text-xs text-gray-400 mb-1 mt-2">Hebrew (HE)</label>
+                  <input type="text" dir="rtl" value={form.nameHe} onChange={(e) => setForm({ ...form, nameHe: e.target.value })} className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
                   <input type="text" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} required className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+                  <label className="block text-xs text-gray-400 mb-1 mt-2">Hebrew (HE)</label>
+                  <input type="text" dir="rtl" value={form.roleHe} onChange={(e) => setForm({ ...form, roleHe: e.target.value })} className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
                 </div>
               </div>
               <div>
@@ -279,6 +289,14 @@ function ManageTeam() {
                   value={form.country}
                   onChange={(e) => setForm({ ...form, country: e.target.value })}
                   placeholder="Nepal"
+                  className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                />
+                <label className="block text-xs text-gray-400 mb-1 mt-2">Hebrew (HE)</label>
+                <input
+                  type="text"
+                  dir="rtl"
+                  value={form.countryHe}
+                  onChange={(e) => setForm({ ...form, countryHe: e.target.value })}
                   className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 />
               </div>

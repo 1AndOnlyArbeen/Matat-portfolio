@@ -8,7 +8,7 @@ function ManageHero() {
   const [heroes, setHeroes] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ title: "", subtitle: "", buttonText: "", buttonLink: "" });
+  const [form, setForm] = useState({ title: "", subtitle: "", buttonText: "", buttonLink: "", titleHe: "", subtitleHe: "", buttonTextHe: "" });
   const [imageFile, setImageFile] = useState(null);
   const [badge1File, setBadge1File] = useState(null);
   const [badge2File, setBadge2File] = useState(null);
@@ -69,7 +69,7 @@ function ManageHero() {
   // open modal for creating new banner
   const openCreate = () => {
     setEditing(null);
-    setForm({ title: "", subtitle: "", buttonText: "", buttonLink: "" });
+    setForm({ title: "", subtitle: "", buttonText: "", buttonLink: "", titleHe: "", subtitleHe: "", buttonTextHe: "" });
     setImageFile(null);
     setBadge1File(null);
     setBadge2File(null);
@@ -84,6 +84,9 @@ function ManageHero() {
       subtitle: hero.subtitle || "",
       buttonText: hero.buttonText || "",
       buttonLink: hero.buttonLink || "",
+      titleHe: hero.titleHe || "",
+      subtitleHe: hero.subtitleHe || "",
+      buttonTextHe: hero.buttonTextHe || "",
     });
     setImageFile(null);
     setBadge1File(null);
@@ -109,6 +112,9 @@ function ManageHero() {
     data.append("subtitle", form.subtitle);
     data.append("buttonText", form.buttonText);
     data.append("buttonLink", form.buttonLink);
+    data.append("titleHe", form.titleHe);
+    data.append("subtitleHe", form.subtitleHe);
+    data.append("buttonTextHe", form.buttonTextHe);
     if (imageFile) data.append("backgroundImage", imageFile);
     if (badge1File) data.append("badgeImage1", badge1File);
     if (badge2File) data.append("badgeImage2", badge2File);
@@ -361,7 +367,7 @@ function ManageHero() {
             {/* modal form */}
             <form onSubmit={handleSubmit} className="p-5 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title (EN)</label>
                 <input
                   type="text"
                   value={form.title}
@@ -371,9 +377,20 @@ function ManageHero() {
                   className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 />
               </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Title (HE)</label>
+                <input
+                  type="text"
+                  dir="rtl"
+                  value={form.titleHe}
+                  onChange={(e) => setForm({ ...form, titleHe: e.target.value })}
+                  placeholder="כותרת בעברית..."
+                  className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                />
+              </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Subtitle</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Subtitle (EN)</label>
                 <textarea
                   value={form.subtitle}
                   onChange={(e) => setForm({ ...form, subtitle: e.target.value })}
@@ -383,10 +400,21 @@ function ManageHero() {
                   className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
                 />
               </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Subtitle (HE)</label>
+                <textarea
+                  dir="rtl"
+                  value={form.subtitleHe}
+                  onChange={(e) => setForm({ ...form, subtitleHe: e.target.value })}
+                  rows={3}
+                  placeholder="כתובית בעברית..."
+                  className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
+                />
+              </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Button Text</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Button Text (EN)</label>
                   <input
                     type="text"
                     value={form.buttonText}
@@ -407,6 +435,17 @@ function ManageHero() {
                     className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   />
                 </div>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Button Text (HE)</label>
+                <input
+                  type="text"
+                  dir="rtl"
+                  value={form.buttonTextHe}
+                  onChange={(e) => setForm({ ...form, buttonTextHe: e.target.value })}
+                  placeholder="טקסט כפתור בעברית..."
+                  className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                />
               </div>
 
               <ImageDropzone

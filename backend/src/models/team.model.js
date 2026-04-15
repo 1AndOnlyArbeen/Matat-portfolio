@@ -26,6 +26,10 @@ const team = new mongoose.Schema(
       type: String,
       default: null,
     },
+    // Hebrew translations
+    nameHe:    { type: String, default: '' },
+    roleHe:    { type: String, default: '' },
+    countryHe: { type: String, default: '' },
     teamImage: {
       type: String,
       required: true,

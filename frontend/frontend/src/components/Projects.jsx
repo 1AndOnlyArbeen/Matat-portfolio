@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { getProjects } from "../api";
+import useLang from "../hooks/useLang";
 import { FiExternalLink, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import useScrollAnimation from "../hooks/useScrollAnimation";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -8,8 +10,9 @@ import { Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 
-// shows all portfolio projects in a slider
 function Projects() {
+  const { t } = useTranslation();
+  const l = useLang();
   const [projects, setProjects] = useState([]);
   const [headingRef, headingVisible] = useScrollAnimation();
   const [sliderRef, sliderVisible] = useScrollAnimation(0.1);
@@ -26,14 +29,19 @@ function Projects() {
   if (projects.length === 0) return null;
 
   return (
-    <section id="projects" className="py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="projects" className="relative py-24 sm:py-28 bg-white overflow-hidden">
+      {/* decorative shapes */}
+      <div className="absolute top-10 -right-10 w-48 h-48 bg-[#0075ff]/5 rounded-full blur-2xl animate-pulse-glow pointer-events-none" />
+      <div className="absolute bottom-10 -left-10 w-36 h-36 bg-[#0075ff]/5 rounded-full blur-2xl animate-pulse-glow pointer-events-none" style={{ animationDelay: "2s" }} />
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* section heading */}
-        <div ref={headingRef} className={`text-center mb-12 animate-fade-up ${headingVisible ? "visible" : ""}`}>
-          <h2 className="text-3xl sm:text-4xl font-bold text-blue-900 mb-3">Our Projects</h2>
-          <p className="text-gray-500 max-w-xl mx-auto">
-            Take a look at some of the projects we have delivered for our clients.
+        <div ref={headingRef} className={`text-center mb-14 animate-fade-up ${headingVisible ? "visible" : ""}`}>
+          <span className="section-label">{t("projects.title")}</span>
+          <h2 className="section-title">{t("projects.title")}</h2>
+          <p className="text-[#7e8590] max-w-xl mx-auto text-base">
+            {t("projects.subtitle")}
           </p>
         </div>
 
@@ -56,27 +64,27 @@ function Projects() {
           >
             {projects.map((project) => (
               <SwiperSlide key={project._id}>
-                <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 group hover:-translate-y-1">
+                <div className="bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] overflow-hidden border border-gray-100/80 group card-hover">
                   {/* project thumbnail */}
-                  <div className="overflow-hidden h-48">
+                  <div className="overflow-hidden h-48 hover-shine">
                     <img
                       src={project.projectImage || project.image}
-                      alt={project.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      alt={l(project, "title")}
+                      className="w-full h-full object-cover transition-transform duration-600 group-hover:scale-110"
                     />
                   </div>
 
                   {/* project info */}
                   <div className="p-5">
-                    <h3 className="text-lg font-semibold text-blue-900 mb-2">{project.title}</h3>
-                    <p className="text-gray-500 text-sm mb-3 line-clamp-2">{project.description}</p>
+                    <h3 className="text-lg font-bold text-[#051229] mb-2">{l(project, "title")}</h3>
+                    <p className="text-[#7e8590] text-sm mb-3 line-clamp-2">{l(project, "description")}</p>
 
                     {/* tech tags */}
                     <div className="flex flex-wrap gap-2 mb-4">
-                      {(Array.isArray(project.tags) ? project.tags : project.tags?.split(",").map(t => t.trim()))?.map((tag) => (
+                      {(Array.isArray(l(project, "tags")) ? l(project, "tags") : l(project, "tags")?.split(",").map(t => t.trim()))?.map((tag) => (
                         <span
                           key={tag}
-                          className="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded-full font-medium"
+                          className="bg-[#dfecfd] text-[#0075ff] text-xs px-2.5 py-1 rounded-full font-semibold"
                         >
                           {tag}
                         </span>
@@ -86,9 +94,9 @@ function Projects() {
                     {/* view detail page */}
                     <Link
                       to={`/projects/${project._id}`}
-                      className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors"
+                      className="inline-flex items-center gap-1.5 text-[#0075ff] hover:text-[#051229] text-sm font-bold transition-colors link-underline"
                     >
-                      View Project <FiExternalLink size={14} />
+                      {t("projects.viewProject")} <FiExternalLink size={14} />
                     </Link>
                   </div>
                 </div>
@@ -97,10 +105,10 @@ function Projects() {
           </Swiper>
 
           {/* custom nav arrows */}
-          <button className="projects-prev absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-10 bg-white shadow-lg rounded-full p-2 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors cursor-pointer">
+          <button className="projects-prev absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-10 bg-white shadow-lg rounded-full p-2.5 text-[#364052] hover:bg-[#0075ff] hover:text-white transition-all cursor-pointer hover:scale-110">
             <FiChevronLeft size={22} />
           </button>
-          <button className="projects-next absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-10 bg-white shadow-lg rounded-full p-2 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors cursor-pointer">
+          <button className="projects-next absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-10 bg-white shadow-lg rounded-full p-2.5 text-[#364052] hover:bg-[#0075ff] hover:text-white transition-all cursor-pointer hover:scale-110">
             <FiChevronRight size={22} />
           </button>
         </div>

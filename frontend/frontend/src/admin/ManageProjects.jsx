@@ -9,7 +9,7 @@ function ManageProjects() {
   const [projects, setProjects] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ title: "", description: "", tags: "", link: "" });
+  const [form, setForm] = useState({ title: "", description: "", tags: "", link: "", titleHe: "", descriptionHe: "", tagsHe: "" });
   const [imageFile, setImageFile] = useState(null);
   const [screenshotFiles, setScreenshotFiles] = useState([]);
   const [screenshotPreviews, setScreenshotPreviews] = useState([]);
@@ -64,7 +64,7 @@ function ManageProjects() {
   // open modal for creating new project
   const openCreate = () => {
     setEditing(null);
-    setForm({ title: "", description: "", tags: "", link: "" });
+    setForm({ title: "", description: "", tags: "", link: "", titleHe: "", descriptionHe: "", tagsHe: "" });
     setImageFile(null);
     setScreenshotFiles([]);
     setScreenshotPreviews([]);
@@ -79,6 +79,9 @@ function ManageProjects() {
       description: project.description,
       tags: project.tags || "",
       link: project.projectLink || "",
+      titleHe: project.titleHe || "",
+      descriptionHe: project.descriptionHe || "",
+      tagsHe: project.tagsHe || "",
     });
     setImageFile(null);
     setScreenshotFiles([]);
@@ -122,6 +125,9 @@ function ManageProjects() {
     data.append("description", form.description);
     data.append("tags", form.tags);
     data.append("projectLink", form.link);
+    data.append("titleHe", form.titleHe);
+    data.append("descriptionHe", form.descriptionHe);
+    data.append("tagsHe", form.tagsHe);
     if (imageFile) data.append("projectImage", imageFile);
 
     let result;
@@ -361,7 +367,7 @@ function ManageProjects() {
             {/* modal form */}
             <form onSubmit={handleSubmit} className="p-5 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title (EN)</label>
                 <input
                   type="text"
                   value={form.title}
@@ -371,7 +377,18 @@ function ManageProjects() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label className="block text-xs text-gray-400 mb-1">Title (HE)</label>
+                <input
+                  type="text"
+                  dir="rtl"
+                  value={form.titleHe}
+                  onChange={(e) => setForm({ ...form, titleHe: e.target.value })}
+                  placeholder="כותרת בעברית..."
+                  className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description (EN)</label>
                 <textarea
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
@@ -381,12 +398,34 @@ function ManageProjects() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tags (comma separated)</label>
+                <label className="block text-xs text-gray-400 mb-1">Description (HE)</label>
+                <textarea
+                  dir="rtl"
+                  value={form.descriptionHe}
+                  onChange={(e) => setForm({ ...form, descriptionHe: e.target.value })}
+                  rows={3}
+                  placeholder="תיאור בעברית..."
+                  className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tags (EN, comma separated)</label>
                 <input
                   type="text"
                   value={form.tags}
                   onChange={(e) => setForm({ ...form, tags: e.target.value })}
                   placeholder="React, Node.js, MongoDB"
+                  className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Tags (HE, comma separated)</label>
+                <input
+                  type="text"
+                  dir="rtl"
+                  value={form.tagsHe}
+                  onChange={(e) => setForm({ ...form, tagsHe: e.target.value })}
+                  placeholder="תגיות בעברית..."
                   className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 />
               </div>

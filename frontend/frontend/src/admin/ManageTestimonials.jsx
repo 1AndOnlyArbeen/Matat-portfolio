@@ -8,7 +8,7 @@ function ManageTestimonials() {
   const [testimonials, setTestimonials] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: "", company: "", text: "", rating: 5 });
+  const [form, setForm] = useState({ name: "", nameHe: "", company: "", companyHe: "", text: "", reviewTextHe: "", rating: 5 });
   const [hoverRating, setHoverRating] = useState(0); // for star preview on hover
   const [avatarFile, setAvatarFile] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -63,7 +63,7 @@ function ManageTestimonials() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ name: "", company: "", text: "", rating: 5 });
+    setForm({ name: "", nameHe: "", company: "", companyHe: "", text: "", reviewTextHe: "", rating: 5 });
     setAvatarFile(null);
     setShowModal(true);
   };
@@ -72,8 +72,11 @@ function ManageTestimonials() {
     setEditing(item);
     setForm({
       name: item.name,
+      nameHe: item.nameHe || "",
       company: item.company || "",
+      companyHe: item.companyHe || "",
       text: item.reviewText || item.text,
+      reviewTextHe: item.reviewTextHe || "",
       rating: item.rating || 5,
     });
     setAvatarFile(null);
@@ -86,8 +89,11 @@ function ManageTestimonials() {
 
     const data = new FormData();
     data.append("name", form.name);
+    data.append("nameHe", form.nameHe);
     data.append("company", form.company);
+    data.append("companyHe", form.companyHe);
     data.append("reviewText", form.text);
+    data.append("reviewTextHe", form.reviewTextHe);
     data.append("rating", form.rating);
     if (avatarFile) data.append("avatar", avatarFile);
 
@@ -244,15 +250,21 @@ function ManageTestimonials() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                   <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+                  <label className="block text-xs text-gray-400 mb-1 mt-2">Hebrew (HE)</label>
+                  <input type="text" dir="rtl" value={form.nameHe} onChange={(e) => setForm({ ...form, nameHe: e.target.value })} className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Company</label>
                   <input type="text" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+                  <label className="block text-xs text-gray-400 mb-1 mt-2">Hebrew (HE)</label>
+                  <input type="text" dir="rtl" value={form.companyHe} onChange={(e) => setForm({ ...form, companyHe: e.target.value })} className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Review Text</label>
                 <textarea value={form.text} onChange={(e) => setForm({ ...form, text: e.target.value })} rows={4} required className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none" />
+                <label className="block text-xs text-gray-400 mb-1 mt-2">Hebrew (HE)</label>
+                <textarea dir="rtl" value={form.reviewTextHe} onChange={(e) => setForm({ ...form, reviewTextHe: e.target.value })} rows={4} className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
