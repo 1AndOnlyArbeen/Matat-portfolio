@@ -1,15 +1,25 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { submitContact } from "../api";
 import { FiSend, FiMapPin, FiMail, FiPhone } from "react-icons/fi";
-import useScrollAnimation from "../hooks/useScrollAnimation";
 
 function Contact() {
   const { t } = useTranslation();
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
   const [status, setStatus] = useState("idle");
-  const [headingRef, headingVisible] = useScrollAnimation();
-  const [contentRef, contentVisible] = useScrollAnimation(0.1);
+  const [mounted, setMounted] = useState(false);
+  const sectionRef = useRef(null);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setMounted(true); },
+      { threshold: 0.1 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -31,132 +41,131 @@ function Contact() {
   };
 
   return (
-    <section id="contact" className="relative py-24 sm:py-28 bg-[#f0f4f8] overflow-hidden">
-      <div className="absolute -top-10 -left-16 w-60 h-60 bg-[#0075ff]/6 rounded-full blur-3xl animate-pulse-glow pointer-events-none" />
-      <div className="absolute bottom-0 -right-16 w-52 h-52 bg-[#0075ff]/4 rounded-full blur-3xl animate-pulse-glow pointer-events-none" style={{ animationDelay: "2s" }} />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="contact" ref={sectionRef} className="relative py-24 sm:py-28 bg-white overflow-hidden">
+      {/* subtle decorative blobs */}
+      <div className="absolute -top-20 -left-20 w-80 h-80 bg-[#0075ff]/5 rounded-full blur-[100px] pointer-events-none animate-pulse-glow" />
+      <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-[#0075ff]/3 rounded-full blur-[100px] pointer-events-none animate-pulse-glow" style={{ animationDelay: "2s" }} />
 
-        <div ref={headingRef} className={`text-center mb-14 animate-fade-up ${headingVisible ? "visible" : ""}`}>
-          <span className="section-label">{t("contact.title")}</span>
-          <h2 className="section-title">{t("contact.title")}</h2>
-          <p className="text-[#7e8590] max-w-xl mx-auto text-base">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+
+        {/* centered heading */}
+        <div
+          className="text-center mb-14"
+          style={{
+            opacity: mounted ? 1 : 0,
+            transform: mounted ? "translateY(0)" : "translateY(30px)",
+            transition: "all 0.8s ease",
+          }}
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0075ff]/5 border border-[#0075ff]/10 mb-5">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0075ff] opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0075ff]" />
+            </span>
+            <span className="text-xs font-bold tracking-widest text-[#0075ff] uppercase">{t("contact.title")}</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#051229] mb-2">
+            {t("contact.title")}
+          </h2>
+          <p className="text-[#7e8590] text-base max-w-xl mx-auto">
             {t("contact.subtitle")}
           </p>
         </div>
 
-        <div ref={contentRef} className={`grid grid-cols-1 lg:grid-cols-5 gap-10 animate-fade-up ${contentVisible ? "visible" : ""}`}>
-
-          {/* left side - contact details */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-2xl p-6 shadow-[0_10px_40px_rgba(0,0,0,0.06)] border border-gray-100">
+        {/* content grid */}
+        <div
+          className="grid grid-cols-1 lg:grid-cols-5 gap-10"
+          style={{
+            opacity: mounted ? 1 : 0,
+            transform: mounted ? "translateY(0)" : "translateY(40px)",
+            transition: "all 0.8s ease 0.2s",
+          }}
+        >
+          {/* left — contact info */}
+          <div className="lg:col-span-2 space-y-5">
+            <div
+              className="bg-[#f0f2f5] rounded-2xl p-6 border border-[#e5e5e5]/50"
+              style={{
+                opacity: mounted ? 1 : 0,
+                transform: mounted ? "translateX(0)" : "translateX(-30px)",
+                transition: "all 0.7s ease 0.3s",
+              }}
+            >
               <h3 className="text-lg font-bold text-[#051229] mb-5">{t("contact.getInTouch")}</h3>
               <div className="space-y-5">
-                <div className="flex items-start gap-3 group">
-                  <div className="w-10 h-10 rounded-full bg-[#0075ff]/10 flex items-center justify-center group-hover:bg-[#0075ff] transition-colors shrink-0">
-                    <FiMapPin className="text-[#0075ff] group-hover:text-white transition-colors" size={18} />
+                {[
+                  { icon: FiMapPin, label: t("contact.address"), value: t("contact.addressValue") },
+                  { icon: FiMail, label: t("contact.email"), value: t("contact.emailValue") },
+                  { icon: FiPhone, label: t("contact.phone"), value: t("contact.phoneValue") },
+                ].map(({ icon: Icon, label, value }, i) => (
+                  <div key={i} className="flex items-start gap-3 group">
+                    <div className="w-10 h-10 rounded-full bg-[#0075ff]/8 flex items-center justify-center group-hover:bg-[#0075ff] transition-colors shrink-0">
+                      <Icon className="text-[#0075ff] group-hover:text-white transition-colors" size={18} />
+                    </div>
+                    <div>
+                      <p className="font-bold text-[#051229] text-sm">{label}</p>
+                      <p className="text-[#7e8590] text-sm">{value}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-bold text-[#051229] text-sm">{t("contact.address")}</p>
-                    <p className="text-[#7e8590] text-sm">{t("contact.addressValue")}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 group">
-                  <div className="w-10 h-10 rounded-full bg-[#0075ff]/10 flex items-center justify-center group-hover:bg-[#0075ff] transition-colors shrink-0">
-                    <FiMail className="text-[#0075ff] group-hover:text-white transition-colors" size={18} />
-                  </div>
-                  <div>
-                    <p className="font-bold text-[#051229] text-sm">{t("contact.email")}</p>
-                    <p className="text-[#7e8590] text-sm">{t("contact.emailValue")}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 group">
-                  <div className="w-10 h-10 rounded-full bg-[#0075ff]/10 flex items-center justify-center group-hover:bg-[#0075ff] transition-colors shrink-0">
-                    <FiPhone className="text-[#0075ff] group-hover:text-white transition-colors" size={18} />
-                  </div>
-                  <div>
-                    <p className="font-bold text-[#051229] text-sm">{t("contact.phone")}</p>
-                    <p className="text-[#7e8590] text-sm">{t("contact.phoneValue")}</p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           </div>
 
-          {/* right side - contact form */}
-          <div className="lg:col-span-3">
+          {/* right — form */}
+          <div
+            className="lg:col-span-3"
+            style={{
+              opacity: mounted ? 1 : 0,
+              transform: mounted ? "translateY(0) scale(1)" : "translateY(20px) scale(0.98)",
+              transition: "all 0.8s ease 0.35s",
+            }}
+          >
             <form onSubmit={handleSubmit} className="relative space-y-4">
               {status === "sending" && (
                 <div className="absolute inset-0 z-10 bg-white/80 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center gap-3">
                   <div className="w-12 h-12 border-3 border-[#0075ff]/20 border-t-[#0075ff] rounded-full animate-spin" />
                   <p className="text-sm font-medium text-[#364052]">{t("contact.sending")}</p>
-                  <p className="text-xs text-[#7e8590]">{t("contact.sendingNote")}</p>
                 </div>
               )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <input
-                  type="text"
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  placeholder={t("contact.yourName")}
-                  required
-                  disabled={status === "sending"}
-                  className="w-full px-5 py-3.5 rounded-lg bg-white border border-gray-200 focus:outline-none focus:border-[#0075ff] focus:ring-2 focus:ring-[#0075ff]/10 text-[#364052] text-sm placeholder-[#7e8590] transition-all disabled:opacity-60"
+                  type="text" name="name" value={form.name} onChange={handleChange}
+                  placeholder={t("contact.yourName")} required disabled={status === "sending"}
+                  className="w-full px-5 py-3.5 rounded-xl bg-[#f0f2f5] border border-[#e5e5e5]/50 focus:outline-none focus:border-[#0075ff] focus:ring-2 focus:ring-[#0075ff]/10 text-[#051229] text-sm placeholder-[#7e8590] transition-all disabled:opacity-60"
                 />
                 <input
-                  type="email"
-                  name="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  placeholder={t("contact.yourEmail")}
-                  required
-                  disabled={status === "sending"}
-                  className="w-full px-5 py-3.5 rounded-lg bg-white border border-gray-200 focus:outline-none focus:border-[#0075ff] focus:ring-2 focus:ring-[#0075ff]/10 text-[#364052] text-sm placeholder-[#7e8590] transition-all disabled:opacity-60"
+                  type="email" name="email" value={form.email} onChange={handleChange}
+                  placeholder={t("contact.yourEmail")} required disabled={status === "sending"}
+                  className="w-full px-5 py-3.5 rounded-xl bg-[#f0f2f5] border border-[#e5e5e5]/50 focus:outline-none focus:border-[#0075ff] focus:ring-2 focus:ring-[#0075ff]/10 text-[#051229] text-sm placeholder-[#7e8590] transition-all disabled:opacity-60"
                 />
               </div>
 
               <input
-                type="text"
-                name="subject"
-                value={form.subject}
-                onChange={handleChange}
-                placeholder={t("contact.subject")}
-                required
-                disabled={status === "sending"}
-                className="w-full px-5 py-3.5 rounded-lg bg-white border border-gray-200 focus:outline-none focus:border-[#0075ff] focus:ring-2 focus:ring-[#0075ff]/10 text-[#364052] text-sm placeholder-[#7e8590] transition-all disabled:opacity-60"
+                type="text" name="subject" value={form.subject} onChange={handleChange}
+                placeholder={t("contact.subject")} required disabled={status === "sending"}
+                className="w-full px-5 py-3.5 rounded-xl bg-[#f0f2f5] border border-[#e5e5e5]/50 focus:outline-none focus:border-[#0075ff] focus:ring-2 focus:ring-[#0075ff]/10 text-[#051229] text-sm placeholder-[#7e8590] transition-all disabled:opacity-60"
               />
 
               <textarea
-                name="message"
-                value={form.message}
-                onChange={handleChange}
-                placeholder={t("contact.yourMessage")}
-                rows={5}
-                required
-                disabled={status === "sending"}
-                className="w-full px-5 py-3.5 rounded-lg bg-white border border-gray-200 focus:outline-none focus:border-[#0075ff] focus:ring-2 focus:ring-[#0075ff]/10 text-[#364052] text-sm resize-none placeholder-[#7e8590] transition-all disabled:opacity-60"
+                name="message" value={form.message} onChange={handleChange}
+                placeholder={t("contact.yourMessage")} rows={5} required disabled={status === "sending"}
+                className="w-full px-5 py-3.5 rounded-xl bg-[#f0f2f5] border border-[#e5e5e5]/50 focus:outline-none focus:border-[#0075ff] focus:ring-2 focus:ring-[#0075ff]/10 text-[#051229] text-sm resize-none placeholder-[#7e8590] transition-all disabled:opacity-60"
               />
 
               <button
-                type="submit"
-                disabled={status === "sending"}
-                className="btn-solvior disabled:opacity-50 disabled:cursor-not-allowed"
+                type="submit" disabled={status === "sending"}
+                className="btn-solvior btn-pulse disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {status === "sending" ? (
                   <>
-                    <span className="btn-icon">
-                      <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                    </span>
+                    <span className="btn-icon"><span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" /></span>
                     <span className="btn-text">{t("contact.sendingBtn")}</span>
                   </>
                 ) : (
                   <>
-                    <span className="btn-icon">
-                      <FiSend size={18} />
-                    </span>
+                    <span className="btn-icon"><FiSend size={18} /></span>
                     <span className="btn-text">{t("contact.sendMessage")}</span>
                   </>
                 )}

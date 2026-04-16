@@ -130,12 +130,16 @@ function Navbar() {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        className={`fixed top-0 left-0 right-0 z-50 overflow-hidden transition-all duration-500 ${
           scrolled
-            ? "bg-white/90 backdrop-blur-xl border-b border-[#e5e5e5] shadow-[0_2px_20px_rgba(0,0,0,0.06)]"
-            : "bg-white"
+            ? "backdrop-blur-3xl shadow-[0_2px_15px_rgba(0,0,0,0.03)]"
+            : "backdrop-blur-2xl"
         }`}
       >
+        {/* animated bubble — light, covers logo area */}
+        <div className="absolute -left-10 -top-10 w-[350px] h-[120px] bg-[#e8f0fe]/70 rounded-full blur-2xl animate-pulse-glow pointer-events-none" />
+        {/* animated bubble — darker, covers nav links area */}
+        <div className="absolute -right-10 -top-6 w-[600px] h-[100px] bg-[#c4d7f5]/60 rounded-full blur-2xl pointer-events-none" style={{ animation: "pulse-glow 5s ease-in-out infinite 1s" }} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="flex items-center justify-between h-20">
             {/* logo */}

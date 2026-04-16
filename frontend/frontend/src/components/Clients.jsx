@@ -21,9 +21,6 @@ function Clients() {
 
   if (clients.length === 0) return null;
 
-  // duplicate list for seamless infinite loop
-  const logos = [...clients, ...clients];
-
   return (
     <section id="clients" className="py-24 sm:py-28 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -52,17 +49,17 @@ function Clients() {
             {/* scrolling track */}
             <div
               ref={trackRef}
-              className="flex gap-5 sm:gap-6 logo-marquee-track"
+              className="flex gap-8 sm:gap-12 logo-marquee-track"
             >
-              {logos.map((client, i) => (
+              {clients.map((client, i) => (
                 <div
                   key={`${client._id}-${i}`}
-                  className="shrink-0 w-36 sm:w-44 h-24 sm:h-28 bg-[#f3f4f6] rounded-2xl flex items-center justify-center p-5 sm:p-6 group transition-all duration-300 hover:bg-[#e9eaec] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1"
+                  className="shrink-0 w-36 sm:w-44 h-24 sm:h-28 flex items-center justify-center p-5 sm:p-6 group cursor-pointer"
                 >
                   <img
                     src={client.logo}
                     alt={l(client, "clientName") || client.name}
-                    className="max-w-full max-h-full object-contain opacity-60 group-hover:opacity-100 transition-opacity duration-300 select-none"
+                    className="max-w-full max-h-full object-contain opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300 select-none"
                     draggable="false"
                   />
                 </div>

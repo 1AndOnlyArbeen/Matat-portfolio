@@ -118,10 +118,10 @@ function App() {
         <Route path="/" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
         <Route path="/projects" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
         <Route path="/apps" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
-        <Route path="/clients" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
         <Route path="/about" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
         <Route path="/team" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
         <Route path="/testimonials" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
+        <Route path="/clients" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
         <Route path="/gallery" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
         <Route path="/contact" element={<PublicLayout><HomeWithScroll /></PublicLayout>} />
 
@@ -143,10 +143,10 @@ function App() {
           <Route path="projects/:id" element={<AdminProjectDetail />} />
           <Route path="apps" element={<ManageApps />} />
           <Route path="apps/:id" element={<AdminAppDetail />} />
+          <Route path="testimonials" element={<ManageTestimonials />} />
+          <Route path="team" element={<ManageTeam />} />
           <Route path="clients" element={<ManageClients />} />
           <Route path="clients/:id" element={<AdminClientDetail />} />
-          <Route path="team" element={<ManageTeam />} />
-          <Route path="testimonials" element={<ManageTestimonials />} />
           <Route path="gallery" element={<ManageGallery />} />
           <Route path="about" element={<ManageAbout />} />
           <Route path="messages" element={<ManageMessages />} />

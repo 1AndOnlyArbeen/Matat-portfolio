@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1500" height="297.698" viewBox="0 0 1500 297.698">
+  <defs>
+    <filter id="Path_3087" x="0" y="0" width="1500" height="259.102" filterUnits="userSpaceOnUse">
+      <feOffset dy="3" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feFlood flood-color="#00326c" flood-opacity="0.149"/>
+      <feComposite operator="in" in2="blur"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="Path_3086" x="0" y="10.102" width="1500" height="287.596" filterUnits="userSpaceOnUse">
+      <feOffset dy="3" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="10" result="blur-2"/>
+      <feFlood flood-opacity="0.161"/>
+      <feComposite operator="in" in2="blur-2"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <g id="Group_4347" data-name="Group 4347" transform="translate(30.407 -3304.898)">
+    <g transform="matrix(1, 0, 0, 1, -30.41, 3304.9)" filter="url(#Path_3087)">
+      <path id="Path_3087-2" data-name="Path 3087" d="M0,6.695S363.527-36.882,723.527-36.882,1440,6.695,1440,6.695V162.22H0Z" transform="translate(30 63.88)" fill="#4577e4"/>
+    </g>
+    <g id="Group_4337" data-name="Group 4337" transform="translate(0 -34.404)">
+      <g transform="matrix(1, 0, 0, 1, -30.41, 3339.3)" filter="url(#Path_3086)">
+        <path id="Path_3086-2" data-name="Path 3086" d="M0-8.514S363.289-44.079,723.289-44.079,1440-8.514,1440-8.514v192.03H0Z" transform="translate(30 81.18)" fill="#fff"/>
+      </g>
+    </g>
+  </g>
+</svg>

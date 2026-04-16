@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { FiGithub, FiLinkedin, FiTwitter, FiMail, FiPhone, FiMapPin } from "react-icons/fi";
+import { FiGithub, FiLinkedin, FiTwitter, FiFacebook, FiInstagram } from "react-icons/fi";
 import { getFooterSettings } from "../api";
 import useLang from "../hooks/useLang";
-import logo from "../assets/matat-logo-white.svg";
+import footerLogo from "../assets/matat.footer.svg";
 
 function Footer() {
   const { t } = useTranslation();
@@ -30,103 +30,95 @@ function Footer() {
   ].filter((s) => s.url);
 
   return (
-    <footer className="relative bg-[#051229] border-t border-[#27354d] overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 pb-8">
+    <footer style={{ background: "#ffffff", marginTop: 0, paddingTop: 0 }}>
+      {/* arch — smooth gentle curve */}
+<div style={{ width: "100%", lineHeight: 0, overflow: "hidden" }}>
+  <svg
+    viewBox="0 0 1440 90"
+    preserveAspectRatio="none"
+    style={{ width: "100%", height: "90px", display: "block" }}
+  >
+    <path
+      d="M0,80 C360,0 1080,0 1440,80 C1080,6 360,6 0,80 Z"
+      fill="#3B5BDB"
+    />
+  </svg>
+</div>
 
-        {/* 4-column grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8 pb-12">
+      {/* footer content */}
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 pt-3 pb-2 flex flex-col lg:flex-row gap-6">
 
-          {/* col 1 -- brand */}
-          <div className="space-y-5">
-            <img src={logo} alt="Matat" className="h-9 w-auto" />
-            <p className="text-sm leading-relaxed text-[#a9b0b8] max-w-[260px]">
-              {tagline}
-            </p>
-            {socials.length > 0 && (
-              <div className="flex items-center gap-3 pt-1">
-                {socials.map(({ icon: Icon, url }, i) => (
-                  <a
-                    key={i}
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="social-icon"
-                  >
-                    <Icon size={15} />
-                  </a>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* col 2 -- quick links */}
+        {/* left 50% — logo + tagline */}
+        <div className="lg:w-1/2 flex items-start gap-4">
+          <img src={footerLogo} alt="Matat" className="h-12 w-auto shrink-0" />
           <div>
-            <h4 className="text-[18px] font-bold text-white mb-8 tracking-tight">{t("nav.home")}</h4>
-            <ul className="space-y-3">
+            <p className="text-base font-bold text-[#051229] mb-1">Matat Technology</p>
+            <p className="text-sm leading-snug text-[#7e8590] max-w-[280px]">{tagline}</p>
+          </div>
+        </div>
+
+        {/* right 50% — links + contact in 3 cols */}
+        <div className="lg:w-1/2 grid grid-cols-3 gap-4">
+          <div>
+            <h4 className="text-sm font-bold text-[#051229] mb-2">{t("nav.home")}</h4>
+            <ul className="space-y-1">
               {[
                 { label: t("nav.projects"), href: "#projects" },
                 { label: t("nav.apps"), href: "#apps" },
                 { label: t("nav.clients"), href: "#clients" },
                 { label: t("nav.about"), href: "#about" },
-                { label: t("nav.team"), href: "#team" },
               ].map((link) => (
                 <li key={link.href}>
-                  <a href={link.href} className="footer-link text-sm">
-                    {link.label}
-                  </a>
+                  <a href={link.href} className="text-[#7e8590] hover:text-[#0075ff] transition-colors text-sm">{link.label}</a>
                 </li>
               ))}
             </ul>
           </div>
-
-          {/* col 3 -- more links */}
           <div>
-            <h4 className="text-[18px] font-bold text-white mb-8 tracking-tight">{t("nav.gallery")}</h4>
-            <ul className="space-y-3">
+            <h4 className="text-sm font-bold text-[#051229] mb-2">{t("nav.gallery")}</h4>
+            <ul className="space-y-1">
               {[
+                { label: t("nav.team"), href: "#team" },
                 { label: t("nav.testimonials"), href: "#testimonials" },
                 { label: t("nav.gallery"), href: "#gallery" },
                 { label: t("nav.contact"), href: "#contact" },
               ].map((link) => (
                 <li key={link.href}>
-                  <a href={link.href} className="footer-link text-sm">
-                    {link.label}
-                  </a>
+                  <a href={link.href} className="text-[#7e8590] hover:text-[#0075ff] transition-colors text-sm">{link.label}</a>
                 </li>
               ))}
             </ul>
           </div>
-
-          {/* col 4 -- contact */}
           <div>
-            <h4 className="text-[18px] font-bold text-white mb-8 tracking-tight">{t("contact.getInTouch")}</h4>
-            <ul className="space-y-5">
-              <li>
-                <p className="text-xs text-[#676e7a] mb-1">{t("contact.email")}</p>
-                <a href={`mailto:${email}`} className="footer-link text-sm text-white">
-                  {email}
+            <h4 className="text-sm font-bold text-[#051229] mb-3">Follow Us</h4>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { icon: FiFacebook, url: data?.facebookUrl || "#", bg: "bg-[#1877F2]" },
+                { icon: FiInstagram, url: data?.instagramUrl || "#", bg: "bg-gradient-to-br from-[#f09433] via-[#e6683c] to-[#bc1888]" },
+                ...(data?.linkedinUrl ? [{ icon: FiLinkedin, url: data.linkedinUrl, bg: "bg-[#0A66C2]" }] : []),
+                ...(data?.twitterUrl ? [{ icon: FiTwitter, url: data.twitterUrl, bg: "bg-[#1DA1F2]" }] : []),
+                ...(data?.githubUrl ? [{ icon: FiGithub, url: data.githubUrl, bg: "bg-[#333]" }] : []),
+              ].map(({ icon: Icon, url, bg }, i) => (
+                <a
+                  key={i}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`w-9 h-9 rounded-full ${bg} flex items-center justify-center text-white hover:scale-110 hover:shadow-lg transition-all`}
+                >
+                  <Icon size={16} />
                 </a>
-              </li>
-              <li>
-                <p className="text-xs text-[#676e7a] mb-1">{t("contact.phone")}</p>
-                <a href={`tel:${phone}`} className="footer-link text-sm text-white">
-                  {phone}
-                </a>
-              </li>
-              <li>
-                <p className="text-xs text-[#676e7a] mb-1">{t("contact.address")}</p>
-                <p className="text-sm text-[#a9b0b8]">{location}</p>
-              </li>
-            </ul>
+              ))}
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* bottom bar */}
-        <div className="border-t border-[#27354d] pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#676e7a]">
+      {/* copyright */}
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 pb-2">
+        <div className="border-t border-[#e5e5e5] pt-2 text-center text-xs text-[#a9b0b8]">
           <p>&copy; {currentYear} {copyright}</p>
-          <p>{tagline}</p>
         </div>
-
       </div>
     </footer>
   );

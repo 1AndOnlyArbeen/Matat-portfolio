@@ -20,26 +20,19 @@ function Hero() {
   return (
     <>
       {/* Spacer for fixed navbar */}
-      <div className="h-20 bg-white" />
+      <div className="h-14 bg-white" />
 
-      <section id="hero" className="relative bg-white overflow-hidden h-[calc(100vh-80px)] flex items-center">
-        {/* floating decorative blobs */}
-        <div className="absolute top-20 -left-20 w-72 h-72 bg-[#2563eb]/5 rounded-full blur-3xl animate-pulse-glow pointer-events-none" />
-        <div className="absolute bottom-10 -right-16 w-64 h-64 bg-[#2563eb]/4 rounded-full blur-3xl animate-pulse-glow pointer-events-none" style={{ animationDelay: "2s" }} />
-        <div className="absolute top-1/2 left-1/3 w-40 h-40 bg-[#2563eb]/3 animate-morph pointer-events-none" />
+      <section id="hero" className="relative bg-white overflow-hidden h-[calc(100vh-56px)] flex items-start">
+        {/* 2 animated bubbles — light left, darker right */}
+        <div className="absolute -top-20 -left-20 w-[500px] h-[500px] bg-[#dbeafe]/60 rounded-full blur-[80px] animate-pulse-glow pointer-events-none" />
+        <div className="absolute -bottom-20 -right-20 w-[450px] h-[450px] bg-[#bfdbfe]/70 rounded-full blur-[80px] pointer-events-none" style={{ animation: "pulse-glow 5s ease-in-out infinite 1.5s" }} />
 
-        {/* floating geometric shapes */}
-        <div className="absolute top-32 right-[15%] w-3 h-3 bg-[#2563eb] rounded-full animate-float opacity-20" />
-        <div className="absolute top-48 left-[10%] w-2 h-2 bg-[#2563eb] rounded-full animate-float opacity-15" style={{ animationDelay: "1s" }} />
-        <div className="absolute bottom-24 left-[20%] w-4 h-4 border-2 border-[#2563eb]/20 rounded-full animate-float-slow opacity-30" />
-        <div className="absolute top-40 right-[30%] w-6 h-6 border-2 border-[#2563eb]/10 rotate-45 animate-float-slow opacity-20" style={{ animationDelay: "3s" }} />
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 md:pt-16 pb-6 sm:pb-8 md:pb-10 w-full">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-6 sm:pb-8 md:pb-10 w-full">
           <div className="flex flex-col md:flex-row items-center gap-5 md:gap-10">
 
             {/* LEFT -- text + button */}
             <div className="w-full md:flex-1 order-1 md:order-1 text-center md:text-left">
-              <h1 className="hero-title font-black text-[#051229] mb-3 sm:mb-4 leading-[1.1] tracking-tight text-3xl sm:text-4xl md:text-5xl lg:text-6xl">
+              <h1 className="hero-title font-black text-black/80 mb-3 sm:mb-4 leading-[1.1] tracking-tight text-3xl sm:text-4xl md:text-5xl lg:text-6xl">
                 {l(data, "title")}
               </h1>
 
@@ -70,7 +63,7 @@ function Hero() {
             </div>
 
             {/* RIGHT -- banner image */}
-            <div className="hero-image w-2/3 sm:w-1/2 md:w-[28rem] lg:w-[32rem] shrink-0 order-2 md:order-2 mx-auto md:mx-0">
+            <div className="hero-image w-3/4 sm:w-2/3 md:w-[36rem] lg:w-[44rem] shrink-0 order-2 md:order-2 mx-auto md:mx-0 md:-mr-28 lg:-mr-44">
               <img
                 src={data.backgroundImage}
                 alt={data.title}
