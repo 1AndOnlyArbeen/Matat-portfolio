@@ -177,7 +177,7 @@ adminRouter.route('/deleteAbout/:id').delete(verifyJwt, deleteAbout);
 
 // router for messsage
 
-adminRouter.route('/createMessageDetails').post(createMessageDetails);
+adminRouter.route('/createMessageDetails').post(verifyJwt,createMessageDetails);
 adminRouter.route('/getMessageDetails').get(verifyJwt, getMessageDetails);
 adminRouter.route('/deleteMessageDetails/:id').delete(verifyJwt, deleteMessageDetails);
 
