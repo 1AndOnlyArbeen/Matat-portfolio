@@ -14,15 +14,12 @@ function parseStatValue(raw) {
 
 const easeOutQuart = (t) => 1 - Math.pow(1 - t, 4);
 
-// ---------- stat card with animated number + circular progress ring ----------
+// ---------- stat card: big number hero + animated progress bar ----------
 function StatRing({ rawValue, label, index, triggered, accent }) {
   const { num, suffix } = parseStatValue(rawValue);
   const [display, setDisplay] = useState(0);
   const [progress, setProgress] = useState(0);
   const rafRef = useRef(null);
-
-  // normalize to 0..1 for the ring — big numbers still fill the ring
-  const target = num <= 0 ? 0 : Math.min(num / (num > 100 ? num : 100), 1);
 
   useEffect(() => {
     if (!triggered) {
@@ -39,7 +36,7 @@ function StatRing({ rawValue, label, index, triggered, accent }) {
         const p = Math.min((ts - start) / duration, 1);
         const eased = easeOutQuart(p);
         setDisplay(Math.round(eased * num));
-        setProgress(eased * target);
+        setProgress(eased);
         if (p < 1) rafRef.current = requestAnimationFrame(tick);
       };
       rafRef.current = requestAnimationFrame(tick);
@@ -48,73 +45,60 @@ function StatRing({ rawValue, label, index, triggered, accent }) {
       clearTimeout(timeout);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [triggered, num, target, index]);
-
-  const size = 74;
-  const stroke = 5;
-  const r = (size - stroke) / 2;
-  const circ = 2 * Math.PI * r;
-  const dashOffset = circ * (1 - progress);
+  }, [triggered, num, index]);
 
   return (
     <div
-      className="relative rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-sm p-4 hover:bg-white/[0.08] hover:border-white/20 transition-colors duration-500 group overflow-hidden"
+      className="relative rounded-2xl bg-white/70 p-5 transition-colors duration-500 group overflow-hidden hover:bg-white"
       style={{
         opacity: triggered ? 1 : 0,
         transform: triggered
           ? "translateY(0) scale(1)"
           : "translateY(30px) scale(0.95)",
         transition: `opacity 700ms ease-out ${index * 120}ms, transform 700ms cubic-bezier(0.22, 1, 0.36, 1) ${index * 120}ms`,
+        backdropFilter: "blur(14px)",
+        WebkitBackdropFilter: "blur(14px)",
+        border: "1px solid rgba(148,163,184,0.28)",
+        boxShadow:
+          "inset 0 0 0 1px rgba(255,255,255,0.6), 0 12px 30px rgba(15,35,65,0.08)",
       }}
     >
-      <div className="relative flex items-center gap-4">
-        <div
-          className="relative shrink-0"
-          style={{ width: size, height: size }}
+      {/* accent corner glow */}
+      <div
+        className="absolute -top-6 -right-6 w-20 h-20 rounded-full blur-2xl opacity-35 pointer-events-none"
+        style={{ background: accent }}
+      />
+
+      <div className="relative">
+        <p
+          className="text-4xl sm:text-5xl font-black text-[#051229] tabular-nums leading-none tracking-tight"
         >
-          <svg width={size} height={size} className="-rotate-90">
-            <circle
-              cx={size / 2}
-              cy={size / 2}
-              r={r}
-              stroke="rgba(255,255,255,0.08)"
-              strokeWidth={stroke}
-              fill="none"
-            />
-            <circle
-              cx={size / 2}
-              cy={size / 2}
-              r={r}
-              stroke={accent}
-              strokeWidth={stroke}
-              strokeLinecap="round"
-              strokeDasharray={circ}
-              strokeDashoffset={dashOffset}
-              fill="none"
-              style={{ filter: `drop-shadow(0 0 6px ${accent}88)` }}
-            />
-          </svg>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-base font-black text-white tabular-nums leading-none">
-              {display}
-              <span style={{ color: accent }}>{suffix}</span>
-            </span>
-          </div>
-        </div>
-        <div className="min-w-0">
-          <p className="text-white/70 text-[11px] uppercase tracking-[0.15em] font-bold leading-tight">
-            {label}
-          </p>
+          {display}
+          <span style={{ color: accent }}>{suffix}</span>
+        </p>
+
+        {/* animated progress bar */}
+        <div className="mt-3 h-[3px] w-full rounded-full bg-[#051229]/10 overflow-hidden">
           <div
-            className="mt-2 h-[2px] w-8 rounded-full"
-            style={{ background: accent }}
+            className="h-full rounded-full"
+            style={{
+              width: `${progress * 100}%`,
+              background: `linear-gradient(90deg, ${accent}, ${accent}aa)`,
+              boxShadow: `0 0 10px ${accent}99`,
+              transition: "width 50ms linear",
+            }}
           />
         </div>
+
+        <p className="mt-3 text-[#364052] text-[12px] sm:text-[13px] uppercase tracking-[0.16em] font-extrabold leading-snug">
+          {label}
+        </p>
       </div>
+
       <div
         className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
         style={{
-          background: `radial-gradient(circle at 30% 50%, ${accent}22, transparent 70%)`,
+          background: `radial-gradient(circle at 50% 0%, ${accent}1a, transparent 70%)`,
         }}
       />
     </div>
@@ -221,96 +205,31 @@ function About() {
     t("about.feature3", { defaultValue: "" }),
   ].filter(Boolean);
 
-  const marqueeWords = [
-    { text: "ABOUT", style: "fill" },
-    { text: "US", style: "stroke-white" },
-    { text: "•", style: "fill" },
-    { text: "INNOVATE", style: "stroke-blue" },
-    { text: "•", style: "fill" },
-    { text: "CRAFT", style: "stroke-purple" },
-    { text: "•", style: "fill" },
-    { text: "VISION", style: "stroke-white" },
-    { text: "•", style: "fill" },
-  ];
-
-  const renderMarqueeSet = (keyPrefix) => (
-    <div className="flex items-center gap-10 sm:gap-14 px-6 shrink-0">
-      {marqueeWords.map((w, i) => {
-        const base =
-          "text-5xl sm:text-6xl md:text-7xl font-black leading-none whitespace-nowrap select-none";
-        if (w.style === "fill")
-          return (
-            <span
-              key={`${keyPrefix}-${i}`}
-              className={`${base} text-[#051229]/10`}
-            >
-              {w.text}
-            </span>
-          );
-        const strokeColors = {
-          "stroke-white": "rgba(5,18,41,0.35)",
-          "stroke-blue": "rgba(37,99,235,0.75)",
-          "stroke-purple": "rgba(124,58,237,0.6)",
-        };
-        return (
-          <span
-            key={`${keyPrefix}-${i}`}
-            className={`${base} text-transparent`}
-            style={{ WebkitTextStroke: `1.5px ${strokeColors[w.style]}` }}
-          >
-            {w.text}
-          </span>
-        );
-      })}
-    </div>
-  );
-
   return (
     <section
       ref={rootRef}
       id="about"
-      className="relative py-24 sm:py-32 bg-[#dfe6f0] overflow-hidden"
+      className="relative py-24 sm:py-32 bg-[#f0f2f5] overflow-hidden"
     >
-      {/* ===== animated aurora blobs (mouse-reactive) ===== */}
+      {/* ===== soft mouse-reactive blobs (subtle, matches testimonials' clean feel) ===== */}
       <div
-        className="absolute top-[-15%] left-[-10%] w-[45rem] h-[45rem] rounded-full blur-[140px] opacity-50 pointer-events-none"
+        className="absolute top-[-20%] left-[-15%] w-[40rem] h-[40rem] rounded-full blur-[160px] opacity-25 pointer-events-none"
         style={{
           background:
-            "radial-gradient(circle, rgba(37,99,235,0.35) 0%, transparent 60%)",
-          transform: `translate(${mouse.x * 25}px, ${mouse.y * 25}px)`,
+            "radial-gradient(circle, rgba(37,99,235,0.22) 0%, transparent 60%)",
+          transform: `translate(${mouse.x * 20}px, ${mouse.y * 20}px)`,
           transition: "transform 600ms cubic-bezier(0.22, 1, 0.36, 1)",
         }}
       />
       <div
-        className="absolute bottom-[-15%] right-[-10%] w-[50rem] h-[50rem] rounded-full blur-[160px] opacity-40 pointer-events-none"
+        className="absolute bottom-[-20%] right-[-15%] w-[45rem] h-[45rem] rounded-full blur-[180px] opacity-20 pointer-events-none"
         style={{
           background:
-            "radial-gradient(circle, rgba(124,58,237,0.3) 0%, transparent 60%)",
-          transform: `translate(${-mouse.x * 35}px, ${-mouse.y * 35}px)`,
+            "radial-gradient(circle, rgba(124,58,237,0.18) 0%, transparent 60%)",
+          transform: `translate(${-mouse.x * 30}px, ${-mouse.y * 30}px)`,
           transition: "transform 600ms cubic-bezier(0.22, 1, 0.36, 1)",
         }}
       />
-
-      {/* ===== subtle grid ===== */}
-      <div
-        className="absolute inset-0 opacity-[0.06] pointer-events-none"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(5,18,41,0.9) 1px, transparent 1px), linear-gradient(90deg, rgba(5,18,41,0.9) 1px, transparent 1px)",
-          backgroundSize: "64px 64px",
-        }}
-      />
-
-      {/* ===== top marquee strip ===== */}
-      <div className="relative mb-16 sm:mb-20 overflow-hidden py-5 border-y border-[#051229]/10">
-        <div className="flex animate-marquee-about w-max">
-          {renderMarqueeSet("a")}
-          {renderMarqueeSet("b")}
-        </div>
-        {/* edge fade */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#dfe6f0] to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#dfe6f0] to-transparent" />
-      </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* ===== section label ===== */}
@@ -327,7 +246,7 @@ function About() {
           <span className="relative w-2.5 h-2.5 rounded-full bg-[#2563eb] shadow-[0_0_14px_#2563eb]">
             <span className="absolute inset-0 rounded-full bg-[#2563eb] animate-ping opacity-60" />
           </span>
-          <span className="text-[#60a5fa] text-[11px] sm:text-xs font-bold tracking-[0.45em] uppercase">
+          <span className="text-[#2563eb] text-[11px] sm:text-xs font-bold tracking-[0.45em] uppercase">
             Who We Are
           </span>
           <div className="flex-1 h-px bg-gradient-to-r from-[#2563eb]/60 to-transparent" />
@@ -357,7 +276,7 @@ function About() {
 
             {l(about, "title") && (
               <h3
-                className="text-lg sm:text-xl font-bold text-[#60a5fa] mb-5"
+                className="text-lg sm:text-xl font-bold text-[#2563eb] mb-5"
                 style={{
                   opacity: bodyVisible ? 1 : 0,
                   transform: bodyVisible ? "translateY(0)" : "translateY(16px)",
@@ -380,14 +299,14 @@ function About() {
                 }}
               >
                 <span className="absolute left-0 top-1.5 bottom-1.5 w-[2px] bg-[#2563eb]/50 rounded-full" />
-                <p className="text-white/65 italic text-sm leading-relaxed">
+                <p className="text-[#7e8590] italic text-sm leading-relaxed">
                   &ldquo;{l(about, "mission")}&rdquo;
                 </p>
               </div>
             )}
 
             <p
-              className="text-white/85 leading-relaxed text-base sm:text-lg mb-8"
+              className="text-[#364052] leading-relaxed text-base sm:text-lg mb-8"
               style={{
                 opacity: bodyVisible ? 1 : 0,
                 transform: bodyVisible ? "translateY(0)" : "translateY(16px)",
@@ -412,10 +331,10 @@ function About() {
                       transition: `opacity 600ms ease-out ${600 + i * 120}ms, transform 700ms cubic-bezier(0.22, 1, 0.36, 1) ${600 + i * 120}ms`,
                     }}
                   >
-                    <span className="mt-0.5 w-6 h-6 rounded-full border border-[#2563eb]/60 bg-[#2563eb]/10 flex items-center justify-center shrink-0 group-hover:bg-[#2563eb]/30 group-hover:scale-110 transition-all duration-300">
-                      <FiCheck size={13} className="text-[#60a5fa]" />
+                    <span className="mt-0.5 w-6 h-6 rounded-full border border-[#2563eb]/40 bg-[#2563eb]/10 flex items-center justify-center shrink-0 group-hover:bg-[#2563eb]/20 group-hover:scale-110 transition-all duration-300">
+                      <FiCheck size={13} className="text-[#2563eb]" />
                     </span>
-                    <p className="text-white/90 text-sm sm:text-base font-medium leading-relaxed">
+                    <p className="text-[#364052] text-sm sm:text-base font-medium leading-relaxed">
                       {feat}
                     </p>
                   </div>
@@ -456,69 +375,27 @@ function About() {
               transition: "transform 500ms cubic-bezier(0.22, 1, 0.36, 1)",
             }}
           >
-            {/* orbital feature card */}
+            {/* section eyebrow */}
             <div
-              className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#0f2341] via-[#162d50] to-[#0a1628] p-8 mb-5 border border-white/[0.06] shadow-[0_30px_80px_rgba(10,22,40,0.6)]"
+              className="flex items-center justify-between mb-5"
               style={{
                 opacity: bodyVisible ? 1 : 0,
-                transform: bodyVisible
-                  ? "translateY(0) scale(1)"
-                  : "translateY(40px) scale(0.96)",
+                transform: bodyVisible ? "translateY(0)" : "translateY(16px)",
                 transition:
-                  "opacity 800ms ease-out 200ms, transform 900ms cubic-bezier(0.22, 1, 0.36, 1) 200ms",
+                  "opacity 600ms ease-out 200ms, transform 600ms cubic-bezier(0.22, 1, 0.36, 1) 200ms",
               }}
             >
-              {/* corner accents */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[#2563eb]/20 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#7c3aed]/20 rounded-full blur-2xl pointer-events-none" />
-
-              {/* diagonal stripes */}
-              <div
-                className="absolute inset-0 opacity-[0.04] pointer-events-none"
-                style={{
-                  backgroundImage:
-                    "repeating-linear-gradient(135deg, transparent, transparent 10px, rgba(255,255,255,1) 10px, rgba(255,255,255,1) 11px)",
-                }}
-              />
-
-              {/* orbital visual */}
-              <div className="relative h-36 flex items-center justify-center">
-                {/* rings */}
-                <div className="absolute w-28 h-28 rounded-full border border-white/10" />
-                <div className="absolute w-40 h-40 rounded-full border border-white/[0.06]" />
-
-                {/* counter-rotating orbit w/ a dot */}
-                <div className="absolute w-40 h-40 animate-spin-slow">
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-[#60a5fa] shadow-[0_0_14px_#60a5fa]" />
-                </div>
-                <div className="absolute w-28 h-28 animate-spin-reverse">
-                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-[#fbbf24] shadow-[0_0_12px_#fbbf24]" />
-                </div>
-                <div className="absolute w-40 h-40 animate-spin-slow" style={{ animationDuration: "26s" }}>
-                  <div className="absolute bottom-1 right-4 w-1.5 h-1.5 rounded-full bg-[#a78bfa] shadow-[0_0_10px_#a78bfa]" />
-                </div>
-
-                {/* center monogram */}
-                <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-[#2563eb] to-[#7c3aed] flex items-center justify-center shadow-[0_0_30px_rgba(37,99,235,0.55)]">
-                  <span className="text-white font-black text-2xl tracking-tight">
-                    M
-                  </span>
-                </div>
-              </div>
-
-              <div className="relative mt-5 flex items-center justify-between">
-                <p className="text-[#60a5fa] text-[10px] uppercase tracking-[0.35em] font-bold">
-                  By the numbers
-                </p>
-                <div className="flex gap-1.5">
-                  {accents.map((c, i) => (
-                    <span
-                      key={i}
-                      className="w-1.5 h-1.5 rounded-full"
-                      style={{ background: c, opacity: 0.7 }}
-                    />
-                  ))}
-                </div>
+              <p className="text-[#2563eb] text-[11px] uppercase tracking-[0.35em] font-bold">
+                By the numbers
+              </p>
+              <div className="flex gap-1.5">
+                {accents.map((c, i) => (
+                  <span
+                    key={i}
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{ background: c, opacity: 0.8 }}
+                  />
+                ))}
               </div>
             </div>
 

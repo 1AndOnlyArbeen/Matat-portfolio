@@ -524,22 +524,6 @@ h1, h2, h3, h4, h5, h6 {
   animation-play-state: paused;
 }
 
-@keyframes marqueeAbout {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-.animate-marquee-about {
-  animation: marqueeAbout 40s linear infinite;
-  will-change: transform;
-}
-
-@keyframes spin-reverse {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(-360deg); }
-}
-.animate-spin-reverse {
-  animation: spin-reverse 14s linear infinite;
-}
 
 /* ========== NAVBAR ========== */
 
