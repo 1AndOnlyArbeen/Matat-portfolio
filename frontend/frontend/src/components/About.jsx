@@ -126,7 +126,7 @@ function AnimatedHeadline({ text, visible }) {
   const chars = text.split("");
   return (
     <h2
-      className="text-5xl sm:text-6xl md:text-7xl font-black text-white leading-[0.95] tracking-tight"
+      className="text-5xl sm:text-6xl md:text-7xl font-black text-[#051229] leading-[0.95] tracking-tight"
       style={{ perspective: 900 }}
     >
       {chars.map((c, i) => {
@@ -240,14 +240,17 @@ function About() {
           "text-5xl sm:text-6xl md:text-7xl font-black leading-none whitespace-nowrap select-none";
         if (w.style === "fill")
           return (
-            <span key={`${keyPrefix}-${i}`} className={`${base} text-white/10`}>
+            <span
+              key={`${keyPrefix}-${i}`}
+              className={`${base} text-[#051229]/10`}
+            >
               {w.text}
             </span>
           );
         const strokeColors = {
-          "stroke-white": "rgba(255,255,255,0.28)",
-          "stroke-blue": "rgba(37,99,235,0.65)",
-          "stroke-purple": "rgba(124,58,237,0.55)",
+          "stroke-white": "rgba(5,18,41,0.35)",
+          "stroke-blue": "rgba(37,99,235,0.75)",
+          "stroke-purple": "rgba(124,58,237,0.6)",
         };
         return (
           <span
@@ -266,23 +269,23 @@ function About() {
     <section
       ref={rootRef}
       id="about"
-      className="relative py-24 sm:py-32 bg-[#070d1c] overflow-hidden"
+      className="relative py-24 sm:py-32 bg-[#dfe6f0] overflow-hidden"
     >
       {/* ===== animated aurora blobs (mouse-reactive) ===== */}
       <div
-        className="absolute top-[-15%] left-[-10%] w-[45rem] h-[45rem] rounded-full blur-[140px] opacity-60 pointer-events-none"
+        className="absolute top-[-15%] left-[-10%] w-[45rem] h-[45rem] rounded-full blur-[140px] opacity-50 pointer-events-none"
         style={{
           background:
-            "radial-gradient(circle, rgba(37,99,235,0.45) 0%, transparent 60%)",
+            "radial-gradient(circle, rgba(37,99,235,0.35) 0%, transparent 60%)",
           transform: `translate(${mouse.x * 25}px, ${mouse.y * 25}px)`,
           transition: "transform 600ms cubic-bezier(0.22, 1, 0.36, 1)",
         }}
       />
       <div
-        className="absolute bottom-[-15%] right-[-10%] w-[50rem] h-[50rem] rounded-full blur-[160px] opacity-50 pointer-events-none"
+        className="absolute bottom-[-15%] right-[-10%] w-[50rem] h-[50rem] rounded-full blur-[160px] opacity-40 pointer-events-none"
         style={{
           background:
-            "radial-gradient(circle, rgba(124,58,237,0.5) 0%, transparent 60%)",
+            "radial-gradient(circle, rgba(124,58,237,0.3) 0%, transparent 60%)",
           transform: `translate(${-mouse.x * 35}px, ${-mouse.y * 35}px)`,
           transition: "transform 600ms cubic-bezier(0.22, 1, 0.36, 1)",
         }}
@@ -290,23 +293,23 @@ function About() {
 
       {/* ===== subtle grid ===== */}
       <div
-        className="absolute inset-0 opacity-[0.04] pointer-events-none"
+        className="absolute inset-0 opacity-[0.06] pointer-events-none"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)",
+            "linear-gradient(rgba(5,18,41,0.9) 1px, transparent 1px), linear-gradient(90deg, rgba(5,18,41,0.9) 1px, transparent 1px)",
           backgroundSize: "64px 64px",
         }}
       />
 
       {/* ===== top marquee strip ===== */}
-      <div className="relative mb-16 sm:mb-20 overflow-hidden py-5 border-y border-white/[0.06]">
+      <div className="relative mb-16 sm:mb-20 overflow-hidden py-5 border-y border-[#051229]/10">
         <div className="flex animate-marquee-about w-max">
           {renderMarqueeSet("a")}
           {renderMarqueeSet("b")}
         </div>
         {/* edge fade */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#070d1c] to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#070d1c] to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#dfe6f0] to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#dfe6f0] to-transparent" />
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
