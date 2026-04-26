@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { FiArrowRight } from "react-icons/fi";
 import { getHero } from "../api";
 import useLang from "../hooks/useLang";
 
@@ -56,9 +55,6 @@ function Hero() {
                 href={data.buttonLink}
                 className="hero-button btn-solvior inline-flex"
               >
-                <span className="btn-icon">
-                  <FiArrowRight size={20} />
-                </span>
                 <span className="btn-text">{l(data, "buttonText")}</span>
               </a>
             </div>

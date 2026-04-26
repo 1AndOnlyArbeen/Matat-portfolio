@@ -488,13 +488,15 @@ h1, h2, h3, h4, h5, h6 {
 .btn-solvior {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0;
-  padding: 5.5px;
+  padding: 13px 34px;
   border-radius: 50px;
-  background: #051229;
-  color: #fff;
+  background: #f97316;
+  color: #ffffff;
+  border: 1.5px solid #ea580c;
   font-weight: 700;
-  font-size: 15px;
+  font-size: 16px;
   cursor: pointer;
   position: relative;
   overflow: hidden;
@@ -513,12 +515,14 @@ h1, h2, h3, h4, h5, h6 {
   flex-shrink: 0;
 }
 .btn-solvior .btn-text {
-  padding: 0 20px;
+  padding: 0 4px;
   white-space: nowrap;
 }
 .btn-solvior:hover {
-  background: #0075ff;
-  box-shadow: 0 10px 30px rgba(0, 117, 255, 0.35);
+  background: #9a3412;
+  color: #fff;
+  border-color: #9a3412;
+  box-shadow: 0 10px 30px rgba(154, 52, 18, 0.4);
   transform: translateY(-2px);
 }
 .btn-solvior:hover .btn-icon {
@@ -928,6 +932,44 @@ h1, h2, h3, h4, h5, h6 {
 }
 .btn-pulse:hover {
   animation: none;
+}
+
+/* Contact "Send Message" button uses both btn-solvior + btn-pulse — light blue */
+.btn-solvior.btn-pulse {
+  background: #93c5fd;
+  color: #0a3a7a;
+  border-color: #60a5fa;
+}
+.btn-solvior.btn-pulse:hover {
+  background: #0075ff;
+  color: #ffffff;
+  border-color: #0075ff;
+  box-shadow: 0 10px 30px rgba(0, 117, 255, 0.4);
+}
+
+/* Hero "Get In Touch" banner button — light green with blue heartbeat pulse */
+.hero-button.btn-solvior {
+  padding: 24px 44px;
+  font-size: 18px;
+  background: #22c55e;
+  color: #052e16;
+  border-color: #16a34a;
+  animation:
+    heroSlideUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards,
+    btnHeartbeatBlue 1.6s ease-in-out 1.7s infinite;
+}
+.hero-button.btn-solvior:hover {
+  background: #16a34a;
+  color: #ffffff;
+  border-color: #16a34a;
+  box-shadow: 0 10px 30px rgba(22, 163, 74, 0.4);
+  animation: heroSlideUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards;
+}
+
+@keyframes btnHeartbeatBlue {
+  0%   { box-shadow: 0 0 0 0   rgba(154, 52, 18, 0.6); }
+  70%  { box-shadow: 0 0 0 18px rgba(154, 52, 18, 0); }
+  100% { box-shadow: 0 0 0 0   rgba(154, 52, 18, 0); }
 }
 
 /* ========== LOGO MARQUEE ========== */
