@@ -159,36 +159,36 @@ function ManageHero() {
   return (
     <div>
       {/* header with add button */}
-      <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-4 bg-white border-b border-blue-100/60 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-xl font-bold text-gray-800">Manage Hero Banners</h2>
-        <div className="flex items-center gap-2">
+      <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-1.5 mb-2 bg-white border-b border-blue-100/60 flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-xs font-bold text-gray-800">Manage Hero Banners</h2>
+        <div className="flex items-center gap-1.5">
           {selectedIds.size > 0 && (
             <>
               <button
                 onClick={() => setSelectedIds(new Set())}
-                className="bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium px-3 py-2 rounded-lg text-xs cursor-pointer inline-flex items-center gap-1 transition-colors"
+                className="bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium px-2 py-1 rounded-lg text-[11px] cursor-pointer inline-flex items-center gap-1 transition-colors"
               >
-                <FiX size={13} /> Unselect All ({selectedIds.size})
+                <FiX size={11} /> Unselect All ({selectedIds.size})
               </button>
               <button
                 onClick={() => setBulkDeleteOpen(true)}
-                className="bg-red-600 hover:bg-red-700 text-white font-medium px-3 py-2 rounded-lg text-xs cursor-pointer inline-flex items-center gap-1 transition-colors"
+                className="bg-red-600 hover:bg-red-700 text-white font-medium px-2 py-1 rounded-lg text-[11px] cursor-pointer inline-flex items-center gap-1 transition-colors"
               >
-                <FiTrash2 size={13} /> Delete Selected ({selectedIds.size})
+                <FiTrash2 size={11} /> Delete Selected ({selectedIds.size})
               </button>
             </>
           )}
           <button
             onClick={() => { setViewAll((v) => !v); setPage(1); }}
-            className="bg-white border border-blue-300 text-blue-600 hover:bg-blue-50 font-medium px-3 py-2 rounded-lg text-xs cursor-pointer transition-colors"
+            className="bg-white border border-blue-300 text-blue-600 hover:bg-blue-50 font-medium px-2 py-1 rounded-lg text-[11px] cursor-pointer transition-colors"
           >
             {viewAll ? "Show Pages" : "View All"}
           </button>
           <button
             onClick={openCreate}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg text-sm flex items-center gap-2 cursor-pointer transition-colors"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-2.5 py-1 rounded-lg text-xs flex items-center gap-1 cursor-pointer transition-colors"
           >
-            <FiPlus size={16} /> Add Banner
+            <FiPlus size={13} /> Add Banner
           </button>
         </div>
       </div>

@@ -21,19 +21,19 @@ function Hero() {
     <>
       {/* Spacer for fixed navbar + breathing gap before the banner starts (small on desktop) */}
       <div className="h-14 bg-white" />
-      <div className="h-8 sm:h-10 md:h-4 lg:h-2 bg-white" />
+      <div className="h-8 sm:h-10 md:h-0 lg:h-0 bg-white" />
 
-      <section id="hero" className="relative bg-white overflow-hidden min-h-[calc(100vh-56px)] flex items-start">
+      <section id="hero" className="relative bg-white overflow-hidden min-h-[calc(100vh-56px)] md:min-h-0 flex items-start">
         {/* 2 animated bubbles — light left, darker right */}
         <div className="absolute -top-20 -left-20 w-[500px] h-[500px] bg-[#dbeafe]/60 rounded-full blur-[80px] animate-pulse-glow pointer-events-none" />
         <div className="absolute -bottom-20 -right-20 w-[450px] h-[450px] bg-[#bfdbfe]/70 rounded-full blur-[80px] pointer-events-none" style={{ animation: "pulse-glow 5s ease-in-out infinite 1.5s" }} />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 md:pt-4 lg:pt-2 pb-6 sm:pb-8 md:pb-10 w-full">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 md:pt-0 lg:pt-0 pb-6 sm:pb-8 md:pb-10 w-full">
           <div className="flex flex-col md:flex-row items-center gap-5 md:gap-10">
 
             {/* LEFT -- text + button (shifted left on desktop) */}
             <div className="w-full md:flex-1 order-1 md:order-1 text-center md:text-left md:-ml-4 lg:-ml-10">
-              <h1 className="hero-title font-black text-black/80 mb-3 sm:mb-4 leading-[1.1] tracking-tight text-3xl sm:text-4xl md:text-5xl lg:text-6xl">
+              <h1 className="hero-title relative top-4 sm:top-6 md:-top-16 font-black text-black/80 mb-3 sm:mb-4 leading-[1.1] tracking-tight text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
                 {l(data, "title")}
               </h1>
 
