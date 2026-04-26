@@ -196,7 +196,7 @@ function ManageHero() {
       {/* banners table */}
       <div className="overflow-x-auto rounded-xl border border-blue-300/40 bg-white/30 backdrop-blur-xl shadow-[0_4px_20px_rgba(30,64,175,0.15)]">
         <table className="admin-list-table w-full sm:min-w-[760px] text-xs text-left">
-          <thead className="sticky top-14 z-20 bg-blue-50 text-gray-700 text-[11px] uppercase tracking-wide shadow-[0_2px_6px_rgba(30,64,175,0.08)]">
+          <thead className="bg-blue-50 text-gray-700 text-[11px] uppercase tracking-wide shadow-[0_2px_6px_rgba(30,64,175,0.08)]">
             <tr>
               <th className="px-3 py-2 w-8">
                 <input

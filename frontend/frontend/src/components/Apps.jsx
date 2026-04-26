@@ -148,8 +148,9 @@ function Apps() {
               autoplay={{ delay: 4500, disableOnInteraction: false }}
               loop={apps.length > 4}
               breakpoints={{
-                640:  { slidesPerView: 2, spaceBetween: 24 },
-                1024: { slidesPerView: 3, spaceBetween: 28 },
+                640:  { slidesPerView: 2, spaceBetween: 14 },
+                1024: { slidesPerView: 3, spaceBetween: 14 },
+                1280: { slidesPerView: 4, spaceBetween: 14 },
               }}
               // padding around the swiper so the card's hover lift + scale isn't clipped
               className="!px-2 !py-6"

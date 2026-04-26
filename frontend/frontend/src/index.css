@@ -34,35 +34,67 @@ body {
     display: block !important;
     min-width: 0 !important;
     width: 100% !important;
+    font-size: 10.5px;
   }
   .admin-list-table thead { display: none; }
   .admin-list-table tbody { display: block; }
+  /* card laid out as a wrapping row so short cells (image, status, actions) sit
+     side-by-side instead of each taking their own line */
   .admin-list-table tr {
     display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 6px;
-    padding: 12px;
-    margin-bottom: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 1px;
+    padding: 5px 7px;
+    margin-bottom: 4px;
     border: 1px solid rgba(30, 64, 175, 0.18);
-    border-radius: 12px;
+    border-radius: 7px;
     background: #ffffff;
-    box-shadow: 0 2px 8px rgba(15, 35, 65, 0.04);
+    box-shadow: 0 1px 3px rgba(15, 35, 65, 0.04);
   }
   .admin-list-table td {
     display: block;
     width: 100%;
-    padding: 4px 0 !important;
+    padding: 1px 0 !important;
     border: none;
     text-align: left;
+    line-height: 1.2;
   }
-  /* the action-cell (right-aligned on desktop) becomes a row of icons aligned right */
+  /* compact cells: checkbox, image, status, actions — sit on the same row */
+  .admin-list-table td.w-8,
+  .admin-list-table td:has(img),
+  .admin-list-table td:has(> span[class*="rounded-full"]),
   .admin-list-table td[class*="text-right"] {
+    width: auto;
+    flex: 0 0 auto;
+  }
+  /* actions cell pushed to the right end of its row */
+  .admin-list-table td[class*="text-right"] {
+    margin-left: auto;
     text-align: right;
   }
   /* let truncated cells use the full card width */
   .admin-list-table td > div[class*="max-w-"] {
     max-width: 100% !important;
+  }
+  /* shrink thumbnails inside the card */
+  .admin-list-table td img {
+    width: 24px !important;
+    height: 24px !important;
+  }
+  /* tighten action icon buttons */
+  .admin-list-table td button {
+    padding: 3px !important;
+  }
+  .admin-list-table td button svg {
+    width: 13px !important;
+    height: 13px !important;
+  }
+  /* compact status pill */
+  .admin-list-table td span[class*="rounded-full"] {
+    font-size: 9.5px !important;
+    padding: 1px 6px !important;
   }
 }
 
