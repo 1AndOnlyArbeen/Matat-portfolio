@@ -97,116 +97,139 @@ function Gallery() {
           )}
         </div>
 
-        {/* Swiper — one card per slide on mobile, multiple on bigger screens */}
-        <div ref={gridRef} className={`relative animate-fade-up ${gridVisible ? "visible" : ""}`}>
-          <Swiper
-            modules={[Navigation, Autoplay]}
-            spaceBetween={20}
-            slidesPerView={1}
-            navigation={{ prevEl: ".gallery-prev", nextEl: ".gallery-next" }}
-            autoplay={{ delay: 5000, disableOnInteraction: false }}
-            loop={albums.length > 3}
-            breakpoints={{
-              640:  { slidesPerView: 2, spaceBetween: 20 },
-              1024: { slidesPerView: 3, spaceBetween: 24 },
-            }}
-            className="pb-2"
-          >
-            {albums.slice(0, HOME_LIMIT).map((album) => {
-              const count = album.images?.length || 1;
-              return (
-                <SwiperSlide key={album._id} className="!h-auto">
-                  <button
-                    onClick={() => open(album)}
-                    className="group relative w-full text-left cursor-pointer rounded-3xl overflow-hidden bg-white shadow-[0_10px_40px_rgba(5,18,41,0.12)] hover:shadow-[0_20px_50px_rgba(0,117,255,0.25)] hover:-translate-y-2 transition-all duration-500"
-                  >
-                    <div className="relative aspect-[4/3] overflow-hidden bg-[#e1e8f0]">
-                      {(() => {
-                        const imgs = (album.images || []).map(toUrl).filter(Boolean);
-                        const cover = album.thumbnail || album.image || imgs[0];
-                        return (
-                          <>
-                            {imgs[2] && (
-                              <img src={imgs[2]} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover scale-95 -rotate-2 opacity-40 blur-sm" />
-                            )}
-                            {imgs[1] && (
-                              <img src={imgs[1]} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover scale-[0.98] rotate-1 opacity-60" />
-                            )}
-                            {cover && (
-                              <img src={cover} alt={l(album, "place")} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110" />
-                            )}
-                          </>
-                        );
-                      })()}
+        {/* Card body — used by both mobile slider and desktop bento grid */}
+        {(() => {
+          const renderCardBody = (album) => {
+            const count = album.images?.length || 1;
+            const imgs = (album.images || []).map(toUrl).filter(Boolean);
+            const cover = album.thumbnail || album.image || imgs[0];
+            return (
+              <div className="relative overflow-hidden bg-[#e1e8f0] h-full w-full aspect-[4/3] lg:aspect-auto">
+                {imgs[2] && (
+                  <img src={imgs[2]} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover scale-95 -rotate-2 opacity-40 blur-sm" />
+                )}
+                {imgs[1] && (
+                  <img src={imgs[1]} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover scale-[0.98] rotate-1 opacity-60" />
+                )}
+                {cover && (
+                  <img src={cover} alt={l(album, "place")} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110" />
+                )}
 
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#051229]/85 via-[#051229]/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#051229]/85 via-[#051229]/20 to-transparent" />
 
-                      <div className="absolute top-3 left-3 right-3 flex items-start gap-2">
-                        <div className="w-7 h-7 rounded-full bg-white/95 backdrop-blur-md flex items-center justify-center text-[#0075ff] shadow-md opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 shrink-0">
-                          <FiArrowUpRight size={14} />
-                        </div>
+                <div className="absolute top-3 left-3 right-3 flex items-start gap-2">
+                  <div className="w-7 h-7 rounded-full bg-white/95 backdrop-blur-md flex items-center justify-center text-[#0075ff] shadow-md opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 shrink-0">
+                    <FiArrowUpRight size={14} />
+                  </div>
 
-                        {l(album, "caption") ? (
-                          <div className="flex-1 min-w-0 flex justify-center">
-                            <div className="bg-[#0075ff]/95 backdrop-blur-sm text-white text-[11px] sm:text-xs font-bold px-3 py-1 rounded-full shadow-lg inline-flex items-center gap-1 max-w-full">
-                              <FiTag size={11} className="shrink-0" />
-                              <span className="truncate">{l(album, "caption")}</span>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex-1" />
-                        )}
-
-                        <div className="bg-white/95 backdrop-blur-md text-[#0075ff] text-[11px] font-bold px-2 py-1 rounded-full inline-flex items-center gap-1 shadow-md shrink-0">
-                          <FiImage size={11} />
-                          {count}
-                        </div>
+                  {l(album, "caption") ? (
+                    <div className="flex-1 min-w-0 flex justify-center">
+                      <div className="bg-[#0075ff]/95 backdrop-blur-sm text-white text-[11px] sm:text-xs font-bold px-3 py-1 rounded-full shadow-lg inline-flex items-center gap-1 max-w-full">
+                        <FiTag size={11} className="shrink-0" />
+                        <span className="truncate">{l(album, "caption")}</span>
                       </div>
-
-                      {(album.date || l(album, "place")) && (
-                        <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-2">
-                          {album.date ? (
-                            <p className="text-[10px] sm:text-xs font-extrabold tracking-wide uppercase text-white inline-flex items-center gap-1 drop-shadow-md min-w-0 flex-1 truncate">
-                              <FiCalendar size={12} className="shrink-0" />
-                              <span className="truncate">
-                                {new Date(album.date).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
-                              </span>
-                            </p>
-                          ) : (
-                            <span className="flex-1" />
-                          )}
-                          {l(album, "place") && (
-                            <p className="text-[10px] sm:text-xs font-extrabold tracking-wide uppercase text-white inline-flex items-center gap-1 drop-shadow-md min-w-0 flex-1 truncate justify-end text-right">
-                              <FiMapPin size={12} className="text-[#0075ff] shrink-0" />
-                              <span className="truncate">{l(album, "place")}</span>
-                            </p>
-                          )}
-                        </div>
-                      )}
                     </div>
-                  </button>
-                </SwiperSlide>
-              );
-            })}
-          </Swiper>
+                  ) : (
+                    <div className="flex-1" />
+                  )}
 
-          {albums.length > 1 && (
-            <div className="flex sm:hidden justify-center gap-3 mt-5">
-              <button
-                className="gallery-prev w-10 h-10 rounded-full border border-[#d1d5db] flex items-center justify-center hover:bg-[#0075ff]/5 transition-all cursor-pointer"
-                aria-label="Previous"
-              >
-                <FiChevronLeft size={18} className="text-[#0075ff]" />
-              </button>
-              <button
-                className="gallery-next w-10 h-10 rounded-full bg-[#0075ff] flex items-center justify-center hover:bg-[#0075ff]/90 transition-all shadow-lg shadow-[#0075ff]/20 cursor-pointer"
-                aria-label="Next"
-              >
-                <FiChevronRight size={18} className="text-white" />
-              </button>
+                  <div className="bg-white/95 backdrop-blur-md text-[#0075ff] text-[11px] font-bold px-2 py-1 rounded-full inline-flex items-center gap-1 shadow-md shrink-0">
+                    <FiImage size={11} />
+                    {count}
+                  </div>
+                </div>
+
+                {(album.date || l(album, "place")) && (
+                  <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-2">
+                    {album.date ? (
+                      <p className="text-[10px] sm:text-xs font-extrabold tracking-wide uppercase text-white inline-flex items-center gap-1 drop-shadow-md min-w-0 flex-1 truncate">
+                        <FiCalendar size={12} className="shrink-0" />
+                        <span className="truncate">
+                          {new Date(album.date).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
+                        </span>
+                      </p>
+                    ) : (
+                      <span className="flex-1" />
+                    )}
+                    {l(album, "place") && (
+                      <p className="text-[10px] sm:text-xs font-extrabold tracking-wide uppercase text-white inline-flex items-center gap-1 drop-shadow-md min-w-0 flex-1 truncate justify-end text-right">
+                        <FiMapPin size={12} className="text-[#0075ff] shrink-0" />
+                        <span className="truncate">{l(album, "place")}</span>
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          };
+
+          return (
+            <div ref={gridRef} className={`relative animate-fade-up ${gridVisible ? "visible" : ""}`}>
+              {/* Mobile/tablet — Swiper slider, all cards same size */}
+              <div className="lg:hidden">
+                <Swiper
+                  modules={[Navigation, Autoplay]}
+                  spaceBetween={20}
+                  slidesPerView={1}
+                  navigation={{ prevEl: ".gallery-prev", nextEl: ".gallery-next" }}
+                  autoplay={{ delay: 5000, disableOnInteraction: false }}
+                  loop={albums.length > 2}
+                  breakpoints={{
+                    640: { slidesPerView: 2, spaceBetween: 20 },
+                  }}
+                  className="pb-2"
+                >
+                  {albums.slice(0, HOME_LIMIT).map((album) => (
+                    <SwiperSlide key={album._id} className="!h-auto">
+                      <button
+                        onClick={() => open(album)}
+                        className="group relative w-full text-left cursor-pointer rounded-3xl overflow-hidden bg-white shadow-[0_10px_40px_rgba(5,18,41,0.12)] hover:shadow-[0_20px_50px_rgba(0,117,255,0.25)] hover:-translate-y-2 transition-all duration-500"
+                      >
+                        {renderCardBody(album)}
+                      </button>
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
+
+                {albums.length > 1 && (
+                  <div className="flex sm:hidden justify-center gap-3 mt-5">
+                    <button
+                      className="gallery-prev w-10 h-10 rounded-full border border-[#d1d5db] flex items-center justify-center hover:bg-[#0075ff]/5 transition-all cursor-pointer"
+                      aria-label="Previous"
+                    >
+                      <FiChevronLeft size={18} className="text-[#0075ff]" />
+                    </button>
+                    <button
+                      className="gallery-next w-10 h-10 rounded-full bg-[#0075ff] flex items-center justify-center hover:bg-[#0075ff]/90 transition-all shadow-lg shadow-[#0075ff]/20 cursor-pointer"
+                      aria-label="Next"
+                    >
+                      <FiChevronRight size={18} className="text-white" />
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Desktop — bento: 1 big (2×2) + 1 tall on its right (1×2) + 3 regulars below */}
+              <div className="hidden lg:grid grid-cols-3 grid-rows-[200px_200px_280px] gap-5">
+                {albums.slice(0, HOME_LIMIT).map((album, idx) => {
+                  const isBig = idx === 0;
+                  const isTall = idx === 1;
+                  return (
+                    <button
+                      key={album._id}
+                      onClick={() => open(album)}
+                      className={`group relative w-full text-left cursor-pointer rounded-3xl overflow-hidden bg-white shadow-[0_10px_40px_rgba(5,18,41,0.12)] hover:shadow-[0_20px_50px_rgba(0,117,255,0.25)] hover:-translate-y-2 transition-all duration-500 ${
+                        isBig ? "col-span-2 row-span-2" : isTall ? "row-span-2" : ""
+                      }`}
+                    >
+                      {renderCardBody(album)}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          )}
-        </div>
+          );
+        })()}
 
         {/* See More — sits at the bottom and always opens the dedicated gallery page */}
         {albums.length > 0 && (

@@ -26,8 +26,8 @@ function Contact() {
     const el = sectionRef.current;
     if (!el) return;
     const io = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setMounted(true); },
-      { threshold: 0.1 }
+      ([entry]) => setMounted(entry.isIntersecting),
+      { threshold: 0.15 }
     );
     io.observe(el);
     return () => io.disconnect();
@@ -65,7 +65,7 @@ function Contact() {
           className="text-center mb-14"
           style={{
             opacity: mounted ? 1 : 0,
-            transform: mounted ? "translateY(0)" : "translateY(30px)",
+            transform: mounted ? "translateY(0)" : "translateY(60px)",
             transition: "all 0.8s ease",
           }}
         >
@@ -107,7 +107,7 @@ function Contact() {
               className="bg-[#f0f2f5] rounded-2xl p-6 border border-[#e5e5e5]/50"
               style={{
                 opacity: mounted ? 1 : 0,
-                transform: mounted ? "translateX(0)" : "translateX(-30px)",
+                transform: mounted ? "translateY(0)" : "translateY(50px)",
                 transition: "all 0.7s ease 0.3s",
               }}
             >
@@ -139,8 +139,8 @@ function Contact() {
             className="lg:col-span-3"
             style={{
               opacity: mounted ? 1 : 0,
-              transform: mounted ? "translateY(0) scale(1)" : "translateY(20px) scale(0.98)",
-              transition: "all 0.8s ease 0.35s",
+              transform: mounted ? "translateY(0) scale(1)" : "translateY(60px) scale(0.98)",
+              transition: "all 0.8s ease 0.4s",
             }}
           >
             <form onSubmit={handleSubmit} className="relative space-y-4">

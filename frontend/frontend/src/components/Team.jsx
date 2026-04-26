@@ -101,7 +101,7 @@ function Team() {
                   <div className="text-center w-full max-w-[15rem] mx-auto group h-full flex">
                     {/* single unified frosted card — flex column so every card stretches to the same height */}
                     <div
-                      className="relative w-full mx-auto rounded-3xl overflow-visible transition-all duration-500 group-hover:shadow-[0_28px_56px_rgba(15,35,65,0.22)] flex flex-col h-full"
+                      className="relative w-full mx-auto rounded-3xl overflow-visible transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-[0_28px_56px_rgba(15,35,65,0.22)] flex flex-col h-full"
                       style={{
                         background: "rgba(255,255,255,0.5)",
                         backdropFilter: "blur(20px)",
@@ -116,7 +116,7 @@ function Team() {
                         <img
                           src={m.teamImage || m.image}
                           alt={l(m, "name")}
-                          className="absolute -top-14 left-1/2 -translate-x-1/2 w-56 h-80 object-cover rounded-xl transition-all duration-500 group-hover:-top-16 drop-shadow-[0_14px_24px_rgba(15,35,65,0.18)]"
+                          className="absolute -top-14 left-1/2 -translate-x-1/2 w-56 h-80 object-cover rounded-xl drop-shadow-[0_14px_24px_rgba(15,35,65,0.18)]"
                           loading="lazy"
                         />
                       </div>

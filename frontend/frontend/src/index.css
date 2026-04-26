@@ -934,42 +934,40 @@ h1, h2, h3, h4, h5, h6 {
   animation: none;
 }
 
-/* Contact "Send Message" button uses both btn-solvior + btn-pulse — light blue */
+/* Contact "Send Message" button uses both btn-solvior + btn-pulse — dark blue */
 .btn-solvior.btn-pulse {
-  background: #93c5fd;
-  color: #0a3a7a;
-  border-color: #60a5fa;
+  background: #172554;
+  color: #ffffff;
+  border-color: #1e3a8a;
 }
 .btn-solvior.btn-pulse:hover {
-  background: #0075ff;
+  background: #0c1230;
   color: #ffffff;
-  border-color: #0075ff;
-  box-shadow: 0 10px 30px rgba(0, 117, 255, 0.4);
+  border-color: #0c1230;
+  box-shadow: 0 10px 30px rgba(12, 18, 48, 0.5);
 }
 
 /* Hero "Get In Touch" banner button — light green with blue heartbeat pulse */
 .hero-button.btn-solvior {
-  padding: 24px 44px;
+  padding: 16px 44px;
   font-size: 18px;
-  background: #22c55e;
-  color: #052e16;
-  border-color: #16a34a;
-  animation:
-    heroSlideUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards,
-    btnHeartbeatBlue 1.6s ease-in-out 1.7s infinite;
+  background: #0c1230;
+  color: #ffffff;
+  border: none;
+  animation: btnHeartbeatBlue 1.6s ease-in-out infinite;
 }
 .hero-button.btn-solvior:hover {
-  background: #16a34a;
+  background: #050818;
   color: #ffffff;
-  border-color: #16a34a;
-  box-shadow: 0 10px 30px rgba(22, 163, 74, 0.4);
-  animation: heroSlideUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards;
+  border: none;
+  box-shadow: 0 10px 30px rgba(5, 8, 24, 0.55);
+  animation: none;
 }
 
 @keyframes btnHeartbeatBlue {
-  0%   { box-shadow: 0 0 0 0   rgba(154, 52, 18, 0.6); }
-  70%  { box-shadow: 0 0 0 18px rgba(154, 52, 18, 0); }
-  100% { box-shadow: 0 0 0 0   rgba(154, 52, 18, 0); }
+  0%   { box-shadow: 0 0 0 0   rgba(124, 45, 18, 0.7); }
+  70%  { box-shadow: 0 0 0 8px rgba(124, 45, 18, 0); }
+  100% { box-shadow: 0 0 0 0   rgba(124, 45, 18, 0); }
 }
 
 /* ========== LOGO MARQUEE ========== */
