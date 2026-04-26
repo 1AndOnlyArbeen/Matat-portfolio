@@ -81,16 +81,17 @@ function Projects() {
               640: { slidesPerView: 2 },
               1024: { slidesPerView: 3 },
             }}
+            className="!py-10"
           >
             {projects.map((project) => (
-              <SwiperSlide key={project._id} className="!h-auto">
+              <SwiperSlide key={project._id} className="!h-auto py-2">
                 <div className="bg-white rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.18),0_2px_8px_rgba(0,0,0,0.10)] hover:shadow-[0_22px_50px_rgba(0,0,0,0.28),0_4px_14px_rgba(0,0,0,0.16)] hover:-translate-y-2 transition-all duration-500 ease-out overflow-hidden group h-full flex flex-col">
                   {/* project thumbnail */}
-                  <div className="overflow-hidden h-48 shrink-0 hover-shine">
+                  <div className="overflow-hidden h-56 shrink-0 hover-shine bg-[#f3f4f6] flex items-center justify-center">
                     <img
                       src={project.projectImage || project.image}
                       alt={l(project, "title")}
-                      className="w-full h-full object-cover transition-transform duration-600 group-hover:scale-110"
+                      className="w-full h-full object-contain transition-transform duration-600 group-hover:scale-105"
                     />
                   </div>
 

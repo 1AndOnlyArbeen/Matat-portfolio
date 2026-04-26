@@ -48,11 +48,11 @@ function Apps() {
       />
 
       {/* app icon — bigger, gentle idle float */}
-      <div className="apps-icon w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-5 rounded-2xl overflow-hidden shadow-md group-hover:shadow-xl transition-all duration-500 group-hover:-translate-y-1 group-hover:rotate-[-3deg] hover-shine">
+      <div className="apps-icon w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-5 rounded-2xl overflow-hidden shadow-md group-hover:shadow-xl transition-all duration-500 group-hover:-translate-y-1 group-hover:rotate-[-3deg] hover-shine bg-[#f3f4f6] flex items-center justify-center">
         <img
           src={app.appIcon || app.icon}
           alt={l(app, "appName") || app.name}
-          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+          className="w-full h-full object-contain transition-transform duration-700 ease-out group-hover:scale-105"
         />
       </div>
 
