@@ -50,18 +50,19 @@ function Footer() {
 </div>
 
       {/* footer content */}
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 pt-3 pb-2 flex flex-col lg:flex-row gap-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 pt-3 pb-2 flex flex-col lg:flex-row gap-6">
 
         {/* left 50% — logo on top, tagline beneath it */}
         <div className="lg:w-1/2 flex flex-col items-start gap-3">
-          <img src={footerLogo} alt="Matat" className="h-16 w-auto shrink-0" />
+          <img src={footerLogo} alt="Matat" className="h-12 sm:h-16 w-auto shrink-0" />
           <p className="text-sm leading-snug text-[#7e8590] max-w-[320px]">
             {tagline}
           </p>
         </div>
 
-        {/* right 50% — links + contact in 3 cols */}
-        <div className="lg:w-1/2 grid grid-cols-3 gap-4">
+        {/* right 50% — Home + Gallery share a row on mobile (2 cols with a divider between),
+            Follow Us drops to its own row */}
+        <div className="lg:w-1/2 grid grid-cols-2 sm:grid-cols-3 gap-4">
           <div>
             <h4 className="text-sm font-bold text-[#051229] mb-2">{t("nav.home")}</h4>
             <ul className="space-y-1">
@@ -77,7 +78,8 @@ function Footer() {
               ))}
             </ul>
           </div>
-          <div>
+          {/* divider line on mobile only — vanishes once the row gets the third column on sm+ */}
+          <div className="border-l border-[#e5e5e5] pl-4 sm:border-l-0 sm:pl-0">
             <h4 className="text-sm font-bold text-[#051229] mb-2">{t("nav.gallery")}</h4>
             <ul className="space-y-1">
               {[
@@ -92,7 +94,7 @@ function Footer() {
               ))}
             </ul>
           </div>
-          <div>
+          <div className="col-span-2 sm:col-span-1">
             <h4 className="text-sm font-bold text-[#051229] mb-3">Follow Us</h4>
             <div className="flex flex-wrap gap-2">
               {[

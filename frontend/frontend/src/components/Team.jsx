@@ -7,10 +7,16 @@ import {
   FiGithub,
   FiTwitter,
   FiArrowRight,
+  FiChevronLeft,
+  FiChevronRight,
 } from "react-icons/fi";
 import useScrollAnimation from "../hooks/useScrollAnimation";
 import useSectionHeading from "../hooks/useSectionHeading";
 import useLang from "../hooks/useLang";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Autoplay } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
 
 const PER_PAGE = 4;
 
@@ -68,102 +74,106 @@ function Team() {
           )}
         </div>
 
-        {/* ===== grid (first 4) ===== */}
-        <div className="relative max-w-5xl mx-auto">
-          <div
-            ref={gridRef}
-            className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-20 justify-items-center animate-fade-up ${gridVisible ? "visible" : ""}`}
+        {/* ===== Swiper slider — one card at a time on mobile, multiple on bigger screens ===== */}
+        <div ref={gridRef} className={`relative max-w-5xl mx-auto animate-fade-up ${gridVisible ? "visible" : ""}`}>
+          <Swiper
+            modules={[Navigation, Autoplay]}
+            spaceBetween={20}
+            slidesPerView={1}
+            navigation={{ prevEl: ".team-prev", nextEl: ".team-next" }}
+            autoplay={{ delay: 5000, disableOnInteraction: false }}
+            loop={visible.length > 4}
+            breakpoints={{
+              640:  { slidesPerView: 2, spaceBetween: 20 },
+              1024: { slidesPerView: 4, spaceBetween: 12 },
+            }}
+            // pt gives breathing space inside the swiper so the floating image at -top-14/-16 isn't clipped
+            className="!pt-16 !pb-2"
           >
-            {visible.map((m, i) => {
+            {visible.map((m) => {
               const socials = [
-                {
-                  url: m.linkedinUrl || m.social?.linkedin,
-                  Icon: FiLinkedin,
-                  label: "LinkedIn",
-                },
-                {
-                  url: m.twitterUrl || m.social?.twitter,
-                  Icon: FiTwitter,
-                  label: "Twitter",
-                },
-                {
-                  url: m.githubUrl || m.social?.github,
-                  Icon: FiGithub,
-                  label: "GitHub",
-                },
+                { url: m.linkedinUrl || m.social?.linkedin, Icon: FiLinkedin, label: "LinkedIn" },
+                { url: m.twitterUrl || m.social?.twitter, Icon: FiTwitter, label: "Twitter" },
+                { url: m.githubUrl || m.social?.github, Icon: FiGithub, label: "GitHub" },
               ];
-
               return (
-                <div
-                  key={m._id}
-                  className="text-center w-60 group"
-                  style={{
-                    opacity: gridVisible ? 1 : 0,
-                    transform: gridVisible
-                      ? "translateY(0)"
-                      : "translateY(20px)",
-                    transition: `opacity 500ms ease-out ${i * 90}ms, transform 600ms cubic-bezier(0.22, 1, 0.36, 1) ${i * 90}ms`,
-                  }}
-                >
-                  {/* single unified frosted card */}
-                  <div
-                    className="relative w-60 mx-auto rounded-3xl overflow-hidden transition-all duration-500 group-hover:shadow-[0_28px_56px_rgba(15,35,65,0.22)]"
-                    style={{
-                      background: "rgba(255,255,255,0.5)",
-                      backdropFilter: "blur(20px)",
-                      WebkitBackdropFilter: "blur(20px)",
-                      border: "1px solid rgba(255,255,255,0.7)",
-                      boxShadow:
-                        "0 14px 36px rgba(15,35,65,0.12), inset 0 0 0 1px rgba(255,255,255,0.45)",
-                    }}
-                  >
-                    {/* image area — every photo is centred and cropped identically */}
-                    <div className="relative w-full h-72 overflow-hidden bg-white">
-                      <img
-                        src={m.teamImage || m.image}
-                        alt={l(m, "name")}
-                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        loading="lazy"
-                      />
-                    </div>
+                <SwiperSlide key={m._id} className="!h-auto">
+                  <div className="text-center w-full max-w-[15rem] mx-auto group h-full flex">
+                    {/* single unified frosted card — flex column so every card stretches to the same height */}
+                    <div
+                      className="relative w-full mx-auto rounded-3xl overflow-visible transition-all duration-500 group-hover:shadow-[0_28px_56px_rgba(15,35,65,0.22)] flex flex-col h-full"
+                      style={{
+                        background: "rgba(255,255,255,0.5)",
+                        backdropFilter: "blur(20px)",
+                        WebkitBackdropFilter: "blur(20px)",
+                        border: "1px solid rgba(255,255,255,0.7)",
+                        boxShadow:
+                          "0 14px 36px rgba(15,35,65,0.12), inset 0 0 0 1px rgba(255,255,255,0.45)",
+                      }}
+                    >
+                      {/* image area — image overflows above the card top (the "floating" style) */}
+                      <div className="relative h-72 shrink-0">
+                        <img
+                          src={m.teamImage || m.image}
+                          alt={l(m, "name")}
+                          className="absolute -top-14 left-1/2 -translate-x-1/2 w-56 h-80 object-cover rounded-xl transition-all duration-500 group-hover:-top-16 drop-shadow-[0_14px_24px_rgba(15,35,65,0.18)]"
+                          loading="lazy"
+                        />
+                      </div>
 
-                    {/* info area (name, role, socials) — same card */}
-                    <div className="px-4 pt-4 pb-5 border-t border-white/60">
-                      <h3 className="font-extrabold text-[17px] text-[#051229] tracking-tight leading-tight">
-                        {l(m, "name")}
-                      </h3>
-                      <p className="text-[11px] text-[#0075ff] mt-1 tracking-[0.18em] uppercase font-semibold">
-                        {l(m, "role")}
-                      </p>
+                      {/* info area grows so social row pins to the bottom across all cards */}
+                      <div className="px-4 pt-4 pb-5 border-t border-white/60 flex flex-col flex-1">
+                        <h3 className="font-extrabold text-[17px] text-[#051229] tracking-tight leading-tight line-clamp-1">
+                          {l(m, "name")}
+                        </h3>
+                        <p className="text-[11px] text-[#0075ff] mt-1 tracking-[0.18em] uppercase font-semibold line-clamp-1">
+                          {l(m, "role")}
+                        </p>
 
-                      <div className="flex items-center justify-center gap-2 mt-3">
-                        {socials.map(({ url, Icon, label }, si) => {
-                          const cls =
-                            "w-7 h-7 rounded-full bg-white/70 border border-[#0075ff]/20 text-[#364052] hover:bg-[#0075ff] hover:text-white hover:border-[#0075ff] hover:scale-110 flex items-center justify-center transition-all duration-300";
-                          return (
-                            <a
-                              key={si}
-                              href={url || undefined}
-                              target={url ? "_blank" : undefined}
-                              rel={url ? "noopener noreferrer" : undefined}
-                              onClick={(e) => {
-                                if (!url) e.preventDefault();
-                              }}
-                              aria-label={label}
-                              className={cls}
-                              style={!url ? { cursor: "default" } : undefined}
-                            >
-                              <Icon size={12} />
-                            </a>
-                          );
-                        })}
+                        <div className="flex items-center justify-center gap-2 mt-auto pt-3">
+                          {socials.map(({ url, Icon, label }, si) => {
+                            const cls =
+                              "w-7 h-7 rounded-full bg-white/70 border border-[#0075ff]/20 text-[#364052] hover:bg-[#0075ff] hover:text-white hover:border-[#0075ff] hover:scale-110 flex items-center justify-center transition-all duration-300";
+                            return (
+                              <a
+                                key={si}
+                                href={url || undefined}
+                                target={url ? "_blank" : undefined}
+                                rel={url ? "noopener noreferrer" : undefined}
+                                onClick={(e) => { if (!url) e.preventDefault(); }}
+                                aria-label={label}
+                                className={cls}
+                                style={!url ? { cursor: "default" } : undefined}
+                              >
+                                <Icon size={12} />
+                              </a>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                </SwiperSlide>
               );
             })}
-          </div>
+          </Swiper>
+
+          {visible.length > 1 && (
+            <div className="flex sm:hidden justify-center gap-3 mt-5">
+              <button
+                className="team-prev w-10 h-10 rounded-full border border-[#d1d5db] flex items-center justify-center hover:bg-[#0075ff]/5 transition-all cursor-pointer"
+                aria-label="Previous"
+              >
+                <FiChevronLeft size={18} className="text-[#0075ff]" />
+              </button>
+              <button
+                className="team-next w-10 h-10 rounded-full bg-[#0075ff] flex items-center justify-center hover:bg-[#0075ff]/90 transition-all shadow-lg shadow-[#0075ff]/20 cursor-pointer"
+                aria-label="Next"
+              >
+                <FiChevronRight size={18} className="text-white" />
+              </button>
+            </div>
+          )}
 
           {/* ===== see more ===== */}
           <div className="mt-14 sm:mt-16 flex justify-center">

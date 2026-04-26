@@ -4,23 +4,19 @@ import { getTestimonials } from "../api";
 import { FiStar, FiChevronLeft, FiChevronRight, FiX } from "react-icons/fi";
 import useLang from "../hooks/useLang";
 import useSectionHeading from "../hooks/useSectionHeading";
-
-const CARDS_PER_PAGE = 3;
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Autoplay } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
 
 function Testimonials() {
   const { t } = useTranslation();
   const l = useLang();
   const heading = useSectionHeading("testimonials");
   const [testimonials, setTestimonials] = useState([]);
-  const [page, setPage] = useState(0);
   const [openItem, setOpenItem] = useState(null);
   const [mounted, setMounted] = useState(false);
-  const [animating, setAnimating] = useState(false);
   const sectionRef = useRef(null);
-  const pageRef = useRef(page);
-  pageRef.current = page;
-  const animatingRef = useRef(animating);
-  animatingRef.current = animating;
 
   useEffect(() => {
     getTestimonials().then((res) => {
@@ -40,36 +36,7 @@ function Testimonials() {
     return () => io.disconnect();
   }, [testimonials]);
 
-  const totalPages = Math.max(1, Math.ceil(testimonials.length / CARDS_PER_PAGE));
-
-  // auto-advance
-  useEffect(() => {
-    if (totalPages <= 1) return;
-    const interval = setInterval(() => {
-      if (animatingRef.current) return;
-      const next = pageRef.current === totalPages - 1 ? 0 : pageRef.current + 1;
-      goTo(next);
-    }, 6000);
-    return () => clearInterval(interval);
-  }, [totalPages]);
-
-  const goTo = (newPage) => {
-    if (animating || newPage === page) return;
-    setAnimating(true);
-    setTimeout(() => {
-      setPage(newPage);
-      setTimeout(() => setAnimating(false), 50);
-    }, 250);
-  };
-
-  const goPrev = () => goTo(page === 0 ? totalPages - 1 : page - 1);
-  const goNext = () => goTo(page === totalPages - 1 ? 0 : page + 1);
-
   if (testimonials.length === 0) return null;
-
-  const currentCards = testimonials.slice(page * CARDS_PER_PAGE, page * CARDS_PER_PAGE + CARDS_PER_PAGE);
-
-  const avgRating = (testimonials.reduce((sum, t) => sum + (t.rating || 5), 0) / testimonials.length).toFixed(1);
 
   return (
     <section
@@ -111,44 +78,45 @@ function Testimonials() {
           )}
           <div className="flex justify-center gap-2">
             <button
-              onClick={goPrev}
-              className="w-10 h-10 rounded-full border border-[#d1d5db] flex items-center justify-center hover:bg-[#0075ff]/5 transition-all cursor-pointer"
+              className="testimonials-prev w-10 h-10 rounded-full border border-[#d1d5db] flex items-center justify-center hover:bg-[#0075ff]/5 transition-all cursor-pointer"
+              aria-label="Previous"
             >
               <FiChevronLeft size={18} className="text-[#0075ff]" />
             </button>
             <button
-              onClick={goNext}
-              className="w-10 h-10 rounded-full bg-[#0075ff] flex items-center justify-center hover:bg-[#0075ff]/90 transition-all shadow-lg shadow-[#0075ff]/20 cursor-pointer"
+              className="testimonials-next w-10 h-10 rounded-full bg-[#0075ff] flex items-center justify-center hover:bg-[#0075ff]/90 transition-all shadow-lg shadow-[#0075ff]/20 cursor-pointer"
+              aria-label="Next"
             >
               <FiChevronRight size={18} className="text-white" />
             </button>
           </div>
         </div>
 
-        {/* 3-card grid */}
-        <div
-          className="grid grid-cols-1 md:grid-cols-3 gap-6"
-          style={{
-            opacity: animating ? 0 : 1,
-            transform: animating ? "translateY(20px)" : "translateY(0)",
-            transition: "opacity 0.3s ease, transform 0.3s ease",
+        {/* Swiper — one card per slide on mobile, 3 on md+ */}
+        <Swiper
+          modules={[Navigation, Autoplay]}
+          spaceBetween={24}
+          slidesPerView={1}
+          navigation={{ prevEl: ".testimonials-prev", nextEl: ".testimonials-next" }}
+          autoplay={{ delay: 6000, disableOnInteraction: false }}
+          loop={testimonials.length > 3}
+          breakpoints={{
+            640:  { slidesPerView: 2, spaceBetween: 24 },
+            1024: { slidesPerView: 3, spaceBetween: 24 },
           }}
+          className="pb-2"
         >
-          {currentCards.map((item, i) => {
+          {testimonials.map((item) => {
             const review = l(item, "reviewText") || item.text || "";
-            const isLong = review.length > 180;
 
             return (
-              <div
-                key={item._id}
-                className="relative bg-white rounded-[1.75rem] p-7 sm:p-8 flex flex-col border border-white/60 group hover:-translate-y-1.5 transition-all duration-500"
-                style={{
-                  boxShadow: "inset 0 0 0 1px rgba(187,201,204,0.3), 0 20px 40px rgba(26,28,26,0.04), 0 8px 16px rgba(26,28,26,0.02)",
-                  opacity: mounted ? 1 : 0,
-                  transform: mounted ? "translateY(0)" : "translateY(30px)",
-                  transition: `opacity 0.6s ease ${i * 120}ms, transform 0.6s ease ${i * 120}ms, box-shadow 0.4s ease`,
-                }}
-              >
+              <SwiperSlide key={item._id} className="!h-auto">
+                <div
+                  className="relative h-full bg-white rounded-[1.75rem] p-7 sm:p-8 flex flex-col border border-white/60 group hover:-translate-y-1.5 transition-transform duration-500"
+                  style={{
+                    boxShadow: "inset 0 0 0 1px rgba(187,201,204,0.3), 0 20px 40px rgba(26,28,26,0.04), 0 8px 16px rgba(26,28,26,0.02)",
+                  }}
+                >
                 {/* quote watermark */}
                 <span className="absolute top-4 right-6 text-[#0075ff]/5 text-6xl select-none pointer-events-none" style={{ fontFamily: "Georgia, serif" }}>&#x275D;</span>
 
@@ -186,35 +154,14 @@ function Testimonials() {
                   &ldquo;{review}&rdquo;
                 </p>
 
-                <button onClick={() => setOpenItem(item)} className="text-[#0075ff] text-xs font-bold cursor-pointer hover:underline self-start mb-3">
+                <button onClick={() => setOpenItem(item)} className="text-[#0075ff] text-xs font-bold cursor-pointer hover:underline self-start mb-3 mt-auto">
                   {t("testimonials.seeMore")}
                 </button>
-
-                {/* decorative bottom bar */}
-                <div className="flex gap-1.5 mt-auto pt-4">
-                  <span className={`h-1 rounded-full transition-all duration-300 ${i === 0 ? "w-8 bg-[#0075ff]" : "w-2 bg-[#d1d5db]"}`} />
-                  <span className={`h-1 rounded-full transition-all duration-300 ${i === 1 ? "w-8 bg-[#0075ff]" : "w-2 bg-[#d1d5db]"}`} />
-                  <span className={`h-1 rounded-full transition-all duration-300 ${i === 2 ? "w-8 bg-[#0075ff]" : "w-2 bg-[#d1d5db]"}`} />
                 </div>
-              </div>
+              </SwiperSlide>
             );
           })}
-        </div>
-
-        {/* page dots */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-2.5 mt-10">
-            {Array.from({ length: totalPages }).map((_, i) => (
-              <button
-                key={i}
-                onClick={() => goTo(i)}
-                className={`rounded-full transition-all duration-300 cursor-pointer ${
-                  i === page ? "w-8 h-2.5 bg-[#0075ff]" : "w-2.5 h-2.5 bg-[#d1d5db] hover:bg-[#0075ff]/30"
-                }`}
-              />
-            ))}
-          </div>
-        )}
+        </Swiper>
       </div>
 
       {/* full-review modal */}

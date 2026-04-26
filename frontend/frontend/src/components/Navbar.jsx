@@ -5,15 +5,16 @@ import logoWhite from "../assets/matat-logo-white.svg";
 import logoDark from "../assets/matat-logo-new1.svg";
 import LanguageToggle from "./LanguageToggle";
 
+// "page: true" = navigate to a dedicated /all page; otherwise scroll to the section on home
 const navLinks = [
   { nameKey: "nav.home", path: "/", section: "hero" },
-  { nameKey: "nav.projects", path: "/projects", section: "projects" },
-  { nameKey: "nav.apps", path: "/apps", section: "apps" },
-  { nameKey: "nav.clients", path: "/clients", section: "clients" },
-  { nameKey: "nav.about", path: "/about", section: "about" },
-  { nameKey: "nav.team", path: "/team", section: "team" },
-  { nameKey: "nav.testimonials", path: "/testimonials", section: "testimonials" },
-  { nameKey: "nav.gallery", path: "/gallery", section: "gallery" },
+  { nameKey: "nav.projects", path: "/projects/all", section: "projects", page: true },
+  { nameKey: "nav.apps", path: "/apps/all", section: "apps", page: true },
+  { nameKey: "nav.clients", path: "/clients/all", section: "clients", page: true },
+  { nameKey: "nav.about", path: "/about/all", section: "about", page: true },
+  { nameKey: "nav.team", path: "/team/all", section: "team", page: true },
+  { nameKey: "nav.testimonials", path: "/testimonials/all", section: "testimonials", page: true },
+  { nameKey: "nav.gallery", path: "/gallery/all", section: "gallery", page: true },
   { nameKey: "nav.contact", path: "/contact", section: "contact" },
 ];
 
@@ -100,10 +101,24 @@ function Navbar() {
     e.preventDefault();
     setMobileOpen(false);
 
-    const homePaths = ["/", ...navLinks.map((l) => l.path)];
-
-    if (!homePaths.includes(location.pathname)) {
+    // dedicated /all pages — navigate, don't scroll
+    if (link.page) {
       navigate(link.path);
+      window.scrollTo({ top: 0, behavior: "instant" });
+      return;
+    }
+
+    // home / contact — if we're not already on the home, navigate first
+    if (location.pathname !== "/") {
+      navigate("/");
+      // wait for the home to mount then scroll
+      setTimeout(() => {
+        if (link.section === "hero") {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        } else {
+          document.getElementById(link.section)?.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 50);
       return;
     }
 
@@ -118,7 +133,6 @@ function Navbar() {
         window.scrollTo({ top, behavior: "smooth" });
       }
     }
-    window.history.replaceState(null, "", link.path);
   };
 
   const isActive = (link) => {
@@ -202,11 +216,11 @@ function Navbar() {
       {/* mobile slide-in panel */}
       <div className={`hamburger-overlay ${mobileOpen ? "open" : ""}`} onClick={() => setMobileOpen(false)} />
       <div className={`hamburger-panel ${mobileOpen ? "open" : ""}`}>
-        <div className="p-8 sm:p-10">
-          <div className="flex justify-end mb-8">
+        <div className="px-6 sm:px-8 pt-4 pb-6">
+          <div className="flex justify-end mb-2">
             <button
               onClick={() => setMobileOpen(false)}
-              className="text-white/70 hover:text-white transition-colors cursor-pointer"
+              className="text-[#051229]/70 hover:text-[#051229] transition-colors cursor-pointer"
               aria-label="Close menu"
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -221,10 +235,10 @@ function Navbar() {
                 key={link.nameKey}
                 href={link.path}
                 onClick={(e) => handleNavClick(e, link)}
-                className={`block py-4 text-[16px] font-bold border-b border-white/10 transition-colors ${
+                className={`block py-4 text-[16px] font-bold border-b border-black/10 transition-colors ${
                   isActive(link)
-                    ? "text-[#5B7BF7]"
-                    : "text-white hover:text-[#5B7BF7]"
+                    ? "text-[#0075ff]"
+                    : "text-[#051229] hover:text-[#0075ff]"
                 }`}
               >
                 {t(link.nameKey)}
@@ -232,7 +246,7 @@ function Navbar() {
             ))}
           </div>
 
-          <div className="mt-8 pt-6 border-t border-white/10">
+          <div className="mt-8 pt-6 border-t border-black/10">
             <LanguageToggle />
           </div>
         </div>

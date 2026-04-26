@@ -82,36 +82,23 @@ function AllTeam() {
         {members.length === 0 ? (
           <p className="text-center text-[#7e8590]">No team members yet.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-20 justify-items-center max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-20 items-stretch justify-items-center max-w-5xl mx-auto pt-16">
             {members.map((m, i) => {
               const socials = [
-                {
-                  url: m.linkedinUrl || m.social?.linkedin,
-                  Icon: FiLinkedin,
-                  label: "LinkedIn",
-                },
-                {
-                  url: m.twitterUrl || m.social?.twitter,
-                  Icon: FiTwitter,
-                  label: "Twitter",
-                },
-                {
-                  url: m.githubUrl || m.social?.github,
-                  Icon: FiGithub,
-                  label: "GitHub",
-                },
+                { url: m.linkedinUrl || m.social?.linkedin, Icon: FiLinkedin, label: "LinkedIn" },
+                { url: m.twitterUrl || m.social?.twitter, Icon: FiTwitter, label: "Twitter" },
+                { url: m.githubUrl || m.social?.github, Icon: FiGithub, label: "GitHub" },
               ];
 
               return (
                 <div
                   key={m._id}
-                  className="text-center w-60 group"
-                  style={{
-                    animation: `fadeUp 500ms ease-out ${i * 60}ms both`,
-                  }}
+                  className="text-center w-60 group flex"
+                  style={{ animation: `fadeUp 500ms ease-out ${i * 60}ms both` }}
                 >
+                  {/* card stretches to the tallest card in the row via flex flex-col h-full */}
                   <div
-                    className="relative w-60 mx-auto rounded-3xl overflow-hidden transition-all duration-500 group-hover:shadow-[0_28px_56px_rgba(15,35,65,0.22)]"
+                    className="relative w-60 mx-auto rounded-3xl overflow-visible transition-all duration-500 group-hover:shadow-[0_28px_56px_rgba(15,35,65,0.22)] flex flex-col h-full"
                     style={{
                       background: "rgba(255,255,255,0.5)",
                       backdropFilter: "blur(20px)",
@@ -121,25 +108,26 @@ function AllTeam() {
                         "0 14px 36px rgba(15,35,65,0.12), inset 0 0 0 1px rgba(255,255,255,0.45)",
                     }}
                   >
-                    {/* image area — every photo is centred and cropped identically */}
-                    <div className="relative w-full h-72 overflow-hidden bg-white">
+                    {/* image area — fixed height, image overflows above */}
+                    <div className="relative h-72 shrink-0">
                       <img
                         src={m.teamImage || m.image}
                         alt={l(m, "name")}
-                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="absolute -top-14 left-1/2 -translate-x-1/2 w-56 h-80 object-cover rounded-xl transition-all duration-500 group-hover:-top-16 drop-shadow-[0_14px_24px_rgba(15,35,65,0.18)]"
                         loading="lazy"
                       />
                     </div>
 
-                    <div className="px-4 pt-4 pb-5 border-t border-white/60">
-                      <h3 className="font-extrabold text-[17px] text-[#051229] tracking-tight leading-tight">
+                    {/* info area absorbs extra height so socials always sit at the bottom */}
+                    <div className="px-4 pt-4 pb-5 border-t border-white/60 flex flex-col flex-1">
+                      <h3 className="font-extrabold text-[17px] text-[#051229] tracking-tight leading-tight line-clamp-1">
                         {l(m, "name")}
                       </h3>
-                      <p className="text-[11px] text-[#0075ff] mt-1 tracking-[0.18em] uppercase font-semibold">
+                      <p className="text-[11px] text-[#0075ff] mt-1 tracking-[0.18em] uppercase font-semibold line-clamp-1">
                         {l(m, "role")}
                       </p>
 
-                      <div className="flex items-center justify-center gap-2 mt-3">
+                      <div className="flex items-center justify-center gap-2 mt-auto pt-3">
                         {socials.map(({ url, Icon, label }, si) => {
                           const cls =
                             "w-7 h-7 rounded-full bg-white/70 border border-[#0075ff]/20 text-[#364052] hover:bg-[#0075ff] hover:text-white hover:border-[#0075ff] hover:scale-110 flex items-center justify-center transition-all duration-300";
@@ -149,9 +137,7 @@ function AllTeam() {
                               href={url || undefined}
                               target={url ? "_blank" : undefined}
                               rel={url ? "noopener noreferrer" : undefined}
-                              onClick={(e) => {
-                                if (!url) e.preventDefault();
-                              }}
+                              onClick={(e) => { if (!url) e.preventDefault(); }}
                               aria-label={label}
                               className={cls}
                               style={!url ? { cursor: "default" } : undefined}

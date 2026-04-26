@@ -126,7 +126,7 @@ function ManageTestimonials() {
 
   return (
     <div>
-      <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-4 bg-white border-b border-blue-100/60 flex items-center justify-between">
+      <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-4 bg-white border-b border-blue-100/60 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-xl font-bold text-gray-800">Manage Testimonials</h2>
         <div className="flex items-center gap-2">
           {selectedIds.size > 0 && (
@@ -159,7 +159,7 @@ function ManageTestimonials() {
 
       {/* testimonials table */}
       <div className="overflow-x-auto rounded-xl border border-blue-300/40 bg-white/30 backdrop-blur-xl shadow-[0_4px_20px_rgba(30,64,175,0.15)]">
-        <table className="w-full text-xs text-left">
+        <table className="admin-list-table w-full sm:min-w-[760px] text-xs text-left">
           <thead className="sticky top-14 z-20 bg-blue-50 text-gray-700 text-[11px] uppercase tracking-wide shadow-[0_2px_6px_rgba(30,64,175,0.08)]">
             <tr>
               <th className="px-3 py-2 w-8">
@@ -184,8 +184,8 @@ function ManageTestimonials() {
                     <img src={item.avatar} alt={item.name} className="w-9 h-9 rounded-full object-cover border border-gray-200" />
                   )}
                 </td>
-                <td className="px-3 py-2 font-medium text-gray-800 max-w-[160px] truncate">{item.name}</td>
-                <td className="px-3 py-2 text-gray-500 max-w-[160px] truncate">{item.company || "-"}</td>
+                <td className="px-3 py-2 font-medium text-gray-800"><div className="max-w-[160px] truncate">{item.name}</div></td>
+                <td className="px-3 py-2 text-gray-500"><div className="max-w-[160px] truncate">{item.company || "-"}</div></td>
                 <td className="px-3 py-2">
                   <div className="flex gap-0.5">
                     {Array.from({ length: 5 }).map((_, i) => (
@@ -193,7 +193,7 @@ function ManageTestimonials() {
                     ))}
                   </div>
                 </td>
-                <td className="px-3 py-2 text-gray-500 max-w-[240px] truncate">{item.reviewText || item.text}</td>
+                <td className="px-3 py-2 text-gray-500"><div className="max-w-[240px] truncate">{item.reviewText || item.text}</div></td>
                 <td className="px-3 py-2">
                   <div className="flex items-center justify-end gap-1">
                     <button onClick={() => setViewItem(item)} className="text-gray-500 hover:bg-gray-50 p-1.5 rounded-lg cursor-pointer" title="View"><FiEye size={14} /></button>

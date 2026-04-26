@@ -25,6 +25,47 @@ body {
   overflow-x: hidden;
 }
 
+/* ========== ADMIN LIST TABLE — RESPONSIVE STACKED CARDS BELOW SM ========== */
+
+/* Below 640px, tables collapse from a wide table into a vertical list of cards.
+   Each row becomes its own card with cells stacked. Above 640px, normal table. */
+@media (max-width: 639.98px) {
+  .admin-list-table {
+    display: block !important;
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+  .admin-list-table thead { display: none; }
+  .admin-list-table tbody { display: block; }
+  .admin-list-table tr {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(30, 64, 175, 0.18);
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(15, 35, 65, 0.04);
+  }
+  .admin-list-table td {
+    display: block;
+    width: 100%;
+    padding: 4px 0 !important;
+    border: none;
+    text-align: left;
+  }
+  /* the action-cell (right-aligned on desktop) becomes a row of icons aligned right */
+  .admin-list-table td[class*="text-right"] {
+    text-align: right;
+  }
+  /* let truncated cells use the full card width */
+  .admin-list-table td > div[class*="max-w-"] {
+    max-width: 100% !important;
+  }
+}
+
 /* ========== CUSTOM SCROLLBAR ========== */
 
 ::-webkit-scrollbar {
@@ -35,11 +76,20 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #0075ff;
+  background: #d4d4d4;
   border-radius: 1ex;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #b8b8b8;
 }
 ::-webkit-scrollbar-corner {
   background: transparent;
+}
+
+/* Firefox + standard */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #d4d4d4 transparent;
 }
 
 /* ========== GLOBAL TRANSITIONS ========== */
@@ -630,11 +680,14 @@ h1, h2, h3, h4, h5, h6 {
   width: 420px;
   max-width: 90vw;
   height: 100%;
-  background: #051229;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border-left: 1px solid rgba(0, 0, 0, 0.06);
   z-index: 10000;
   transition: right 0.6s cubic-bezier(0.785, 0.135, 0.15, 0.86);
   overflow-y: auto;
-  box-shadow: -5px 0 20px -5px rgba(0, 0, 0, 0.5);
+  box-shadow: -10px 0 30px -10px rgba(0, 0, 0, 0.18);
 }
 .hamburger-panel.open {
   right: 0;

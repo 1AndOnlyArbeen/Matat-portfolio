@@ -168,7 +168,7 @@ function ManageGallery() {
 
   return (
     <div>
-      <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-4 bg-white border-b border-blue-100/60 flex items-center justify-between">
+      <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-4 bg-white border-b border-blue-100/60 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-xl font-bold text-gray-800">Manage Gallery</h2>
         <div className="flex items-center gap-2">
           {selectedIds.size > 0 && (
@@ -195,7 +195,7 @@ function ManageGallery() {
 
       {/* gallery table */}
       <div className="overflow-x-auto rounded-xl border border-blue-300/40 bg-white/30 backdrop-blur-xl shadow-[0_4px_20px_rgba(30,64,175,0.15)]">
-        <table className="w-full text-xs text-left">
+        <table className="admin-list-table w-full sm:min-w-[760px] text-xs text-left">
           <thead className="sticky top-14 z-20 bg-blue-50 text-gray-700 text-[11px] uppercase tracking-wide shadow-[0_2px_6px_rgba(30,64,175,0.08)]">
             <tr>
               <th className="px-3 py-2 w-8">
@@ -239,7 +239,7 @@ function ManageGallery() {
                       <span className="text-gray-400">-</span>
                     )}
                   </td>
-                  <td className="px-3 py-2 text-gray-500 max-w-[160px] truncate">{img.place || "-"}</td>
+                  <td className="px-3 py-2 text-gray-500"><div className="max-w-[160px] truncate">{img.place || "-"}</div></td>
                   <td className="px-3 py-2 text-gray-500 whitespace-nowrap">
                     {img.date ? new Date(img.date).toLocaleDateString() : "-"}
                   </td>

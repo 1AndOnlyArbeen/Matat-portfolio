@@ -226,7 +226,7 @@ function ManageSectionHeadings() {
 
   return (
     <div>
-      <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-4 bg-white border-b border-blue-100/60 flex items-center justify-between">
+      <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-4 bg-white border-b border-blue-100/60 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 className="text-xl font-bold text-gray-800">Section Headings</h2>
           <p className="text-xs text-gray-400">

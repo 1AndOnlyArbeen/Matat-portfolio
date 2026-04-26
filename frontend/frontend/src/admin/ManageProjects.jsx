@@ -177,7 +177,7 @@ function ManageProjects() {
   return (
     <div>
       {/* header with add button */}
-      <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-4 bg-white border-b border-blue-100/60 flex items-center justify-between">
+      <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-4 bg-white border-b border-blue-100/60 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-xl font-bold text-gray-800">Manage Projects</h2>
         <div className="flex items-center gap-2">
           {selectedIds.size > 0 && (
@@ -213,7 +213,7 @@ function ManageProjects() {
 
       {/* projects table */}
       <div className="overflow-x-auto rounded-xl border border-blue-300/40 bg-white/30 backdrop-blur-xl shadow-[0_4px_20px_rgba(30,64,175,0.15)]">
-        <table className="w-full text-xs text-left">
+        <table className="admin-list-table w-full sm:min-w-[760px] text-xs text-left">
           <thead className="sticky top-14 z-20 bg-blue-50 text-gray-700 text-[11px] uppercase tracking-wide shadow-[0_2px_6px_rgba(30,64,175,0.08)]">
             <tr>
               <th className="px-3 py-2 w-8">
@@ -258,8 +258,8 @@ function ManageProjects() {
                       />
                     )}
                   </td>
-                  <td className="px-3 py-2 font-medium text-gray-800 max-w-[160px] truncate">{project.title}</td>
-                  <td className="px-3 py-2 text-gray-500 max-w-[240px] truncate">{project.description}</td>
+                  <td className="px-3 py-2 font-medium text-gray-800"><div className="max-w-[160px] truncate">{project.title}</div></td>
+                  <td className="px-3 py-2 text-gray-500"><div className="max-w-[240px] truncate">{project.description}</div></td>
                   <td className="px-3 py-2 max-w-[160px]">
                     <div className="flex flex-wrap gap-1">
                       {tags.map((tag) => (
@@ -269,8 +269,8 @@ function ManageProjects() {
                       ))}
                     </div>
                   </td>
-                  <td className="px-3 py-2 text-blue-500 max-w-[160px] truncate">
-                    {project.projectLink || "-"}
+                  <td className="px-3 py-2 text-blue-500">
+                    <div className="max-w-[160px] truncate">{project.projectLink || "-"}</div>
                   </td>
                   <td className="px-3 py-2">
                     <div className="flex items-center justify-end gap-1">

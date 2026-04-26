@@ -101,8 +101,8 @@ function Contact() {
             transition: "all 0.8s ease 0.2s",
           }}
         >
-          {/* left — contact info */}
-          <div className="lg:col-span-2 space-y-5">
+          {/* left — contact info (hidden on mobile, visible from lg up) */}
+          <div className="hidden lg:block lg:col-span-2 space-y-5">
             <div
               className="bg-[#f0f2f5] rounded-2xl p-6 border border-[#e5e5e5]/50"
               style={{

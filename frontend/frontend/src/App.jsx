@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 
 // public site components
@@ -12,6 +12,11 @@ import AppDetail from "./pages/AppDetail";
 import ClientDetail from "./pages/ClientDetail";
 import AllTeam from "./pages/AllTeam";
 import AllGallery from "./pages/AllGallery";
+import AllProjects from "./pages/AllProjects";
+import AllApps from "./pages/AllApps";
+import AllClients from "./pages/AllClients";
+import AllTestimonials from "./pages/AllTestimonials";
+import AllAbout from "./pages/AllAbout";
 import NotFound from "./pages/NotFound";
 import AdminNotFound from "./admin/AdminNotFound";
 
@@ -81,17 +86,18 @@ import AdminClientDetail from "./admin/ClientDetail";
 // so the user always lands on the home page. Admin routes are excluded.
 function RedirectHomeOnLoad() {
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // skip admin routes
+    // skip admin routes — admin URLs should keep working on refresh
     if (location.pathname.startsWith("/matat-admin")) return;
-    // if not already on "/", replace the URL to home
-    if (location.pathname !== "/") {
-      window.history.replaceState(null, "", "/");
-      window.scrollTo(0, 0);
-    }
+    // already on home — nothing to do
+    if (location.pathname === "/") return;
+    // any other public path on a fresh load → send the user to home
+    navigate("/", { replace: true });
+    window.scrollTo(0, 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // empty deps — runs only once on mount (i.e. hard refresh)
+  }, []); // empty deps — runs only once on mount (i.e. hard refresh / first load)
 
   return null;
 }
@@ -134,6 +140,11 @@ function App() {
         <Route path="/clients/:id" element={<PublicLayout><ClientDetail /></PublicLayout>} />
         <Route path="/team/all" element={<PublicLayout><AllTeam /></PublicLayout>} />
         <Route path="/gallery/all" element={<PublicLayout><AllGallery /></PublicLayout>} />
+        <Route path="/projects/all" element={<PublicLayout><AllProjects /></PublicLayout>} />
+        <Route path="/apps/all" element={<PublicLayout><AllApps /></PublicLayout>} />
+        <Route path="/clients/all" element={<PublicLayout><AllClients /></PublicLayout>} />
+        <Route path="/testimonials/all" element={<PublicLayout><AllTestimonials /></PublicLayout>} />
+        <Route path="/about/all" element={<PublicLayout><AllAbout /></PublicLayout>} />
 
         {/* ===== ADMIN PANEL ROUTES ===== */}
 

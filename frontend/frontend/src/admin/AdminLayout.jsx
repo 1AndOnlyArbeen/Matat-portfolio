@@ -161,7 +161,7 @@ function AdminLayout() {
           </div>
 
           {/* sidebar nav links */}
-          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+          <nav className="flex-1 p-3 sm:p-4 space-y-1 overflow-y-auto">
             {sidebarLinks.map((link) => {
               const isActive = location.pathname === link.path;
               const isMessages = link.nameKey === "admin.sidebar.messages";
@@ -170,16 +170,16 @@ function AdminLayout() {
                   key={link.nameKey}
                   to={link.path}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-2.5 sm:gap-3 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-lg text-[13px] sm:text-sm font-medium transition-colors ${
                     isActive
                       ? "bg-blue-50 text-blue-600"
                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                   }`}
                 >
-                  <link.icon size={18} />
-                  <span className="flex-1">{t(link.nameKey)}</span>
+                  <link.icon size={18} className="shrink-0" />
+                  <span className="flex-1 truncate">{t(link.nameKey)}</span>
                   {isMessages && unreadCount > 0 && (
-                    <span className="bg-red-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-full min-w-[22px] text-center">
+                    <span className="bg-red-500 text-white text-[10px] sm:text-[11px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full min-w-[20px] sm:min-w-[22px] text-center shrink-0">
                       {unreadCount > 99 ? "99+" : unreadCount}
                     </span>
                   )}

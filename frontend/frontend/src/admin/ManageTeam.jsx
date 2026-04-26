@@ -129,7 +129,7 @@ function ManageTeam() {
 
   return (
     <div>
-      <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-4 bg-white border-b border-blue-100/60 flex items-center justify-between">
+      <div className="sticky top-0 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-4 bg-white border-b border-blue-100/60 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-xl font-bold text-gray-800">Manage Team</h2>
         <div className="flex items-center gap-2">
           {selectedIds.size > 0 && (
@@ -162,7 +162,7 @@ function ManageTeam() {
 
       {/* team members table */}
       <div className="overflow-x-auto rounded-xl border border-blue-300/40 bg-white/30 backdrop-blur-xl shadow-[0_4px_20px_rgba(30,64,175,0.15)]">
-        <table className="w-full text-xs text-left">
+        <table className="admin-list-table w-full sm:min-w-[760px] text-xs text-left">
           <thead className="sticky top-14 z-20 bg-blue-50 text-gray-700 text-[11px] uppercase tracking-wide shadow-[0_2px_6px_rgba(30,64,175,0.08)]">
             <tr>
               <th className="px-3 py-2 w-8">
@@ -197,21 +197,29 @@ function ManageTeam() {
                       />
                     )}
                   </td>
-                  <td className="px-3 py-2 font-medium text-gray-800 max-w-[160px] truncate">{member.name}</td>
-                  <td className="px-3 py-2 text-blue-500 max-w-[160px] truncate">{member.role}</td>
-                  <td className="px-3 py-2 text-gray-600 max-w-[140px] truncate">
-                    {member.country ? (
-                      <span className="inline-flex items-center gap-1"><FiGlobe size={11} /> {member.country}</span>
-                    ) : "-"}
+                  <td className="px-3 py-2 font-medium text-gray-800"><div className="max-w-[160px] truncate">{member.name}</div></td>
+                  <td className="px-3 py-2 text-blue-500"><div className="max-w-[160px] truncate">{member.role}</div></td>
+                  <td className="px-3 py-2 text-gray-600">
+                    <div className="max-w-[140px] truncate">
+                      {member.country ? (
+                        <span className="inline-flex items-center gap-1"><FiGlobe size={11} /> {member.country}</span>
+                      ) : "-"}
+                    </div>
                   </td>
-                  <td className="px-3 py-2 text-gray-500 max-w-[160px] truncate">
-                    {linkedin ? <a href={linkedin} target="_blank" rel="noreferrer" className="hover:text-blue-600">{linkedin}</a> : "-"}
+                  <td className="px-3 py-2 text-gray-500">
+                    <div className="max-w-[160px] truncate">
+                      {linkedin ? <a href={linkedin} target="_blank" rel="noreferrer" className="hover:text-blue-600">{linkedin}</a> : "-"}
+                    </div>
                   </td>
-                  <td className="px-3 py-2 text-gray-500 max-w-[160px] truncate">
-                    {github ? <a href={github} target="_blank" rel="noreferrer" className="hover:text-blue-600">{github}</a> : "-"}
+                  <td className="px-3 py-2 text-gray-500">
+                    <div className="max-w-[160px] truncate">
+                      {github ? <a href={github} target="_blank" rel="noreferrer" className="hover:text-blue-600">{github}</a> : "-"}
+                    </div>
                   </td>
-                  <td className="px-3 py-2 text-gray-500 max-w-[160px] truncate">
-                    {twitter ? <a href={twitter} target="_blank" rel="noreferrer" className="hover:text-blue-600">{twitter}</a> : "-"}
+                  <td className="px-3 py-2 text-gray-500">
+                    <div className="max-w-[160px] truncate">
+                      {twitter ? <a href={twitter} target="_blank" rel="noreferrer" className="hover:text-blue-600">{twitter}</a> : "-"}
+                    </div>
                   </td>
                   <td className="px-3 py-2">
                     <div className="flex items-center justify-end gap-1">
