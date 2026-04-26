@@ -16,8 +16,8 @@ function Projects() {
   const heading = useSectionHeading("projects");
   const l = useLang();
   const [projects, setProjects] = useState([]);
-  const [headingRef, headingVisible] = useScrollAnimation();
-  const [sliderRef, sliderVisible] = useScrollAnimation(0.1);
+  const [headingRef, headingVisible] = useScrollAnimation(0.15, true);
+  const [sliderRef, sliderVisible] = useScrollAnimation(0.1, true);
 
   useEffect(() => {
     getProjects()
@@ -31,7 +31,7 @@ function Projects() {
   if (projects.length === 0) return null;
 
   return (
-    <section id="projects" className="relative py-24 sm:py-28 bg-white overflow-hidden">
+    <section id="projects" className="relative py-24 sm:py-28 bg-transparent overflow-hidden">
       {/* decorative shapes */}
       <div className="absolute top-10 -right-10 w-48 h-48 bg-[#0075ff]/5 rounded-full blur-2xl animate-pulse-glow pointer-events-none" />
       <div className="absolute bottom-10 -left-10 w-36 h-36 bg-[#0075ff]/5 rounded-full blur-2xl animate-pulse-glow pointer-events-none" style={{ animationDelay: "2s" }} />
@@ -83,10 +83,10 @@ function Projects() {
             }}
           >
             {projects.map((project) => (
-              <SwiperSlide key={project._id}>
-                <div className="bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] overflow-hidden border border-gray-100/80 group card-hover">
+              <SwiperSlide key={project._id} className="!h-auto">
+                <div className="bg-white rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.18),0_2px_8px_rgba(0,0,0,0.10)] hover:shadow-[0_22px_50px_rgba(0,0,0,0.28),0_4px_14px_rgba(0,0,0,0.16)] hover:-translate-y-2 transition-all duration-500 ease-out overflow-hidden group h-full flex flex-col">
                   {/* project thumbnail */}
-                  <div className="overflow-hidden h-48 hover-shine">
+                  <div className="overflow-hidden h-48 shrink-0 hover-shine">
                     <img
                       src={project.projectImage || project.image}
                       alt={l(project, "title")}
@@ -95,7 +95,7 @@ function Projects() {
                   </div>
 
                   {/* project info */}
-                  <div className="p-5">
+                  <div className="p-5 flex flex-col flex-1">
                     <h3 className="text-lg font-bold text-[#051229] mb-2">{l(project, "title")}</h3>
                     <p className="text-[#7e8590] text-sm mb-3 line-clamp-2">{l(project, "description")}</p>
 
@@ -114,7 +114,7 @@ function Projects() {
                     {/* view detail page */}
                     <Link
                       to={`/projects/${project._id}`}
-                      className="inline-flex items-center gap-1.5 text-[#0075ff] hover:text-[#051229] text-sm font-bold transition-colors link-underline"
+                      className="mt-auto inline-flex items-center gap-1.5 text-[#0075ff] hover:text-[#051229] text-sm font-bold transition-colors link-underline"
                     >
                       {t("projects.viewProject")} <FiExternalLink size={14} />
                     </Link>
