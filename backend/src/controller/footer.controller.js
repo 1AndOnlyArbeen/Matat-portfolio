@@ -15,6 +15,7 @@ const updateFooter = asyncHandler(async (req, res) => {
     tagline, taglineHe, email, phone,
     location, locationHe, copyright, copyrightHe,
     githubUrl, linkedinUrl, twitterUrl,
+    facebookUrl, instagramUrl, tiktokUrl,
   } = req.body;
 
   let footer = await Footer.findOne();
@@ -32,6 +33,9 @@ const updateFooter = asyncHandler(async (req, res) => {
     if (githubUrl !== undefined) footer.githubUrl = githubUrl;
     if (linkedinUrl !== undefined) footer.linkedinUrl = linkedinUrl;
     if (twitterUrl !== undefined) footer.twitterUrl = twitterUrl;
+    if (facebookUrl !== undefined) footer.facebookUrl = facebookUrl;
+    if (instagramUrl !== undefined) footer.instagramUrl = instagramUrl;
+    if (tiktokUrl !== undefined) footer.tiktokUrl = tiktokUrl;
     await footer.save();
   }
   return res.status(200).json(new apiResponse(200, footer, 'Footer updated'));

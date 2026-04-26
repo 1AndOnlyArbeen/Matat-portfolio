@@ -370,3 +370,14 @@ export async function deleteMessage(id) {
 export async function getDashboardStats() {
   return await adminFetch("/dashboard");
 }
+
+// ---- Section Headings (one document per section key) ----
+export async function getSectionHeadings() {
+  return await adminFetch("/sectionHeadings");
+}
+export async function upsertSectionHeading(section, payload) {
+  return await adminFetch(`/sectionHeading/${section}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}

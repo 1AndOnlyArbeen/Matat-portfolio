@@ -14,6 +14,9 @@ const footerSchema = new mongoose.Schema(
     githubUrl:    { type: String, default: '' },
     linkedinUrl:  { type: String, default: '' },
     twitterUrl:   { type: String, default: '' },
+    facebookUrl:  { type: String, default: '' },
+    instagramUrl: { type: String, default: '' },
+    tiktokUrl:    { type: String, default: '' },
   },
   { timestamps: true },
 );

@@ -9,6 +9,7 @@ function ManageFooter() {
     location: "", locationHe: "",
     copyright: "", copyrightHe: "",
     githubUrl: "", linkedinUrl: "", twitterUrl: "",
+    facebookUrl: "", instagramUrl: "", tiktokUrl: "",
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -33,6 +34,9 @@ function ManageFooter() {
         githubUrl: d.githubUrl || "",
         linkedinUrl: d.linkedinUrl || "",
         twitterUrl: d.twitterUrl || "",
+        facebookUrl: d.facebookUrl || "",
+        instagramUrl: d.instagramUrl || "",
+        tiktokUrl: d.tiktokUrl || "",
       });
     }
   };
@@ -101,18 +105,31 @@ function ManageFooter() {
         {/* Social Links */}
         <div className="rounded-xl border border-blue-200/60 bg-blue-50/40 p-4 space-y-3">
           <h3 className="text-sm font-semibold text-blue-900">Social Links</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <p className="text-[11px] text-gray-500">Leave any field empty to hide that icon on the public site.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">GitHub URL</label>
-              <input type="url" value={form.githubUrl} onChange={(e) => f("githubUrl", e.target.value)} placeholder="https://github.com/..." className="w-full px-3 py-2 rounded-lg border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+              <label className="block text-xs font-medium text-gray-600 mb-1">Facebook URL</label>
+              <input type="url" value={form.facebookUrl} onChange={(e) => f("facebookUrl", e.target.value)} placeholder="https://facebook.com/..." className="w-full px-3 py-2 rounded-lg border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Instagram URL</label>
+              <input type="url" value={form.instagramUrl} onChange={(e) => f("instagramUrl", e.target.value)} placeholder="https://instagram.com/..." className="w-full px-3 py-2 rounded-lg border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">TikTok URL</label>
+              <input type="url" value={form.tiktokUrl} onChange={(e) => f("tiktokUrl", e.target.value)} placeholder="https://tiktok.com/@..." className="w-full px-3 py-2 rounded-lg border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">LinkedIn URL</label>
               <input type="url" value={form.linkedinUrl} onChange={(e) => f("linkedinUrl", e.target.value)} placeholder="https://linkedin.com/..." className="w-full px-3 py-2 rounded-lg border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Twitter URL</label>
-              <input type="url" value={form.twitterUrl} onChange={(e) => f("twitterUrl", e.target.value)} placeholder="https://twitter.com/..." className="w-full px-3 py-2 rounded-lg border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+              <label className="block text-xs font-medium text-gray-600 mb-1">Twitter / X URL</label>
+              <input type="url" value={form.twitterUrl} onChange={(e) => f("twitterUrl", e.target.value)} placeholder="https://x.com/..." className="w-full px-3 py-2 rounded-lg border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">GitHub URL</label>
+              <input type="url" value={form.githubUrl} onChange={(e) => f("githubUrl", e.target.value)} placeholder="https://github.com/..." className="w-full px-3 py-2 rounded-lg border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
             </div>
           </div>
         </div>

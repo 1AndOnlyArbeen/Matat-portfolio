@@ -3,12 +3,14 @@ import { useTranslation } from "react-i18next";
 import { getTestimonials } from "../api";
 import { FiStar, FiChevronLeft, FiChevronRight, FiX } from "react-icons/fi";
 import useLang from "../hooks/useLang";
+import useSectionHeading from "../hooks/useSectionHeading";
 
 const CARDS_PER_PAGE = 3;
 
 function Testimonials() {
   const { t } = useTranslation();
   const l = useLang();
+  const heading = useSectionHeading("testimonials");
   const [testimonials, setTestimonials] = useState([]);
   const [page, setPage] = useState(0);
   const [openItem, setOpenItem] = useState(null);
@@ -86,18 +88,27 @@ function Testimonials() {
             transition: "all 0.8s ease",
           }}
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0075ff]/5 border border-[#0075ff]/10 mb-5">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0075ff] opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0075ff]" />
-            </span>
-            <span className="text-xs font-bold tracking-widest text-[#0075ff] uppercase">{t("testimonials.title")}</span>
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#051229] mb-2">
-            {t("testimonials.title").split(" ").slice(0, -1).join(" ")}{" "}
-            <span className="text-[#0075ff]">{t("testimonials.title").split(" ").slice(-1)}</span>
-          </h2>
-          <p className="text-[#7e8590] text-base max-w-md mx-auto mb-6">{t("testimonials.subtitle")}</p>
+          {heading.label && (
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0075ff]/5 border border-[#0075ff]/10 mb-5">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0075ff] opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0075ff]" />
+              </span>
+              <span className="text-xs font-bold tracking-widest text-[#0075ff] uppercase">{heading.label}</span>
+            </div>
+          )}
+          {(heading.titlePlain || heading.titleHighlight) && (
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#051229] mb-2">
+              {heading.titlePlain}
+              {heading.titlePlain && heading.titleHighlight && " "}
+              {heading.titleHighlight && (
+                <span className="text-[#0075ff]">{heading.titleHighlight}</span>
+              )}
+            </h2>
+          )}
+          {heading.subtitle && (
+            <p className="text-[#7e8590] text-base max-w-md mx-auto mb-6">{heading.subtitle}</p>
+          )}
           <div className="flex justify-center gap-2">
             <button
               onClick={goPrev}

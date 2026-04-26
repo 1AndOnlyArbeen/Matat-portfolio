@@ -5,7 +5,7 @@ import { logoutAdmin, getMessages } from "../api/admin";
 import {
   FiHome, FiImage, FiGrid, FiSmartphone, FiUsers,
   FiStar, FiCamera, FiInfo, FiMail, FiLogOut, FiMenu,
-  FiX, FiMonitor, FiLayout
+  FiX, FiMonitor, FiLayout, FiType
 } from "react-icons/fi";
 import logo from "../assets/matat-logo-new1.svg";
 import LanguageToggle from "../components/LanguageToggle";
@@ -25,6 +25,7 @@ const sidebarLinks = [
   { nameKey: "admin.sidebar.about", path: "/matat-admin/about", icon: FiInfo },
   { nameKey: "admin.sidebar.messages", path: "/matat-admin/messages", icon: FiMail },
   { nameKey: "admin.sidebar.footer", path: "/matat-admin/footer", icon: FiLayout },
+  { nameKey: "admin.sidebar.sectionHeadings", path: "/matat-admin/section-headings", icon: FiType },
 ];
 
 function AdminLayout() {
@@ -100,32 +101,34 @@ function AdminLayout() {
       )}
 
       {/* full-width top header with logo merged in */}
-      <header className="h-24 bg-white/60 backdrop-blur-xl shadow-[0_6px_24px_rgba(37,99,235,0.15)] border-b border-blue-100/50 flex items-center px-6 sm:px-8 gap-4 shrink-0 z-40">
+      <header className="h-16 sm:h-24 bg-white/60 backdrop-blur-xl shadow-[0_6px_24px_rgba(37,99,235,0.15)] border-b border-blue-100/50 flex items-center px-3 sm:px-6 lg:px-8 gap-2 sm:gap-4 shrink-0 z-40">
         <button
-          className="lg:hidden text-blue-600 cursor-pointer"
+          className="lg:hidden text-blue-600 cursor-pointer shrink-0"
           onClick={() => setSidebarOpen(true)}
         >
-          <FiMenu size={28} />
+          <FiMenu size={24} />
         </button>
 
         {/* logo on left */}
         <Link to="/matat-admin" className="flex items-center shrink-0">
-          <img src={logo} alt="Matat" className="h-14 w-auto" />
+          <img src={logo} alt="Matat" className="h-8 sm:h-12 lg:h-14 w-auto" />
         </Link>
 
         {/* current page title centered */}
-        <h1 className="flex-1 flex items-center justify-center gap-3 text-2xl sm:text-3xl font-bold text-blue-700">
-          {CurrentIcon && <CurrentIcon size={28} className="text-blue-500" />}
-          {current ? t(current.nameKey) : t("admin.admin")}
+        <h1 className="flex-1 flex items-center justify-center gap-2 sm:gap-3 text-base sm:text-2xl lg:text-3xl font-bold text-blue-700 truncate min-w-0">
+          {CurrentIcon && <CurrentIcon className="text-blue-500 shrink-0 hidden sm:block" size={28} />}
+          <span className="truncate">{current ? t(current.nameKey) : t("admin.admin")}</span>
         </h1>
 
-        {/* link to view live site */}
-        <LanguageToggle />
+        {/* language toggle hidden on small screens, view-site button collapses to icon-ish on mobile */}
+        <div className="hidden sm:flex items-center gap-2">
+          <LanguageToggle />
+        </div>
         <a
           href="/"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-base font-medium text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition-all shrink-0"
+          className="text-xs sm:text-base font-medium text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-all shrink-0"
         >
           {t("admin.viewSite")}
         </a>
@@ -143,7 +146,7 @@ function AdminLayout() {
       <div className="flex-1 flex min-h-0 p-3 sm:p-4 gap-3 sm:gap-4">
         {/* sidebar (separate rounded bar starting below header) */}
         <aside
-          className={`fixed lg:static top-28 bottom-4 lg:bottom-auto lg:top-auto left-3 sm:left-4 lg:left-0 z-50 w-64 bg-white rounded-2xl border border-gray-200 shadow-[0_8px_30px_rgba(37,99,235,0.12)] transform transition-transform lg:transform-none overflow-hidden flex flex-col shrink-0 ${
+          className={`fixed lg:static top-20 sm:top-28 bottom-4 lg:bottom-auto lg:top-auto left-3 sm:left-4 lg:left-0 z-50 w-[85vw] max-w-[260px] sm:w-64 bg-white rounded-2xl border border-gray-200 shadow-[0_8px_30px_rgba(37,99,235,0.12)] transform transition-transform lg:transform-none overflow-hidden flex flex-col shrink-0 ${
             sidebarOpen ? "translate-x-0" : "-translate-x-[110%] lg:translate-x-0"
           }`}
         >

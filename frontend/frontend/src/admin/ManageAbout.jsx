@@ -6,7 +6,24 @@ import {
 } from "react-icons/fi";
 import ConfirmModal from "./ConfirmModal";
 
-const emptyForm = { title: "", titleHe: "", description: "", descriptionHe: "", mission: "", missionHe: "", stats: [{ value: "", label: "", valueHe: "", labelHe: "" }] };
+const emptyForm = {
+  title: "",
+  titleHe: "",
+  description: "",
+  descriptionHe: "",
+  mission: "",
+  missionHe: "",
+  headingLine1: "",
+  headingLine1He: "",
+  headingLine2: "",
+  headingLine2He: "",
+  ctaLabel: "",
+  ctaLabelHe: "",
+  ctaNote: "",
+  ctaNoteHe: "",
+  stats: [{ value: "", label: "", valueHe: "", labelHe: "" }],
+  tickerItems: [{ text: "", textHe: "" }],
+};
 
 function ManageAbout() {
   const [items, setItems] = useState([]);
@@ -77,7 +94,18 @@ function ManageAbout() {
       descriptionHe: item.descriptionHe || "",
       mission: item.mission || "",
       missionHe: item.missionHe || "",
+      headingLine1: item.headingLine1 || "",
+      headingLine1He: item.headingLine1He || "",
+      headingLine2: item.headingLine2 || "",
+      headingLine2He: item.headingLine2He || "",
+      ctaLabel: item.ctaLabel || "",
+      ctaLabelHe: item.ctaLabelHe || "",
+      ctaNote: item.ctaNote || "",
+      ctaNoteHe: item.ctaNoteHe || "",
       stats: item.stats?.length ? item.stats.map((s) => ({ value: s.value || "", label: s.label || "", valueHe: s.valueHe || "", labelHe: s.labelHe || "" })) : [{ value: "", label: "", valueHe: "", labelHe: "" }],
+      tickerItems: item.tickerItems?.length
+        ? item.tickerItems.map((t) => ({ text: t.text || "", textHe: t.textHe || "" }))
+        : [{ text: "", textHe: "" }],
     });
     setMessage("");
     setShowModal(true);
@@ -91,6 +119,16 @@ function ManageAbout() {
   const addStat = () => setForm({ ...form, stats: [...form.stats, { value: "", label: "", valueHe: "", labelHe: "" }] });
   const removeStat = (index) => setForm({ ...form, stats: form.stats.filter((_, i) => i !== index) });
 
+  const updateTicker = (index, field, value) => {
+    const updated = [...(form.tickerItems || [])];
+    updated[index] = { ...updated[index], [field]: value };
+    setForm({ ...form, tickerItems: updated });
+  };
+  const addTicker = () =>
+    setForm({ ...form, tickerItems: [...(form.tickerItems || []), { text: "", textHe: "" }] });
+  const removeTicker = (index) =>
+    setForm({ ...form, tickerItems: (form.tickerItems || []).filter((_, i) => i !== index) });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -103,7 +141,18 @@ function ManageAbout() {
       descriptionHe: form.descriptionHe,
       mission: form.mission,
       missionHe: form.missionHe,
+      headingLine1: form.headingLine1,
+      headingLine1He: form.headingLine1He,
+      headingLine2: form.headingLine2,
+      headingLine2He: form.headingLine2He,
+      ctaLabel: form.ctaLabel,
+      ctaLabelHe: form.ctaLabelHe,
+      ctaNote: form.ctaNote,
+      ctaNoteHe: form.ctaNoteHe,
       stats: form.stats.filter((s) => s.value.trim() || s.label.trim()).map((s) => ({ value: s.value, label: s.label, valueHe: s.valueHe, labelHe: s.labelHe })),
+      tickerItems: (form.tickerItems || [])
+        .filter((t) => (t.text || "").trim() || (t.textHe || "").trim())
+        .map((t) => ({ text: t.text, textHe: t.textHe })),
     };
 
     const result = editing
@@ -173,7 +222,7 @@ function ManageAbout() {
       </div>
 
       {/* table */}
-      <div className="overflow-x-clip rounded-xl border border-blue-300/40 bg-white/30 backdrop-blur-xl shadow-[0_4px_20px_rgba(30,64,175,0.15)]">
+      <div className="overflow-x-auto rounded-xl border border-blue-300/40 bg-white/30 backdrop-blur-xl shadow-[0_4px_20px_rgba(30,64,175,0.15)]">
         <table className="w-full text-xs text-left">
           <thead className="sticky top-14 z-20 bg-blue-50 text-gray-700 text-[11px] uppercase tracking-wide shadow-[0_2px_6px_rgba(30,64,175,0.08)]">
             <tr>
@@ -354,14 +403,93 @@ function ManageAbout() {
                 />
               </div>
 
+              {/* big heading lines (public About hero — split into two lines) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Heading — Line 1</label>
+                  <input
+                    type="text"
+                    value={form.headingLine1}
+                    onChange={(e) => setForm({ ...form, headingLine1: e.target.value })}
+                    placeholder="About"
+                    className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  />
+                  <label className="block text-xs text-gray-400 mb-1 mt-2">Hebrew (HE)</label>
+                  <input
+                    type="text"
+                    dir="rtl"
+                    value={form.headingLine1He}
+                    onChange={(e) => setForm({ ...form, headingLine1He: e.target.value })}
+                    placeholder="אודות"
+                    className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Heading — Line 2</label>
+                  <input
+                    type="text"
+                    value={form.headingLine2}
+                    onChange={(e) => setForm({ ...form, headingLine2: e.target.value })}
+                    placeholder="Us."
+                    className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  />
+                  <label className="block text-xs text-gray-400 mb-1 mt-2">Hebrew (HE)</label>
+                  <input
+                    type="text"
+                    dir="rtl"
+                    value={form.headingLine2He}
+                    onChange={(e) => setForm({ ...form, headingLine2He: e.target.value })}
+                    placeholder="שלנו."
+                    className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  />
+                </div>
+              </div>
+
+              {/* CTA button label + small note next to it */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">CTA Button Label</label>
+                  <input
+                    type="text"
+                    value={form.ctaLabel}
+                    onChange={(e) => setForm({ ...form, ctaLabel: e.target.value })}
+                    placeholder="Get In Touch"
+                    className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  />
+                  <label className="block text-xs text-gray-400 mb-1 mt-2">Hebrew (HE)</label>
+                  <input
+                    type="text"
+                    dir="rtl"
+                    value={form.ctaLabelHe}
+                    onChange={(e) => setForm({ ...form, ctaLabelHe: e.target.value })}
+                    placeholder="צור קשר"
+                    className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">CTA Note</label>
+                  <input
+                    type="text"
+                    value={form.ctaNote}
+                    onChange={(e) => setForm({ ...form, ctaNote: e.target.value })}
+                    placeholder="Response within 24h"
+                    className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  />
+                  <label className="block text-xs text-gray-400 mb-1 mt-2">Hebrew (HE)</label>
+                  <input
+                    type="text"
+                    dir="rtl"
+                    value={form.ctaNoteHe}
+                    onChange={(e) => setForm({ ...form, ctaNoteHe: e.target.value })}
+                    placeholder="תגובה תוך 24 שעות"
+                    className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  />
+                </div>
+              </div>
+
               {/* stats */}
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-sm font-medium text-gray-700">Stats</label>
-                  <button type="button" onClick={addStat} className="text-blue-600 text-sm flex items-center gap-1 cursor-pointer hover:text-blue-800">
-                    <FiPlus size={14} /> Add Stat
-                  </button>
-                </div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Stats</label>
                 <div className="space-y-2">
                   {form.stats?.map((stat, index) => (
                     <div key={index} className="space-y-1.5">
@@ -410,6 +538,60 @@ function ManageAbout() {
                     </div>
                   ))}
                 </div>
+                <button
+                  type="button"
+                  onClick={addStat}
+                  className="mt-3 bg-blue-600 hover:bg-blue-700 text-white font-medium px-3 py-2 rounded-lg text-xs flex items-center gap-1.5 cursor-pointer transition-colors shadow-sm"
+                >
+                  <FiPlus size={14} /> Add Stat
+                </button>
+              </div>
+
+              {/* ticker items — bottom marquee on the public About */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Ticker Items</label>
+                <p className="text-xs text-gray-400 mb-2">
+                  Each item becomes one chip on the running ticker at the bottom of the About section
+                  (e.g. "WordPress Development", "WooCommerce", "Laravel Solutions").
+                </p>
+                <div className="space-y-2">
+                  {(form.tickerItems || []).map((tk, index) => (
+                    <div key={index} className="space-y-1.5">
+                      <div className="flex gap-2 items-center">
+                        <input
+                          type="text"
+                          value={tk.text}
+                          onChange={(e) => updateTicker(index, "text", e.target.value)}
+                          placeholder="WordPress Development"
+                          className="flex-1 px-3 py-2 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeTicker(index)}
+                          className="text-red-400 hover:text-red-600 p-1 cursor-pointer"
+                        >
+                          <FiTrash2 size={16} />
+                        </button>
+                      </div>
+                      <label className="block text-xs text-gray-400 mb-1">Hebrew (HE)</label>
+                      <input
+                        type="text"
+                        dir="rtl"
+                        value={tk.textHe}
+                        onChange={(e) => updateTicker(index, "textHe", e.target.value)}
+                        placeholder="פיתוח וורדפרס"
+                        className="w-full px-3 py-2 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                      />
+                    </div>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={addTicker}
+                  className="mt-3 bg-blue-600 hover:bg-blue-700 text-white font-medium px-3 py-2 rounded-lg text-xs flex items-center gap-1.5 cursor-pointer transition-colors shadow-sm"
+                >
+                  <FiPlus size={14} /> Add Ticker
+                </button>
               </div>
 
               {message && <p className="text-sm text-red-500 font-medium">{message}</p>}
@@ -462,6 +644,18 @@ function ManageAbout() {
                         <p className="text-blue-700 font-bold text-lg">{s.value}</p>
                         <p className="text-gray-600 text-xs">{s.label}</p>
                       </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {viewItem.tickerItems?.length > 0 && (
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-gray-400 mb-2">Ticker Items</p>
+                  <div className="flex flex-wrap gap-2">
+                    {viewItem.tickerItems.map((t, i) => (
+                      <span key={i} className="text-[11px] bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
+                        {t.text}
+                      </span>
                     ))}
                   </div>
                 </div>

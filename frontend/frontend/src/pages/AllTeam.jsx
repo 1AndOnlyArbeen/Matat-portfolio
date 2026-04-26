@@ -3,44 +3,55 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getTeamMembers } from "../api";
 import {
+  FiArrowLeft,
   FiLinkedin,
   FiGithub,
   FiTwitter,
-  FiArrowRight,
 } from "react-icons/fi";
-import useScrollAnimation from "../hooks/useScrollAnimation";
-import useSectionHeading from "../hooks/useSectionHeading";
 import useLang from "../hooks/useLang";
+import useSectionHeading from "../hooks/useSectionHeading";
 
-const PER_PAGE = 4;
-
-function Team() {
+function AllTeam() {
   const { t } = useTranslation();
   const l = useLang();
   const heading = useSectionHeading("team");
   const [members, setMembers] = useState([]);
-  const [headingRef, headingVisible] = useScrollAnimation();
-  const [gridRef, gridVisible] = useScrollAnimation(0.1);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getTeamMembers().then((res) => {
-      const list = res?.teams || (Array.isArray(res) ? res : []);
-      if (list.length > 0) setMembers(list);
-    });
+    getTeamMembers()
+      .then((res) => {
+        const list = res?.teams || (Array.isArray(res) ? res : []);
+        setMembers(list);
+        setLoading(false);
+      })
+      .catch(() => {
+        setMembers([]);
+        setLoading(false);
+      });
   }, []);
 
-  if (members.length === 0) return null;
-
-  const visible = members.slice(0, PER_PAGE);
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center bg-[#f0f4f8]">
+        <div className="w-10 h-10 border-[3px] border-[#0075ff]/20 border-t-[#0075ff] rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <section id="team" className="py-24 sm:py-28 bg-[#f0f4f8]">
+    <section className="py-20 sm:py-28 bg-[#f0f4f8] min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* ===== header — admin-driven via Section Headings ===== */}
-        <div
-          ref={headingRef}
-          className={`text-center mb-16 sm:mb-20 animate-fade-up ${headingVisible ? "visible" : ""}`}
+        {/* back link */}
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 text-[#0075ff] hover:text-[#051229] font-bold text-sm mb-8 transition-colors"
         >
+          <FiArrowLeft size={16} /> Back to Home
+        </Link>
+
+        {/* header — admin-driven via Section Headings */}
+        <div className="text-center mb-16">
           {heading.label && (
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0075ff]/5 border border-[#0075ff]/10 mb-5">
               <span className="relative flex h-2 w-2">
@@ -68,13 +79,11 @@ function Team() {
           )}
         </div>
 
-        {/* ===== grid (first 4) ===== */}
-        <div className="relative max-w-5xl mx-auto">
-          <div
-            ref={gridRef}
-            className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-20 justify-items-center animate-fade-up ${gridVisible ? "visible" : ""}`}
-          >
-            {visible.map((m, i) => {
+        {members.length === 0 ? (
+          <p className="text-center text-[#7e8590]">No team members yet.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-20 justify-items-center max-w-5xl mx-auto">
+            {members.map((m, i) => {
               const socials = [
                 {
                   url: m.linkedinUrl || m.social?.linkedin,
@@ -98,14 +107,9 @@ function Team() {
                   key={m._id}
                   className="text-center w-60 group"
                   style={{
-                    opacity: gridVisible ? 1 : 0,
-                    transform: gridVisible
-                      ? "translateY(0)"
-                      : "translateY(20px)",
-                    transition: `opacity 500ms ease-out ${i * 90}ms, transform 600ms cubic-bezier(0.22, 1, 0.36, 1) ${i * 90}ms`,
+                    animation: `fadeUp 500ms ease-out ${i * 60}ms both`,
                   }}
                 >
-                  {/* single unified frosted card */}
                   <div
                     className="relative w-60 mx-auto rounded-3xl overflow-hidden transition-all duration-500 group-hover:shadow-[0_28px_56px_rgba(15,35,65,0.22)]"
                     style={{
@@ -127,7 +131,6 @@ function Team() {
                       />
                     </div>
 
-                    {/* info area (name, role, socials) — same card */}
                     <div className="px-4 pt-4 pb-5 border-t border-white/60">
                       <h3 className="font-extrabold text-[17px] text-[#051229] tracking-tight leading-tight">
                         {l(m, "name")}
@@ -164,24 +167,10 @@ function Team() {
               );
             })}
           </div>
-
-          {/* ===== see more ===== */}
-          <div className="mt-14 sm:mt-16 flex justify-center">
-            <Link
-              to="/team/all"
-              className="group inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full bg-[#051229] text-white font-bold text-sm hover:bg-[#0075ff] transition-all duration-300 hover:scale-105 shadow-lg shadow-[#051229]/20 hover:shadow-[#0075ff]/30"
-            >
-              <span className="tracking-wide">See More Members</span>
-              <FiArrowRight
-                size={16}
-                className="group-hover:translate-x-1 transition-transform"
-              />
-            </Link>
-          </div>
-        </div>
+        )}
       </div>
     </section>
   );
 }
 
-export default Team;
+export default AllTeam;

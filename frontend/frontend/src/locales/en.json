@@ -134,7 +134,8 @@
       "gallery": "Gallery",
       "about": "About",
       "messages": "Messages",
-      "footer": "Footer"
+      "footer": "Footer",
+      "sectionHeadings": "Section Headings"
     },
     "viewSite": "View Site",
     "logout": "Logout",

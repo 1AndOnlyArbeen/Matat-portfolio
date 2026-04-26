@@ -15,9 +15,9 @@ function Home() {
       <Projects />
       <Apps />
       <Clients />
-      <About />
       <Team />
       <Testimonials />
+      <About />
       <Gallery />
       <Contact />
     </>

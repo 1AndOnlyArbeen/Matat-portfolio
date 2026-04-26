@@ -78,6 +78,11 @@ import {
 } from '../controller/gallery.controller.js';
 import { getFooter, updateFooter } from '../controller/footer.controller.js';
 
+import {
+    getSectionHeadings,
+    upsertSectionHeading,
+} from '../controller/sectionHeading.controller.js';
+
 const adminRouter = Router();
 
 // admion login routers
@@ -215,5 +220,10 @@ adminRouter.route('/updateGalleryHeading').patch(verifyJwt, updateGalleryHeading
 // footer
 adminRouter.route('/footer-settings').get(getFooter);
 adminRouter.route('/updateFooter').patch(verifyJwt, updateFooter);
+
+// section headings — single map for every section's eyebrow/title/highlight/subtitle
+// public read so the site can pull all of them in one request, admin upsert per-section
+adminRouter.route('/sectionHeadings').get(getSectionHeadings);
+adminRouter.route('/sectionHeading/:section').put(verifyJwt, upsertSectionHeading);
 
 export { adminRouter };

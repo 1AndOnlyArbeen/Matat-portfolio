@@ -22,19 +22,39 @@ const cleanStats = (stats) => {
     .map((s, i) => ({
       value: (s.value || '').trim(),
       label: (s.label || '').trim(),
+      valueHe: (s?.valueHe || '').trim(),
+      labelHe: (s?.labelHe || '').trim(),
+      order: typeof s?.order === 'number' ? s.order : i + 1,
+    }));
+};
+
+// same idea for the bottom ticker — drop empty rows, trim, assign order
+const cleanTicker = (items) => {
+  if (!Array.isArray(items)) return [];
+  return items
+    .filter((s) => (s?.text || '').trim() || (s?.textHe || '').trim())
+    .map((s, i) => ({
+      text: (s.text || '').trim(),
+      textHe: (s?.textHe || '').trim(),
       order: typeof s?.order === 'number' ? s.order : i + 1,
     }));
 };
 
 // create the about and save in the db
 const createAbout = asyncHandler(async (req, res) => {
-  const { title, description, mission, stats, titleHe, descriptionHe, missionHe } = req.body;
+  const {
+    title, description, mission, stats, tickerItems,
+    headingLine1, headingLine2, ctaLabel, ctaNote,
+    titleHe, descriptionHe, missionHe,
+    headingLine1He, headingLine2He, ctaLabelHe, ctaNoteHe,
+  } = req.body;
 
   if (!title || !description || !mission) {
     throw new apiError(400, 'All fields are required');
   }
 
   const cleanedStats = cleanStats(stats);
+  const cleanedTicker = cleanTicker(tickerItems);
 
   let about;
   try {
@@ -42,10 +62,19 @@ const createAbout = asyncHandler(async (req, res) => {
       title,
       description,
       mission,
+      headingLine1,
+      headingLine2,
+      ctaLabel,
+      ctaNote,
       titleHe,
       descriptionHe,
       missionHe,
+      headingLine1He,
+      headingLine2He,
+      ctaLabelHe,
+      ctaNoteHe,
       stats: cleanedStats,
+      tickerItems: cleanedTicker,
     });
   } catch (err) {
     throw new apiError(500, 'Failed to create about');
@@ -126,7 +155,12 @@ const toggleAbout = asyncHandler(async (req, res) => {
 
 // editing the about details after the save
 const editAbout = asyncHandler(async (req, res) => {
-  const { title, description, mission, stats, titleHe, descriptionHe, missionHe } = req.body;
+  const {
+    title, description, mission, stats, tickerItems,
+    headingLine1, headingLine2, ctaLabel, ctaNote,
+    titleHe, descriptionHe, missionHe,
+    headingLine1He, headingLine2He, ctaLabelHe, ctaNoteHe,
+  } = req.body;
 
   const about = await About.findById(req.params.id);
   if (!about) {
@@ -139,11 +173,25 @@ const editAbout = asyncHandler(async (req, res) => {
   if (titleHe !== undefined) about.titleHe = titleHe;
   if (descriptionHe !== undefined) about.descriptionHe = descriptionHe;
   if (missionHe !== undefined) about.missionHe = missionHe;
+  // optional public-facing copy — overwrite only when sent
+  if (headingLine1 !== undefined) about.headingLine1 = headingLine1;
+  if (headingLine2 !== undefined) about.headingLine2 = headingLine2;
+  if (ctaLabel !== undefined) about.ctaLabel = ctaLabel;
+  if (ctaNote !== undefined) about.ctaNote = ctaNote;
+  if (headingLine1He !== undefined) about.headingLine1He = headingLine1He;
+  if (headingLine2He !== undefined) about.headingLine2He = headingLine2He;
+  if (ctaLabelHe !== undefined) about.ctaLabelHe = ctaLabelHe;
+  if (ctaNoteHe !== undefined) about.ctaNoteHe = ctaNoteHe;
 
   // stats is a full replace — if admin sent stats, replace the array;
   // if stats is undefined (not sent), keep what was there
   if (stats !== undefined) {
     about.stats = cleanStats(stats);
+  }
+
+  // same full-replace semantics for the ticker
+  if (tickerItems !== undefined) {
+    about.tickerItems = cleanTicker(tickerItems);
   }
 
   await about.save();

@@ -83,6 +83,11 @@ export async function getFooterSettings() {
   return await fetchData("/footer-settings");
 }
 
+// returns a map keyed by section: { team: {...}, projects: {...}, ... }
+export async function getSectionHeadings() {
+  return await fetchData("/sectionHeadings");
+}
+
 // ---- contact form submission ----
 // sends form data as JSON via POST to the new /createMessageDetails endpoint
 export async function submitContact(formData) {

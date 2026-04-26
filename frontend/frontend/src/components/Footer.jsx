@@ -1,9 +1,13 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { FiGithub, FiLinkedin, FiTwitter, FiFacebook, FiInstagram } from "react-icons/fi";
+import { FaTiktok } from "react-icons/fa";
 import { getFooterSettings } from "../api";
 import useLang from "../hooks/useLang";
-import footerLogo from "../assets/matat.footer.svg";
+// header logo (admin-panel logo) used at the top of the footer
+import footerLogo from "../assets/matat-logo-new1.svg";
+// small footer-strip logo placed beside the copyright line
+import copyrightLogo from "../assets/matat.footer.svg";
 
 function Footer() {
   const { t } = useTranslation();
@@ -48,13 +52,12 @@ function Footer() {
       {/* footer content */}
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 pt-3 pb-2 flex flex-col lg:flex-row gap-6">
 
-        {/* left 50% — logo + tagline */}
-        <div className="lg:w-1/2 flex items-start gap-4">
-          <img src={footerLogo} alt="Matat" className="h-12 w-auto shrink-0" />
-          <div>
-            <p className="text-base font-bold text-[#051229] mb-1">Matat Technology</p>
-            <p className="text-sm leading-snug text-[#7e8590] max-w-[280px]">{tagline}</p>
-          </div>
+        {/* left 50% — logo on top, tagline beneath it */}
+        <div className="lg:w-1/2 flex flex-col items-start gap-3">
+          <img src={footerLogo} alt="Matat" className="h-16 w-auto shrink-0" />
+          <p className="text-sm leading-snug text-[#7e8590] max-w-[320px]">
+            {tagline}
+          </p>
         </div>
 
         {/* right 50% — links + contact in 3 cols */}
@@ -93,31 +96,49 @@ function Footer() {
             <h4 className="text-sm font-bold text-[#051229] mb-3">Follow Us</h4>
             <div className="flex flex-wrap gap-2">
               {[
-                { icon: FiFacebook, url: data?.facebookUrl || "#", bg: "bg-[#1877F2]" },
-                { icon: FiInstagram, url: data?.instagramUrl || "#", bg: "bg-gradient-to-br from-[#f09433] via-[#e6683c] to-[#bc1888]" },
-                ...(data?.linkedinUrl ? [{ icon: FiLinkedin, url: data.linkedinUrl, bg: "bg-[#0A66C2]" }] : []),
-                ...(data?.twitterUrl ? [{ icon: FiTwitter, url: data.twitterUrl, bg: "bg-[#1DA1F2]" }] : []),
-                ...(data?.githubUrl ? [{ icon: FiGithub, url: data.githubUrl, bg: "bg-[#333]" }] : []),
-              ].map(({ icon: Icon, url, bg }, i) => (
-                <a
-                  key={i}
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`w-9 h-9 rounded-full ${bg} flex items-center justify-center text-white hover:scale-110 hover:shadow-lg transition-all`}
-                >
-                  <Icon size={16} />
-                </a>
-              ))}
+                { icon: FiFacebook,  url: data?.facebookUrl,  bg: "bg-[#1877F2]" },
+                { icon: FiInstagram, url: data?.instagramUrl, bg: "bg-gradient-to-br from-[#f09433] via-[#e6683c] to-[#bc1888]" },
+                { icon: FaTiktok,    url: data?.tiktokUrl,    bg: "bg-[#000000]" },
+                { icon: FiLinkedin,  url: data?.linkedinUrl,  bg: "bg-[#0A66C2]" },
+                { icon: FiTwitter,   url: data?.twitterUrl,   bg: "bg-[#1DA1F2]" },
+                { icon: FiGithub,    url: data?.githubUrl,    bg: "bg-[#333]" },
+              ].map(({ icon: Icon, url, bg }, i) => {
+                const enabled = !!url;
+                return (
+                  <a
+                    key={i}
+                    href={enabled ? url : undefined}
+                    target={enabled ? "_blank" : undefined}
+                    rel={enabled ? "noopener noreferrer" : undefined}
+                    onClick={(e) => { if (!enabled) e.preventDefault(); }}
+                    aria-disabled={!enabled}
+                    className={`w-9 h-9 rounded-full ${bg} flex items-center justify-center text-white transition-all ${
+                      enabled
+                        ? "hover:scale-110 hover:shadow-lg cursor-pointer"
+                        : "opacity-50 cursor-default"
+                    }`}
+                  >
+                    <Icon size={16} />
+                  </a>
+                );
+              })}
             </div>
           </div>
         </div>
       </div>
 
-      {/* copyright */}
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 pb-2">
-        <div className="border-t border-[#e5e5e5] pt-2 text-center text-xs text-[#a9b0b8]">
-          <p>&copy; {currentYear} {copyright}</p>
+      {/* copyright — light blue strip with logo + text inline */}
+      <div
+        className="w-full py-2 text-[11px] text-[#0a3a7a]"
+        style={{ background: "#cfe6ff" }}
+      >
+        <div className="flex items-center justify-center gap-2">
+          <img
+            src={copyrightLogo}
+            alt="Matat"
+            className="h-4 w-auto"
+          />
+          <span>&copy; {currentYear} {copyright}</span>
         </div>
       </div>
     </footer>

@@ -45,16 +45,15 @@ const bilingualText = (enDefault = '', heDefault = '') => ({
   he: { type: String, default: heDefault },
 });
 
-// single document that stores the gallery section heading text
+// kept only because old DB rows reference this collection — every text default
+// is now empty so nothing static leaks onto the public site. Section headings
+// are managed under the unified SectionHeading collection.
 const galleryHeadingSchema = new mongoose.Schema(
   {
-    label: bilingualText('✦ Our Story In Photos', '✦ הסיפור שלנו בתמונות'),
-    title: bilingualText('Memories from', 'זיכרונות מ'),
-    titleHighlight: bilingualText('the road', 'הדרך'),
-    subtitle: bilingualText(
-      "Glimpses of moments — events, trips, milestones — across the places we've been.",
-      'הצצות לרגעים — אירועים, טיולים, אבני דרך — במקומות שבהם היינו.',
-    ),
+    label: bilingualText('', ''),
+    title: bilingualText('', ''),
+    titleHighlight: bilingualText('', ''),
+    subtitle: bilingualText('', ''),
   },
   { timestamps: true },
 );

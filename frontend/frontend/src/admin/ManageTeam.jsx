@@ -161,7 +161,7 @@ function ManageTeam() {
       </div>
 
       {/* team members table */}
-      <div className="overflow-x-clip rounded-xl border border-blue-300/40 bg-white/30 backdrop-blur-xl shadow-[0_4px_20px_rgba(30,64,175,0.15)]">
+      <div className="overflow-x-auto rounded-xl border border-blue-300/40 bg-white/30 backdrop-blur-xl shadow-[0_4px_20px_rgba(30,64,175,0.15)]">
         <table className="w-full text-xs text-left">
           <thead className="sticky top-14 z-20 bg-blue-50 text-gray-700 text-[11px] uppercase tracking-wide shadow-[0_2px_6px_rgba(30,64,175,0.08)]">
             <tr>
@@ -314,7 +314,13 @@ function ManageTeam() {
                   <input type="text" value={form.twitter} onChange={(e) => setForm({ ...form, twitter: e.target.value })} className="w-full px-4 py-2.5 rounded-lg border border-blue-300 shadow-[0_2px_10px_rgba(37,99,235,0.25)] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
                 </div>
               </div>
-              <ImageDropzone label="Photo" onFileSelect={setImageFile} currentImage={editing?.teamImage || editing?.image} />
+              <div>
+                <ImageDropzone label="Photo" onFileSelect={setImageFile} currentImage={editing?.teamImage || editing?.image} />
+                <p className="mt-2 text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
+                  Note: upload a photo with a <strong>transparent / background-less</strong> image (PNG with no background).
+                  Photos with a solid background will look out of place inside the framed card.
+                </p>
+              </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2.5 rounded-lg text-sm text-gray-600 hover:bg-gray-100 cursor-pointer">Cancel</button>
                 <button type="submit" disabled={saving} className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium px-5 py-2.5 rounded-lg text-sm flex items-center gap-2 cursor-pointer"><FiSave size={14} /> {saving ? "Saving..." : "Save"}</button>

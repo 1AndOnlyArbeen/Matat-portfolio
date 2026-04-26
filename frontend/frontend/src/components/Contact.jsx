@@ -1,14 +1,26 @@
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { submitContact } from "../api";
+import { submitContact, getFooterSettings } from "../api";
 import { FiSend, FiMapPin, FiMail, FiPhone } from "react-icons/fi";
+import useSectionHeading from "../hooks/useSectionHeading";
+import useLang from "../hooks/useLang";
 
 function Contact() {
   const { t } = useTranslation();
+  const l = useLang();
+  const heading = useSectionHeading("contact");
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
   const [status, setStatus] = useState("idle");
   const [mounted, setMounted] = useState(false);
+  const [footer, setFooter] = useState(null);
   const sectionRef = useRef(null);
+
+  // pull contact info (address/email/phone) from the same Footer document the admin edits
+  useEffect(() => {
+    getFooterSettings().then((res) => {
+      if (res) setFooter(res);
+    });
+  }, []);
 
   useEffect(() => {
     const el = sectionRef.current;
@@ -57,19 +69,27 @@ function Contact() {
             transition: "all 0.8s ease",
           }}
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0075ff]/5 border border-[#0075ff]/10 mb-5">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0075ff] opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0075ff]" />
-            </span>
-            <span className="text-xs font-bold tracking-widest text-[#0075ff] uppercase">{t("contact.title")}</span>
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#051229] mb-2">
-            {t("contact.title")}
-          </h2>
-          <p className="text-[#7e8590] text-base max-w-xl mx-auto">
-            {t("contact.subtitle")}
-          </p>
+          {heading.label && (
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0075ff]/5 border border-[#0075ff]/10 mb-5">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0075ff] opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0075ff]" />
+              </span>
+              <span className="text-xs font-bold tracking-widest text-[#0075ff] uppercase">{heading.label}</span>
+            </div>
+          )}
+          {(heading.titlePlain || heading.titleHighlight) && (
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#051229] mb-2">
+              {heading.titlePlain}
+              {heading.titlePlain && heading.titleHighlight && " "}
+              {heading.titleHighlight && (
+                <span className="text-[#0075ff]">{heading.titleHighlight}</span>
+              )}
+            </h2>
+          )}
+          {heading.subtitle && (
+            <p className="text-[#7e8590] text-base max-w-xl mx-auto">{heading.subtitle}</p>
+          )}
         </div>
 
         {/* content grid */}
@@ -94,20 +114,22 @@ function Contact() {
               <h3 className="text-lg font-bold text-[#051229] mb-5">{t("contact.getInTouch")}</h3>
               <div className="space-y-5">
                 {[
-                  { icon: FiMapPin, label: t("contact.address"), value: t("contact.addressValue") },
-                  { icon: FiMail, label: t("contact.email"), value: t("contact.emailValue") },
-                  { icon: FiPhone, label: t("contact.phone"), value: t("contact.phoneValue") },
-                ].map(({ icon: Icon, label, value }, i) => (
-                  <div key={i} className="flex items-start gap-3 group">
-                    <div className="w-10 h-10 rounded-full bg-[#0075ff]/8 flex items-center justify-center group-hover:bg-[#0075ff] transition-colors shrink-0">
-                      <Icon className="text-[#0075ff] group-hover:text-white transition-colors" size={18} />
+                  { icon: FiMapPin, label: t("contact.address"), value: footer ? l(footer, "location") : "" },
+                  { icon: FiMail,   label: t("contact.email"),   value: footer?.email || "" },
+                  { icon: FiPhone,  label: t("contact.phone"),   value: footer?.phone || "" },
+                ]
+                  .filter(({ value }) => !!value)
+                  .map(({ icon: Icon, label, value }, i) => (
+                    <div key={i} className="flex items-start gap-3 group">
+                      <div className="w-10 h-10 rounded-full bg-[#0075ff]/8 flex items-center justify-center group-hover:bg-[#0075ff] transition-colors shrink-0">
+                        <Icon className="text-[#0075ff] group-hover:text-white transition-colors" size={18} />
+                      </div>
+                      <div>
+                        <p className="font-bold text-[#051229] text-sm">{label}</p>
+                        <p className="text-[#7e8590] text-sm">{value}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-bold text-[#051229] text-sm">{label}</p>
-                      <p className="text-[#7e8590] text-sm">{value}</p>
-                    </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             </div>
           </div>

@@ -10,6 +10,8 @@ import Home from "./pages/Home";
 import ProjectDetail from "./pages/ProjectDetail";
 import AppDetail from "./pages/AppDetail";
 import ClientDetail from "./pages/ClientDetail";
+import AllTeam from "./pages/AllTeam";
+import AllGallery from "./pages/AllGallery";
 import NotFound from "./pages/NotFound";
 import AdminNotFound from "./admin/AdminNotFound";
 
@@ -70,6 +72,7 @@ import ManageGallery from "./admin/ManageGallery";
 import ManageAbout from "./admin/ManageAbout";
 import ManageMessages from "./admin/ManageMessages";
 import ManageFooter from "./admin/ManageFooter";
+import ManageSectionHeadings from "./admin/ManageSectionHeadings";
 import AdminProjectDetail from "./admin/ProjectDetail";
 import AdminAppDetail from "./admin/AppDetail";
 import AdminClientDetail from "./admin/ClientDetail";
@@ -129,6 +132,8 @@ function App() {
         <Route path="/projects/:id" element={<PublicLayout><ProjectDetail /></PublicLayout>} />
         <Route path="/apps/:id" element={<PublicLayout><AppDetail /></PublicLayout>} />
         <Route path="/clients/:id" element={<PublicLayout><ClientDetail /></PublicLayout>} />
+        <Route path="/team/all" element={<PublicLayout><AllTeam /></PublicLayout>} />
+        <Route path="/gallery/all" element={<PublicLayout><AllGallery /></PublicLayout>} />
 
         {/* ===== ADMIN PANEL ROUTES ===== */}
 
@@ -151,6 +156,7 @@ function App() {
           <Route path="about" element={<ManageAbout />} />
           <Route path="messages" element={<ManageMessages />} />
           <Route path="footer" element={<ManageFooter />} />
+          <Route path="section-headings" element={<ManageSectionHeadings />} />
           <Route path="*" element={<AdminNotFound />} />
         </Route>
 
