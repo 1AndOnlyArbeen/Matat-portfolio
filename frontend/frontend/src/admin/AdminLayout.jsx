@@ -5,7 +5,7 @@ import { logoutAdmin, getMessages } from "../api/admin";
 import {
   FiHome, FiImage, FiGrid, FiSmartphone, FiUsers,
   FiStar, FiCamera, FiInfo, FiMail, FiLogOut, FiMenu,
-  FiX, FiMonitor, FiLayout, FiType
+  FiX, FiMonitor, FiLayout, FiType, FiMessageCircle
 } from "react-icons/fi";
 import logo from "../assets/matat-logo-new1.svg";
 import LanguageToggle from "../components/LanguageToggle";
@@ -26,6 +26,7 @@ const sidebarLinks = [
   { nameKey: "admin.sidebar.messages", path: "/matat-admin/messages", icon: FiMail },
   { nameKey: "admin.sidebar.footer", path: "/matat-admin/footer", icon: FiLayout },
   { nameKey: "admin.sidebar.sectionHeadings", path: "/matat-admin/section-headings", icon: FiType },
+  { nameKey: "admin.sidebar.chatAssistant", path: "/matat-admin/chat-assistant", icon: FiMessageCircle },
 ];
 
 function AdminLayout() {

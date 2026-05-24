@@ -81,6 +81,7 @@ import ManageSectionHeadings from "./admin/ManageSectionHeadings";
 import AdminProjectDetail from "./admin/ProjectDetail";
 import AdminAppDetail from "./admin/AppDetail";
 import AdminClientDetail from "./admin/ClientDetail";
+import ChatAssistant from "./admin/ChatAssistant";
 
 // On hard refresh / first load, redirect any public route back to "/"
 // so the user always lands on the home page. Admin routes are excluded.
@@ -168,6 +169,7 @@ function App() {
           <Route path="messages" element={<ManageMessages />} />
           <Route path="footer" element={<ManageFooter />} />
           <Route path="section-headings" element={<ManageSectionHeadings />} />
+          <Route path="chat-assistant" element={<ChatAssistant />} />
           <Route path="*" element={<AdminNotFound />} />
         </Route>
 
